@@ -1,24 +1,16 @@
+using SafeShare.DataAccessLayer.BaseModels;
+
 namespace SafeShare.DataAccessLayer.Models;
 
 /// <summary>
 /// Represents an expense created by a group member.
 /// </summary>
-public class Expense
+public class Expense : Base
 {
-    /// <summary>
-    /// Gets or sets the unique identifier of the expense.
-    /// </summary>
-    public int ExpenseId { get; set; } // Non-nullable primary key.
-
     /// <summary>
     /// Gets or sets the title describing the expense.
     /// </summary>
     public string Title { get; set; } = null!; // Non-nullable since an expense must have a title.
-
-    /// <summary>
-    /// Gets or sets the date when the expense was made.
-    /// </summary>
-    public DateTime Date { get; set; } // Non-nullable since an expense must have a date.
 
     /// <summary>
     /// Gets or sets the member who encoded the expense.

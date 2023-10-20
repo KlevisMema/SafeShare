@@ -1,19 +1,16 @@
-    namespace SafeShare.DataAccessLayer.Models;
+using SafeShare.DataAccessLayer.BaseModels;
+
+namespace SafeShare.DataAccessLayer.Models;
 
 /// <summary>
 /// Represents a member's participation in an expense.
 /// </summary>
-public class ExpenseMember
+public class ExpenseMember : Base
 {
-    /// <summary>
-    /// Gets or sets the unique identifier of the expense member.
-    /// </summary>
-    public int ExpenseMemberId { get; set; }
-
     /// <summary>
     /// Gets or sets the unique identifier of the associated expense.
     /// </summary>
-    public int ExpenseId { get; set; }
+    public Guid ExpenseId { get; set; }
 
     /// <summary>
     /// Gets or sets the unique identifier of the member affected by the expense.

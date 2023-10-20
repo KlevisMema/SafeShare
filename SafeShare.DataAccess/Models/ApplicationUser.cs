@@ -1,17 +1,14 @@
+using SafeShare.Utilities.Enums;
 using Microsoft.AspNetCore.Identity;
+using SafeShare.DataAccessLayer.BaseModels;
 
 namespace SafeShare.DataAccessLayer.Models;
 
 /// <summary>
 /// Represents a user of the application.
 /// </summary>
-public class ApplicationUser : IdentityUser
+public class ApplicationUser : BaseIdentity
 {
-    /// <summary>
-    /// Gets or sets the full name of the user.
-    /// </summary>
-    public string FullName { get; set; } = null!; // Non-nullable since a full name is usually required.
-
     /// <summary>
     /// Navigation property representing the groups owned by the user.
     /// </summary>

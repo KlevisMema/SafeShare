@@ -1,19 +1,16 @@
+using SafeShare.DataAccessLayer.BaseModels;
+
 namespace SafeShare.DataAccessLayer.Models;
 
 /// <summary>
 /// Represents a member of a group.
 /// </summary>
-public class GroupMember
+public class GroupMember : Base
 {
-    /// <summary>
-    /// Gets or sets the unique identifier of the group member.
-    /// </summary>
-    public int GroupMemberId { get; set; } // Non-nullable primary key.
-
     /// <summary>
     /// Gets or sets the unique identifier of the associated group.
     /// </summary>
-    public int GroupId { get; set; } // Non-nullable foreign key.
+    public Guid GroupId { get; set; } // Non-nullable foreign key.
 
     /// <summary>
     /// Gets or sets the unique identifier of the associated application user.

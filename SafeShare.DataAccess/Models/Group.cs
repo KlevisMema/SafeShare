@@ -1,15 +1,12 @@
+using SafeShare.DataAccessLayer.BaseModels;
+
 namespace SafeShare.DataAccessLayer.Models;
 
 /// <summary>
 /// Represents a group of users for encoding common expenses.
 /// </summary>
-public class Group
+public class Group : Base
 {
-    /// <summary>
-    /// Gets or sets the unique identifier of the group.
-    /// </summary>
-    public int GroupId { get; set; } // Non-nullable primary key.
-
     /// <summary>
     /// Gets or sets the name of the group.
     /// </summary>

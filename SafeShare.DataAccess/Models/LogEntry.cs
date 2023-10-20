@@ -1,15 +1,12 @@
-﻿namespace SafeShare.DataAccessLayer.Models;
+﻿using SafeShare.DataAccessLayer.BaseModels;
+
+namespace SafeShare.DataAccessLayer.Models;
 
 /// <summary>
 /// Represents a log entry for user activity monitoring.
 /// </summary>
-public class LogEntry
+public class LogEntry : BaseId
 {
-    /// <summary>
-    /// Gets or sets the unique identifier of the log entry.
-    /// </summary>
-    public int LogEntryId { get; set; } // Non-nullable primary key.
-
     /// <summary>
     /// Gets or sets the date and time when the log entry was created.
     /// </summary>
