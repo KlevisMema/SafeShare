@@ -8,30 +8,15 @@ public class Group
     /// <summary>
     /// Gets or sets the unique identifier of the group.
     /// </summary>
-    public int GroupId { get; set; }
+    public int GroupId { get; set; } // Non-nullable primary key.
 
     /// <summary>
     /// Gets or sets the name of the group.
     /// </summary>
-    public string GroupName { get; set; } = null!;
+    public string GroupName { get; set; } = null!; // Non-nullable since a group must have a name.
 
     /// <summary>
-    /// Gets or sets the unique identifier of the group owner (user who created the group).
+    /// Navigation property representing the members of the group.
     /// </summary>
-    public string OwnerUserId { get; set; } = null!;
-
-    /// <summary>
-    /// Gets or sets the navigation property representing the owner of the group.
-    /// </summary>
-    public ApplicationUser Owner { get; set; } = null!;
-
-    /// <summary>
-    /// Gets or sets the collection of members in the group.
-    /// </summary>
-    public ICollection<GroupMember> Members { get; set; } = new List<GroupMember>();
-
-    /// <summary>
-    /// Gets or sets the collection of expenses associated with the group.
-    /// </summary>
-    public ICollection<Expense> Expenses { get; set; } = new List<Expense>();
+    public virtual ICollection<GroupMember> Members { get; set; } = new List<GroupMember>(); // Non-nullable collection to ensure initialization.
 }

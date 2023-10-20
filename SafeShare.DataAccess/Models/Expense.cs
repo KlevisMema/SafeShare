@@ -1,57 +1,42 @@
 namespace SafeShare.DataAccessLayer.Models;
 
 /// <summary>
-/// Represents an expense incurred within a group.
+/// Represents an expense created by a group member.
 /// </summary>
 public class Expense
 {
     /// <summary>
     /// Gets or sets the unique identifier of the expense.
     /// </summary>
-    public int ExpenseId { get; set; }
+    public int ExpenseId { get; set; } // Non-nullable primary key.
 
     /// <summary>
-    /// Gets or sets the unique identifier of the group to which the expense belongs.
+    /// Gets or sets the title describing the expense.
     /// </summary>
-    public int GroupId { get; set; }
-
-    /// <summary>
-    /// Gets or sets the unique identifier of the member who paid the expense.
-    /// </summary>
-    public string PayerUserId { get; set; } = null!;
-
-    /// <summary>
-    /// Gets or sets the title of the expense describing what it covers.
-    /// </summary>
-    public string Title { get; set; } = null!;
+    public string Title { get; set; } = null!; // Non-nullable since an expense must have a title.
 
     /// <summary>
     /// Gets or sets the date when the expense was made.
     /// </summary>
-    public DateTime ExpenseDate { get; set; }
+    public DateTime Date { get; set; } // Non-nullable since an expense must have a date.
+
+    /// <summary>
+    /// Gets or sets the member who encoded the expense.
+    /// </summary>
+    public string FromMemberUserId { get; set; } = null!; // Non-nullable since the encoding member must have a user ID.
+
+    /// <summary>
+    /// Gets or sets the list of member user IDs affected by the expense.
+    /// </summary>
+    public List<string> ToMemberUserIds { get; set; } = new List<string>(); // Non-nullable, initialized to an empty list.
 
     /// <summary>
     /// Gets or sets the amount of the expense.
     /// </summary>
-    public decimal Amount { get; set; }
+    public decimal Amount { get; set; } // Non-nullable since an expense must have an amount.
 
     /// <summary>
     /// Gets or sets the optional description of the expense.
     /// </summary>
-    public string? Description { get; set; }
-
-    /// <summary>
-    /// Gets or sets the navigation property representing the group to which the expense belongs.
-    /// </summary>
-    public Group Group { get; set; } = null!;
-
-    /// <summary>
-    /// Gets or sets the navigation property representing the member who paid the expense.
-    /// </summary>
-    public ApplicationUser Payer { get; set; } = null!;
-
-    /// <summary>
-    /// Gets or sets the collection of members affected by the expense.
-    /// </summary>
-    public ICollection<ExpenseMember> ExpenseMembers { get; set; } = new List<ExpenseMember>();
+    public string? Description { get; set; } // Nullable since description is optional.
 }

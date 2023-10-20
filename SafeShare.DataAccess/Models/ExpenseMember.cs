@@ -1,4 +1,4 @@
-namespace SafeShare.DataAccessLayer.Models;
+    namespace SafeShare.DataAccessLayer.Models;
 
 /// <summary>
 /// Represents a member's participation in an expense.
