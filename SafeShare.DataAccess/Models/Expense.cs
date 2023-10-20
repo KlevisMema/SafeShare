@@ -18,11 +18,6 @@ public class Expense : Base
     public string FromMemberUserId { get; set; } = null!; // Non-nullable since the encoding member must have a user ID.
 
     /// <summary>
-    /// Gets or sets the list of member user IDs affected by the expense.
-    /// </summary>
-    public List<string> ToMemberUserIds { get; set; } = new List<string>(); // Non-nullable, initialized to an empty list.
-
-    /// <summary>
     /// Gets or sets the amount of the expense.
     /// </summary>
     public decimal Amount { get; set; } // Non-nullable since an expense must have an amount.
@@ -31,4 +26,10 @@ public class Expense : Base
     /// Gets or sets the optional description of the expense.
     /// </summary>
     public string? Description { get; set; } // Nullable since description is optional.
+
+    /// <summary>
+    /// Gets or sets the list of member user IDs affected by the expense.
+    /// </summary>
+    public ICollection<ExpenseMember> ExpenseMembers { get; set; } = new List<ExpenseMember>(); // Non-nullable, initialized to an empty list.
+
 }

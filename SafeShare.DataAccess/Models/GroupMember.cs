@@ -15,7 +15,7 @@ public class GroupMember : Base
     /// <summary>
     /// Gets or sets the unique identifier of the associated application user.
     /// </summary>
-    public string MemberUserId { get; set; } = null!; // Non-nullable since a member must have a user ID.
+    public string ApplicationUserId { get; set; } = null!; // Non-nullable since a member must have a user ID.
 
     /// <summary>
     /// Gets or sets the balance specific to the group for the member.

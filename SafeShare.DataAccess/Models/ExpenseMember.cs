@@ -15,7 +15,7 @@ public class ExpenseMember : Base
     /// <summary>
     /// Gets or sets the unique identifier of the member affected by the expense.
     /// </summary>
-    public string MemberUserId { get; set; } = null!;
+    public string MemberId { get; set; } = null!;
 
     /// <summary>
     /// Gets or sets the amount paid by the member for the expense.
