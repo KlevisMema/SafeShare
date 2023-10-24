@@ -10,7 +10,7 @@ public abstract class BaseIdentity : IdentityUser
     /// Gets or sets the full name of the user.
     /// </summary>
     [Required, StringLength(100)]
-    public string FullName { get; set; } = null!; // Non-nullable since a full name is usually required.
+    public string FullName { get; set; } = null!;
 
     /// <summary>
     /// Gets or sets the birthday of the user.

@@ -41,4 +41,38 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     /// Gets or sets the database table for Expense Members.
     /// </summary>
     public DbSet<ExpenseMember> ExpenseMembers { get; set; }
+
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<GroupMember>().HasKey(pk => new { pk.UserId, pk.GroupId });
+
+        modelBuilder.Entity<GroupMember>()
+            .HasOne<ApplicationUser>(u => u.User)
+            .WithMany(gm => gm.GroupMembers)
+            .HasForeignKey(fk => fk.UserId)
+            .OnDelete(deleteBehavior: DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<GroupMember>()
+            .HasOne<Group>(u => u.Group)
+            .WithMany(gm => gm.GroupMembers)
+            .HasForeignKey(fk => fk.GroupId)
+            .OnDelete(deleteBehavior: DeleteBehavior.Restrict); ;
+
+        modelBuilder.Entity<ExpenseMember>().HasKey(pk => new { pk.UserId, pk.ExpenseId });
+
+        modelBuilder.Entity<ExpenseMember>()
+            .HasOne<ApplicationUser>(u => u.User)
+            .WithMany(gm => gm.ExpenseMembers)
+            .HasForeignKey(fk => fk.UserId)
+            .OnDelete(deleteBehavior: DeleteBehavior.Restrict); ;
+
+        modelBuilder.Entity<ExpenseMember>()
+            .HasOne<Expense>(u => u.Expense)
+            .WithMany(gm => gm.ExpenseMembers)
+            .HasForeignKey(fk => fk.ExpenseId)
+            .OnDelete(deleteBehavior: DeleteBehavior.Restrict); ;
+
+        base.OnModelCreating(modelBuilder);
+    }
 }

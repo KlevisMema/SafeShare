@@ -9,6 +9,12 @@ namespace SafeShare.DataAccessLayer.Models;
 public class Expense : Base
 {
     /// <summary>
+    /// Gets or sets the primary key of the expense
+    /// </summary>
+    [Key]
+    public Guid Id { get; set; }
+
+    /// <summary>
     /// Encrypted title of the expense.
     /// </summary>
     [Required, StringLength(100)]
@@ -33,19 +39,19 @@ public class Expense : Base
     public byte[] Desc { get; set; } = null!;
 
     /// <summary>
-    /// Gets or sets the user ID who encoded the expense.
+    /// Gets or sets the Group ID associated with the expense.
     /// </summary>
     [Required]
-    public Guid FromUserId { get; set; }
+    public Guid GroupId { get; set; }
 
     /// <summary>
-    /// Navigation property for the user who encoded the expense.
+    /// Navigation property for the group associated with the expense.
     /// </summary>
-    public virtual ApplicationUser FromUser { get; set; } = null!;
+    public virtual Group Group { get; set; } = null!;
 
     /// <summary>
     /// Navigation property for the list of members affected by the expense.
     /// </summary>
-    public virtual ICollection<ExpenseMember> Recipients { get; set; } = null!;
+    public virtual ICollection<ExpenseMember> ExpenseMembers { get; set; } = null!;
 
 }

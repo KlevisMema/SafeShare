@@ -9,18 +9,6 @@ namespace SafeShare.DataAccessLayer.Models;
 public class ExpenseMember : Base
 {
     /// <summary>
-    /// Gets or sets the unique identifier of the associated expense.
-    /// </summary>
-    [Required]
-    public Guid ExpenseId { get; set; }
-
-    /// <summary>
-    /// Gets or sets the unique identifier of the member affected by the expense.
-    /// </summary>
-    [Required]
-    public Guid MemberId { get; set; }
-
-    /// <summary>
     /// Gets or sets the amount paid by the member for the expense.
     /// </summary>
     [Required]
@@ -33,12 +21,24 @@ public class ExpenseMember : Base
     public decimal OwedShare { get; set; }
 
     /// <summary>
+    /// Gets or sets the unique identifier of the associated expense.
+    /// </summary>
+    [Required]
+    public Guid ExpenseId { get; set; }
+
+    /// <summary>
     /// Gets or sets the navigation property representing the expense.
     /// </summary>
     public virtual Expense Expense { get; set; } = null!;
 
     /// <summary>
+    /// Gets or sets the unique identifier of the member affected by the expense.
+    /// </summary>
+    [Required]
+    public string UserId { get; set; } = null!;
+
+    /// <summary>
     /// Gets or sets the navigation property representing the member affected by the expense.
     /// </summary>
-    public virtual ApplicationUser Member { get; set; } = null!;
+    public virtual ApplicationUser User { get; set; } = null!;
 }

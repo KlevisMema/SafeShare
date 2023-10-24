@@ -9,15 +9,21 @@ namespace SafeShare.DataAccessLayer.Models;
 public class Group : Base
 {
     /// <summary>
+    /// Gets or sets the primary key of the group
+    /// </summary>
+    [Key]
+    public Guid Id { get; set; }
+
+    /// <summary>
     /// Gets or sets the name of the group.
     /// </summary>
     [Required, StringLength(100)]
-    public string Name { get; set; } = null!; // Non-nullable since a group must have a name.
+    public string Name { get; set; } = null!;
 
     /// <summary>
     /// Navigation property for the users belonging to this group.
     /// </summary>
-    public virtual ICollection<GroupMember> Users { get; set; } = null!;
+    public virtual ICollection<GroupMember> GroupMembers { get; set; } = null!;
 
     /// <summary>
     /// Navigation property for the expenses associated with this group.

@@ -11,10 +11,10 @@ public class ApplicationUser : BaseIdentity
     /// <summary>
     /// Navigation property representing the groups owned by the user.
     /// </summary>
-    public virtual ICollection<Group>? Groups { get; set; }// Nullable since the user might not own any groups initially.
+    public virtual ICollection<GroupMember>? GroupMembers { get; set; }
 
     /// <summary>
-    /// Navigation property for the expenses created by the user.
+    /// Navigation property for the relationship of the user as a member in various expenses.
     /// </summary>
-    public virtual ICollection<Expense>? Expenses { get; set; } // Nullable since the user might not be a member of any groups initially.
+    public virtual ICollection<ExpenseMember>? ExpenseMembers { get; set; }
 }

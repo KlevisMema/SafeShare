@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SafeShare.DataAccessLayer.Context;
 
@@ -11,9 +12,11 @@ using SafeShare.DataAccessLayer.Context;
 namespace SafeShare.DataAccessLayer.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231024202016_InitialV4")]
+    partial class InitialV4
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -273,6 +276,10 @@ namespace SafeShare.DataAccessLayer.Migrations
                         .IsRequired()
                         .HasColumnType("varbinary(max)");
 
+                    b.Property<string>("FromUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<Guid>("GroupId")
                         .HasColumnType("uniqueidentifier");
 
@@ -289,6 +296,8 @@ namespace SafeShare.DataAccessLayer.Migrations
                         .HasColumnType("varbinary(100)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("FromUserId");
 
                     b.HasIndex("GroupId");
 
@@ -471,11 +480,19 @@ namespace SafeShare.DataAccessLayer.Migrations
 
             modelBuilder.Entity("SafeShare.DataAccessLayer.Models.Expense", b =>
                 {
+                    b.HasOne("SafeShare.DataAccessLayer.Models.ApplicationUser", "FromUser")
+                        .WithMany()
+                        .HasForeignKey("FromUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("SafeShare.DataAccessLayer.Models.Group", "Group")
                         .WithMany("Expenses")
                         .HasForeignKey("GroupId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("FromUser");
 
                     b.Navigation("Group");
                 });

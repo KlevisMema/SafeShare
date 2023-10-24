@@ -2,7 +2,7 @@
 
 namespace SafeShare.DataAccessLayer.BaseModels;
 
-public abstract class Base : BaseId
+public abstract class Base
 {
     /// <summary>
     /// Gets or sets the date created of the entity
