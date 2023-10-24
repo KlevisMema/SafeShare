@@ -22,6 +22,7 @@ public static class ProgramStartuHelper
         Services.AddControllers();
         Services.AddMemoryCache();
         Services.AddEndpointsApiExplorer();
+        Services.AddSwaggerGen();
 
         AddDatabase(Services, Configuration);
 

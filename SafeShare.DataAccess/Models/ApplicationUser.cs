@@ -1,5 +1,3 @@
-using SafeShare.Utilities.Enums;
-using Microsoft.AspNetCore.Identity;
 using SafeShare.DataAccessLayer.BaseModels;
 
 namespace SafeShare.DataAccessLayer.Models;

@@ -1,4 +1,5 @@
 using SafeShare.DataAccessLayer.BaseModels;
+using System.ComponentModel.DataAnnotations;
 
 namespace SafeShare.DataAccessLayer.Models;
 
@@ -10,6 +11,7 @@ public class Group : Base
     /// <summary>
     /// Gets or sets the name of the group.
     /// </summary>
+    [Required, StringLength(100)]
     public string GroupName { get; set; } = null!; // Non-nullable since a group must have a name.
 
     /// <summary>
