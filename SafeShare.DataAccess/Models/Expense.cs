@@ -9,32 +9,43 @@ namespace SafeShare.DataAccessLayer.Models;
 public class Expense : Base
 {
     /// <summary>
-    /// Gets or sets the title describing the expense.
+    /// Encrypted title of the expense.
     /// </summary>
     [Required, StringLength(100)]
-    public string Title { get; set; } = null!; // Non-nullable since an expense must have a title.
+    public byte[] Title { get; set; } = null!;
 
     /// <summary>
-    /// Gets or sets the member who encoded the expense.
+    /// Encrypted date the expense was made.
     /// </summary>
     [Required]
-    public string FromMemberUserId { get; set; } = null!; // Non-nullable since the encoding member must have a user ID.
+    public byte[] Date { get; set; } = null!;
 
     /// <summary>
-    /// Gets or sets the amount of the expense.
+    /// Encrypted amount of the expense.
     /// </summary>
     [Required]
-    public decimal Amount { get; set; } // Non-nullable since an expense must have an amount.
+    public byte[] Amount { get; set; } = null!;
 
     /// <summary>
-    /// Gets or sets the optional description of the expense.
+    /// Encrypted (optional) description of the expense.
     /// </summary>
-    [Required, StringLength(200)]
-    public string? Description { get; set; } // Nullable since description is optional.
+    [Required]
+    public byte[] Desc { get; set; } = null!;
 
     /// <summary>
-    /// Gets or sets the list of member user IDs affected by the expense.
+    /// Gets or sets the user ID who encoded the expense.
     /// </summary>
-    public virtual ICollection<ExpenseMember> ExpenseMembers { get; set; } = new List<ExpenseMember>(); // Non-nullable, initialized to an empty list.
+    [Required]
+    public Guid FromUserId { get; set; }
+
+    /// <summary>
+    /// Navigation property for the user who encoded the expense.
+    /// </summary>
+    public virtual ApplicationUser FromUser { get; set; } = null!;
+
+    /// <summary>
+    /// Navigation property for the list of members affected by the expense.
+    /// </summary>
+    public virtual ICollection<ExpenseMember> Recipients { get; set; } = null!;
 
 }

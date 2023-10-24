@@ -254,24 +254,33 @@ namespace SafeShare.DataAccessLayer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<byte[]>("Amount")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<byte[]>("Date")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
 
                     b.Property<DateTime?>("DeletedAt")
                         .IsRequired()
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Description")
+                    b.Property<byte[]>("Desc")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasColumnType("varbinary(max)");
 
-                    b.Property<string>("FromMemberUserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<Guid>("FromUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("FromUserId1")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<Guid?>("GroupId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
@@ -280,12 +289,16 @@ namespace SafeShare.DataAccessLayer.Migrations
                         .IsRequired()
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Title")
+                    b.Property<byte[]>("Title")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("varbinary(100)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("FromUserId1");
+
+                    b.HasIndex("GroupId");
 
                     b.ToTable("Expenses");
                 });
@@ -309,8 +322,10 @@ namespace SafeShare.DataAccessLayer.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<string>("MemberId")
-                        .IsRequired()
+                    b.Property<Guid>("MemberId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("MemberId1")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime?>("ModifiedAt")
@@ -327,7 +342,7 @@ namespace SafeShare.DataAccessLayer.Migrations
 
                     b.HasIndex("ExpenseId");
 
-                    b.HasIndex("MemberId");
+                    b.HasIndex("MemberId1");
 
                     b.ToTable("ExpenseMembers");
                 });
@@ -348,17 +363,17 @@ namespace SafeShare.DataAccessLayer.Migrations
                         .IsRequired()
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("GroupName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
                     b.Property<DateTime?>("ModifiedAt")
                         .IsRequired()
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.HasKey("Id");
 
@@ -483,19 +498,30 @@ namespace SafeShare.DataAccessLayer.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("SafeShare.DataAccessLayer.Models.Expense", b =>
+                {
+                    b.HasOne("SafeShare.DataAccessLayer.Models.ApplicationUser", "FromUser")
+                        .WithMany("Expenses")
+                        .HasForeignKey("FromUserId1");
+
+                    b.HasOne("SafeShare.DataAccessLayer.Models.Group", null)
+                        .WithMany("Expenses")
+                        .HasForeignKey("GroupId");
+
+                    b.Navigation("FromUser");
+                });
+
             modelBuilder.Entity("SafeShare.DataAccessLayer.Models.ExpenseMember", b =>
                 {
                     b.HasOne("SafeShare.DataAccessLayer.Models.Expense", "Expense")
-                        .WithMany("ExpenseMembers")
+                        .WithMany("Recipients")
                         .HasForeignKey("ExpenseId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("SafeShare.DataAccessLayer.Models.ApplicationUser", "Member")
                         .WithMany()
-                        .HasForeignKey("MemberId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("MemberId1");
 
                     b.Navigation("Expense");
 
@@ -505,20 +531,20 @@ namespace SafeShare.DataAccessLayer.Migrations
             modelBuilder.Entity("SafeShare.DataAccessLayer.Models.Group", b =>
                 {
                     b.HasOne("SafeShare.DataAccessLayer.Models.ApplicationUser", null)
-                        .WithMany("OwnedGroups")
+                        .WithMany("Groups")
                         .HasForeignKey("ApplicationUserId");
                 });
 
             modelBuilder.Entity("SafeShare.DataAccessLayer.Models.GroupMember", b =>
                 {
                     b.HasOne("SafeShare.DataAccessLayer.Models.ApplicationUser", "ApplicationUser")
-                        .WithMany("MemberOfGroups")
+                        .WithMany()
                         .HasForeignKey("ApplicationUserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("SafeShare.DataAccessLayer.Models.Group", "Group")
-                        .WithMany("Members")
+                        .WithMany("Users")
                         .HasForeignKey("GroupId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -530,19 +556,21 @@ namespace SafeShare.DataAccessLayer.Migrations
 
             modelBuilder.Entity("SafeShare.DataAccessLayer.Models.ApplicationUser", b =>
                 {
-                    b.Navigation("MemberOfGroups");
+                    b.Navigation("Expenses");
 
-                    b.Navigation("OwnedGroups");
+                    b.Navigation("Groups");
                 });
 
             modelBuilder.Entity("SafeShare.DataAccessLayer.Models.Expense", b =>
                 {
-                    b.Navigation("ExpenseMembers");
+                    b.Navigation("Recipients");
                 });
 
             modelBuilder.Entity("SafeShare.DataAccessLayer.Models.Group", b =>
                 {
-                    b.Navigation("Members");
+                    b.Navigation("Expenses");
+
+                    b.Navigation("Users");
                 });
 #pragma warning restore 612, 618
         }

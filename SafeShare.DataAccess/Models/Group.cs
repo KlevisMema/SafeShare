@@ -12,10 +12,15 @@ public class Group : Base
     /// Gets or sets the name of the group.
     /// </summary>
     [Required, StringLength(100)]
-    public string GroupName { get; set; } = null!; // Non-nullable since a group must have a name.
+    public string Name { get; set; } = null!; // Non-nullable since a group must have a name.
 
     /// <summary>
-    /// Navigation property representing the members of the group.
+    /// Navigation property for the users belonging to this group.
     /// </summary>
-    public virtual ICollection<GroupMember> Members { get; set; } = new List<GroupMember>(); // Non-nullable collection to ensure initialization.
+    public virtual ICollection<GroupMember> Users { get; set; } = null!;
+
+    /// <summary>
+    /// Navigation property for the expenses associated with this group.
+    /// </summary>
+    public virtual ICollection<Expense>? Expenses { get; set; }
 }

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace SafeShare.DataAccessLayer.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialModelStructure : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -44,8 +44,9 @@ namespace SafeShare.DataAccessLayer.Migrations
                     LockoutEnd = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
                     LockoutEnabled = table.Column<bool>(type: "bit", nullable: false),
                     AccessFailedCount = table.Column<int>(type: "int", nullable: false),
-                    FullName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    FullName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Birthday = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Age = table.Column<int>(type: "int", nullable: false),
                     Gender = table.Column<int>(type: "int", nullable: false),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -58,31 +59,13 @@ namespace SafeShare.DataAccessLayer.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Expenses",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    FromMemberUserId = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Amount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ModifiedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Expenses", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "LogEntries",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Timestamp = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UserId = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Details = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Details = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -200,11 +183,12 @@ namespace SafeShare.DataAccessLayer.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    GroupName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     ApplicationUserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ModifiedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -217,33 +201,35 @@ namespace SafeShare.DataAccessLayer.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "ExpenseMembers",
+                name: "Expenses",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ExpenseId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    MemberId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    PaidShare = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    OwedShare = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Title = table.Column<byte[]>(type: "varbinary(100)", maxLength: 100, nullable: false),
+                    Date = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
+                    Amount = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
+                    Desc = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
+                    FromUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    FromUserId1 = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    GroupId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ModifiedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ExpenseMembers", x => x.Id);
+                    table.PrimaryKey("PK_Expenses", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_ExpenseMembers_AspNetUsers_MemberId",
-                        column: x => x.MemberId,
+                        name: "FK_Expenses_AspNetUsers_FromUserId1",
+                        column: x => x.FromUserId1,
                         principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_ExpenseMembers_Expenses_ExpenseId",
-                        column: x => x.ExpenseId,
-                        principalTable: "Expenses",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        name: "FK_Expenses_Groups_GroupId",
+                        column: x => x.GroupId,
+                        principalTable: "Groups",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -257,7 +243,8 @@ namespace SafeShare.DataAccessLayer.Migrations
                     IsOwner = table.Column<bool>(type: "bit", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ModifiedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -272,6 +259,37 @@ namespace SafeShare.DataAccessLayer.Migrations
                         name: "FK_GroupMembers_Groups_GroupId",
                         column: x => x.GroupId,
                         principalTable: "Groups",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ExpenseMembers",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ExpenseId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    MemberId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    PaidShare = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    OwedShare = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    MemberId1 = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ModifiedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ExpenseMembers", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ExpenseMembers_AspNetUsers_MemberId1",
+                        column: x => x.MemberId1,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_ExpenseMembers_Expenses_ExpenseId",
+                        column: x => x.ExpenseId,
+                        principalTable: "Expenses",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -321,9 +339,19 @@ namespace SafeShare.DataAccessLayer.Migrations
                 column: "ExpenseId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ExpenseMembers_MemberId",
+                name: "IX_ExpenseMembers_MemberId1",
                 table: "ExpenseMembers",
-                column: "MemberId");
+                column: "MemberId1");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Expenses_FromUserId1",
+                table: "Expenses",
+                column: "FromUserId1");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Expenses_GroupId",
+                table: "Expenses",
+                column: "GroupId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_GroupMembers_ApplicationUserId",
