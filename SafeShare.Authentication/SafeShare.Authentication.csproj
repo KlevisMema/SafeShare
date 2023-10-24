@@ -6,4 +6,13 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+    <ItemGroup>
+      <Folder Include="Interfaces\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\SafeShare.DataAccess\SafeShare.DataAccess.csproj" />
+      <ProjectReference Include="..\SafeShare.DataTransormObject\SafeShare.DataTransormObject.csproj" />
+    </ItemGroup>
+
 </Project>
