@@ -56,7 +56,7 @@ public class AUTH_Register : IAUTH_Register
             if (!assignRole.Succsess)
                 return assignRole;
 
-            _logger.LogInformation($"[BLL Module] - [RegisterUser Method], {Util_GetIpAddres.GetLocation(_httpContextAccessor)} user {@createUserResult} was succsessfully created created.");
+            _logger.LogInformation($"[Authentication Module] - [RegisterUser Method], {Util_GetIpAddres.GetLocation(_httpContextAccessor)} user {@createUserResult} was succsessfully created created.");
 
             return Util_GenericResponse<bool>.Response(true, true, "Your account was successfully created", null, System.Net.HttpStatusCode.OK);
         }
@@ -105,7 +105,7 @@ public class AUTH_Register : IAUTH_Register
         }
         catch (Exception ex)
         {
-            var errorResponse = Util_GenericResponse<bool>.Response(false, false, ex.ToString(), null, System.Net.HttpStatusCode.InternalServerError);
+            var errorResponse = Util_GenericResponse<bool>.Response(false, false, "Internal server error", null, System.Net.HttpStatusCode.InternalServerError);
 
             _logger.LogError(ex, $"Somewthing went wrong in [Authentication Module] - [AssignUserToUserRole Method], user with Ip {Util_GetIpAddres.GetLocation(_httpContextAccessor)}", errorResponse);
 
