@@ -1,5 +1,4 @@
-﻿
-using System.Net;
+﻿using System.Net;
 
 namespace SafeShare.Utilities.Responses;
 
@@ -7,11 +6,8 @@ namespace SafeShare.Utilities.Responses;
 ///     A generic class which is used by services and 
 ///     controlls for more detailed responses from services.
 /// </summary>
-/// <typeparam name="T"> Any type of object </typeparam>
-public class Util_GenericResponse<T> where T : class
+public class Util_GenericResponse<T>
 {
-    #region Properties
-
     /// <summary>
     ///     A <see cref="string"/> custom message describing an action succsess or fail  etc. 
     ///     It's nullable.
@@ -29,10 +25,10 @@ public class Util_GenericResponse<T> where T : class
     ///     A <see cref="T"/> obejct of any type.
     /// </summary>
     public T? Value { get; set; }
-
-    #endregion
-
-    #region Constructors overloading
+    /// <summary>
+    ///     A <see cref="List{T}"/> of string indicating errors.
+    /// </summary>
+    public List<string>? Errors { get; set; }
 
     /// <summary>
     ///     Constructor
@@ -46,13 +42,15 @@ public class Util_GenericResponse<T> where T : class
         string? message,
         bool succsess,
         HttpStatusCode statusCode,
-        T? value
+        T? value,
+        List<string>? errors
     )
     {
         Message = message;
         Succsess = succsess;
         StatusCode = statusCode;
         Value = value;
+        Errors = errors;
     }
 
     /// <summary>
@@ -62,10 +60,6 @@ public class Util_GenericResponse<T> where T : class
     {
     }
 
-    #endregion
-
-    #region Methods
-
     /// <summary>
     ///     It creates a new Util_GenericResponse using the costructor with all the fields.
     /// </summary>
@@ -73,17 +67,18 @@ public class Util_GenericResponse<T> where T : class
     /// <param name="succsess"> Succsess <see cref="bool"/> value </param>
     /// <param name="statusCode"> Status code <see cref="HttpStatusCode"/> value </param>
     /// <param name="Value"> Object <see cref="T"/> value, it's nullable </param>
+    /// <param name="errors"> A list of errors </param>
     /// <returns> <see cref="Util_GenericResponse{T}"/> </returns>
     public static Util_GenericResponse<T>
     Response
     (
-        string? message,
+        T? Value,
         bool succsess,
-        HttpStatusCode statusCode,
-        T? Value
+        string? message,
+        List<string>? errors,
+        HttpStatusCode statusCode
     )
     {
-        return new Util_GenericResponse<T>(message, succsess, statusCode, Value);
+        return new Util_GenericResponse<T>(message, succsess, statusCode, Value, errors);
     }
-    #endregion
 }

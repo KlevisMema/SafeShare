@@ -2,6 +2,10 @@
 using System.ComponentModel.DataAnnotations;
 
 namespace SafeShare.DataTransormObject.Authentication;
+
+/// <summary>
+/// A DTO that represents the registering fields of the user.
+/// </summary>
 public class DTO_Register
 {
     /// <summary>
@@ -22,11 +26,17 @@ public class DTO_Register
     [Required]
     public DateTime Birthday { get; set; }
 
+    ///// <summary>
+    ///// Gets or sets the age of the user registering.
+    ///// </summary>
+    //[Required, Range(minimum: 18, maximum: 100)]
+    //public int Age { get; set; }
+
     /// <summary>
-    /// Gets or sets the age of the user registering.
+    /// Gets or sets the phone number of user registering.
     /// </summary>
-    [Required, Range(minimum: 18, maximum: 100)]
-    public int Age { get; set; }
+    [Required, DataType(DataType.PhoneNumber)]
+    public string PhoneNumber { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the gender of the user registering.  
