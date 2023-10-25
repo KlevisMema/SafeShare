@@ -1,4 +1,9 @@
-﻿namespace SafeShare.Security.JwtSecurity;
+﻿/*
+ * Represents the configuration settings required for JWT token generation.
+ * It includes settings such as audience, secret key, issuer, and token lifetime.
+*/
+
+namespace SafeShare.Security.JwtSecurity;
 
 /// <summary>
 /// Represents the authentication settings for JWT tokens.

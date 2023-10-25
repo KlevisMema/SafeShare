@@ -1,7 +1,6 @@
 ﻿/*
-
-This file contains the implementation of the IOAuthJwtTokenService interface which is responsible for creating JWT tokens for authentication.
-
+ * Implementation of the ISecurity_JwtTokenAuth interface responsible for JWT token generation.
+ * This service provides methods to create JWT tokens for user authentication, leveraging provided JWT settings.
 */
 
 using System.Text;
@@ -22,7 +21,6 @@ public class Security_JwtTokenAuth : ISecurity_JwtTokenAuth
     /// Represents the JWT authentication options.
     /// </summary>
     private readonly IOptions<Security_JwtSettings> _jwtOptions;
-
     /// <summary>
     /// Initializes a new instance of the <see cref="OAuthJwtTokenService"/> class.
     /// </summary>
@@ -34,7 +32,6 @@ public class Security_JwtTokenAuth : ISecurity_JwtTokenAuth
     {
         _jwtOptions = jwtOptions;
     }
-
     /// <summary>
     /// Creates a JWT token for the specified user.
     /// </summary>
@@ -52,7 +49,6 @@ public class Security_JwtTokenAuth : ISecurity_JwtTokenAuth
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
-
     /// <summary>
     /// Gets the signing credentials for JWT token generation.
     /// </summary>
@@ -64,7 +60,6 @@ public class Security_JwtTokenAuth : ISecurity_JwtTokenAuth
 
         return new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
     }
-
     /// <summary>
     /// Gets the claims for the specified user.
     /// </summary>
@@ -81,18 +76,16 @@ public class Security_JwtTokenAuth : ISecurity_JwtTokenAuth
                 new Claim(ClaimTypes.Name, user.Email),
                 new Claim(JwtRegisteredClaimNames.NameId, user.Id!),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim(JwtRegisteredClaimNames.Name, user.FirstName),
                 new Claim(JwtRegisteredClaimNames.Aud, _jwtOptions.Value.Audience),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(JwtRegisteredClaimNames.Iss, _jwtOptions.Value.Issuer),
-                new Claim(JwtRegisteredClaimNames.FamilyName, user.FirstName + " " + user.LastName),
+                new Claim(JwtRegisteredClaimNames.FamilyName, user.FullName),
             };
 
         claims.AddRange(user.Roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
         return claims;
     }
-
     /// <summary>
     /// Generates a JWT token with the specified signing credentials and claims.
     /// </summary>

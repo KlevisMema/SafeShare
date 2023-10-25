@@ -73,6 +73,7 @@ public static class API_Helper_ProgramStartup
         IServiceCollection Services
     )
     {
+        Services.AddTransient<IAUTH_Login, AUTH_Login>();
         Services.AddTransient<IAUTH_Register, AUTH_Register>();
         Services.AddTransient<ISecurity_JwtTokenAuth, Security_JwtTokenAuth>();
     }
@@ -94,7 +95,7 @@ public static class API_Helper_ProgramStartup
             (
                 options =>
                 {
-                    options.SignIn.RequireConfirmedEmail = false;
+                    //options.SignIn.RequireConfirmedEmail = false;
                     options.User.RequireUniqueEmail = true;
                     options.Password.RequiredLength = 6;
                 }

@@ -8,11 +8,13 @@
 
     <ItemGroup>
       <PackageReference Include="AutoMapper" Version="12.0.1" />
+      <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.2.0" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\SafeShare.DataAccess\SafeShare.DataAccess.csproj" />
       <ProjectReference Include="..\SafeShare.DataTransormObject\SafeShare.DataTransormObject.csproj" />
+      <ProjectReference Include="..\SafeShare.Security\SafeShare.Security.csproj" />
       <ProjectReference Include="..\SafeShare.Utilities\SafeShare.Utilities.csproj" />
     </ItemGroup>
 

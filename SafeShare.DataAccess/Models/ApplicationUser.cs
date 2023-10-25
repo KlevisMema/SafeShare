@@ -1,3 +1,8 @@
+/*
+ * Defines the ApplicationUser class that represents registered users within the system.
+ * This file contains definitions for the ApplicationUser's properties and their relationships.
+*/
+
 using SafeShare.DataAccessLayer.BaseModels;
 
 namespace SafeShare.DataAccessLayer.Models;

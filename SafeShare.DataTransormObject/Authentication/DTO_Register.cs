@@ -1,6 +1,11 @@
 ﻿using SafeShare.Utilities.Enums;
 using System.ComponentModel.DataAnnotations;
 
+/*
+ * Defines the data transfer object for user registration.
+ * This DTO captures the necessary fields required to register a new user in the system.
+*/
+
 namespace SafeShare.DataTransormObject.Authentication;
 
 /// <summary>

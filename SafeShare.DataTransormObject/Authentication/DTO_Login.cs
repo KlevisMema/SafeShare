@@ -1,4 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿/*
+ * Defines the data transfer object for user login.
+ * This DTO captures the necessary fields required for a user to log into the system.
+*/
+
+using System.ComponentModel.DataAnnotations;
 
 namespace SafeShare.DataTransormObject.Authentication;
 

@@ -1,4 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿/*
+ * An authorization filter to enforce API key-based security. 
+ * Ensures that requests to the application are authorized using the correct API key.
+*/
+
+
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace SafeShare.Security.API;

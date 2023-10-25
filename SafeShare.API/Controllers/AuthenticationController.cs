@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using Azure;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using SafeShare.Utilities.Responses;
 using Microsoft.AspNetCore.Authorization;
@@ -48,4 +49,21 @@ public class AuthenticationController : BaseController
         return result;
     }
 
+    [HttpPost("Login")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Response<string>))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Response<string>))]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Response<string>))]
+    public async Task<ActionResult<Response<string>>>
+    LoginUser
+    (
+        [FromForm] DTO_Login loginDto
+    )
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var result = await _mediator.Send(new MediatR_LoginUserCommand(loginDto));
+
+        return result;
+    }
 }

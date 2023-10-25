@@ -1,4 +1,9 @@
-﻿using System.Net;
+﻿/*
+ * Utility class for generating standardized responses for controllers.
+ * Provides a convenient way to return standard HTTP responses based on the service response's status code.
+*/
+
+using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 

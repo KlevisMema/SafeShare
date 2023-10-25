@@ -1,10 +1,28 @@
-﻿using SafeShare.DataTransormObject.Authentication;
-using SafeShare.Utilities.Responses;
+﻿/*
+    * This interface provides the signature for the registration 
+    * functionality within the Authentication module. It ensures 
+    * that any implementing class provides a method for registering 
+    * users based on the provided DTO.
+*/
 
-namespace SafeShare.Authentication.Interfaces
+using SafeShare.Utilities.Responses;
+using SafeShare.DataTransormObject.Authentication;
+
+namespace SafeShare.Authentication.Interfaces;
+
+/// <summary>
+/// Defines the contract for the registration operations within the Authentication module.
+/// </summary>
+public interface IAUTH_Register
 {
-    public interface IAUTH_Register
-    {
-        Task<Util_GenericResponse<bool>> RegisterUser(DTO_Register registerDto);
-    }
+    /// <summary>
+    /// Registers a new user based on the provided registration data transfer object.
+    /// </summary>
+    /// <param name="registerDto">The data transfer object containing user registration details.</param>
+    /// <returns>A generic response indicating the success or failure of the registration operation.</returns>
+    Task<Util_GenericResponse<bool>> 
+    RegisterUser
+    (
+        DTO_Register registerDto
+    );
 }

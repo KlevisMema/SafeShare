@@ -1,4 +1,9 @@
-﻿using System.Net;
+﻿/*
+ * Utility class that provides a standardized response structure.
+ * This structure is used across services and controllers to ensure consistent and detailed service responses.
+*/
+
+using System.Net;
 
 namespace SafeShare.Utilities.Responses;
 

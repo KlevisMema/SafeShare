@@ -1,4 +1,9 @@
-﻿using System.Text.Json.Serialization;
+﻿/*
+ * Enumerates the different genders for a user.
+ * Supports JSON serialization using a string representation of the enum values.
+*/
+
+using System.Text.Json.Serialization;
 
 namespace SafeShare.Utilities.Enums;
 

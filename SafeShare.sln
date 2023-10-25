@@ -23,9 +23,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SafeShare.DataTransormObjec
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SafeShare.Utilities", "SafeShare.Utilities\SafeShare.Utilities.csproj", "{DC1BEA7E-37F2-4906-8648-69149CA051C7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SafeShare.MediatR", "SafeShare.MediatR\SafeShare.MediatR.csproj", "{51EA9096-EFF2-4F5A-AC07-334F554F5DD2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SafeShare.MediatR", "SafeShare.MediatR\SafeShare.MediatR.csproj", "{51EA9096-EFF2-4F5A-AC07-334F554F5DD2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SafeShare.Mappings", "SafeShare.Mappings\SafeShare.Mappings.csproj", "{3965A775-BFDA-4F62-B82B-A6870B4239E6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SafeShare.Mappings", "SafeShare.Mappings\SafeShare.Mappings.csproj", "{3965A775-BFDA-4F62-B82B-A6870B4239E6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
