@@ -1,4 +1,7 @@
-﻿
+﻿/*
+ * Defines the LogEntry class for tracking user activity in the system.
+ * This file outlines the structure of a log entry, including its attributes and data annotations.
+*/
 
 using System.ComponentModel.DataAnnotations;
 

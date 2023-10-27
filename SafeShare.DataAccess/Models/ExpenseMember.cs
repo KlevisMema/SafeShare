@@ -1,7 +1,11 @@
-
+/*
+ * Defines the ExpenseMember class that represents a member's participation in an expense.
+ * This file contains definitions for the ExpenseMember's properties, their annotations, and relationships.
+*/
 
 using SafeShare.DataAccessLayer.BaseModels;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SafeShare.DataAccessLayer.Models;
 
@@ -14,11 +18,13 @@ public class ExpenseMember : Base
     /// Gets or sets the amount paid by the member for the expense.
     /// </summary>
     [Required]
+    [Column(TypeName = "decimal(18,4)")]
     public decimal PaidShare { get; set; }
     /// <summary>
     /// Gets or sets the amount owed by the member for the expense.
     /// </summary>
     [Required]
+    [Column(TypeName = "decimal(18,4)")]
     public decimal OwedShare { get; set; }
     /// <summary>
     /// Gets or sets the unique identifier of the associated expense.

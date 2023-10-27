@@ -7,11 +7,14 @@
 
 using AutoMapper;
 using SafeShare.Utilities.IP;
+using SafeShare.Utilities.Log;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using SafeShare.Utilities.Services;
 using Microsoft.EntityFrameworkCore;
 using SafeShare.Utilities.Responses;
 using Microsoft.AspNetCore.Identity;
+using SafeShare.Utilities.Dependencies;
 using SafeShare.DataAccessLayer.Models;
 using SafeShare.DataAccessLayer.Context;
 using SafeShare.Authentication.Interfaces;
@@ -22,28 +25,12 @@ namespace SafeShare.Authentication.Auth;
 /// <summary>
 /// Handles user registration within the authentication module.
 /// </summary>
-public class AUTH_Register : IAUTH_Register
+public class AUTH_Register : Util_BaseAuthDependencies<AUTH_Register, ApplicationUser>, IAUTH_Register
 {
-    /// <summary>
-    /// Provides mapping capabilities between different object types.
-    /// </summary>
-    private readonly IMapper _mapper;
     /// <summary>
     /// The primary database context for the application.
     /// </summary>
     private readonly ApplicationDbContext _db;
-    /// <summary>
-    /// Logger instance for logging events and exceptions in the AUTH_Register class.
-    /// </summary>
-    private readonly ILogger<AUTH_Register> _logger;
-    /// <summary>
-    /// Provides functionalities related to user management such as creating, updating, and deleting users.
-    /// </summary>
-    private readonly UserManager<ApplicationUser> _userManager;
-    /// <summary>
-    /// Allows access to the HTTP context of the current request.
-    /// </summary>
-    private readonly IHttpContextAccessor _httpContextAccessor;
     /// <summary>
     /// Initializes a new instance of the <see cref="AUTH_Register"/> class.
     /// </summary>
@@ -59,13 +46,16 @@ public class AUTH_Register : IAUTH_Register
         ILogger<AUTH_Register> logger,
         IHttpContextAccessor httpContextAccessor,
         UserManager<ApplicationUser> userManager
+    ) 
+    : base
+    (
+        mapper, 
+        logger, 
+        httpContextAccessor, 
+        userManager
     )
     {
         _db = db;
-        _mapper = mapper;
-        _logger = logger;
-        _userManager = userManager;
-        _httpContextAccessor = httpContextAccessor;
     }
     /// <summary>
     /// Registers a new user to the application.
@@ -92,19 +82,13 @@ public class AUTH_Register : IAUTH_Register
             if (!assignRole.Succsess)
                 return assignRole;
 
-            _logger.LogInformation($"[Authentication Module] - [RegisterUser Method], {Util_GetIpAddres.GetLocation(_httpContextAccessor)} user {@createUserResult} was succsessfully created created.");
+            _logger.LogInformation($"[Authentication Module] - [RegisterUser Method] =>, [IP] [{await Util_GetIpAddres.GetLocation(_httpContextAccessor)}] | user {registerDto.Email} was succsessfully created created.");
 
             return Util_GenericResponse<bool>.Response(true, true, "Your account was successfully created", null, System.Net.HttpStatusCode.OK);
         }
         catch (Exception ex)
         {
-            var errorResponse = Util_GenericResponse<bool>.Response(false, false, ex.ToString(), null, System.Net.HttpStatusCode.InternalServerError);
-
-            _logger.LogError(ex, $"Somewthing went wrong in [Authentication Module] - [RegisterUser Method], user with Ip {Util_GetIpAddres.GetLocation(_httpContextAccessor)}", errorResponse);
-
-            errorResponse.Message = "Internal server error.";
-
-            return errorResponse;
+            return await Util_LogsHelper<bool, AUTH_Register>.ReturnInternalServerError(ex, _logger, $"Somewthing went wrong in [Authentication Module] - [RegisterUser Method], user with [EMAIL] {registerDto.Email}", false, _httpContextAccessor);
         }
     }
     /// <summary>
@@ -147,13 +131,7 @@ public class AUTH_Register : IAUTH_Register
         }
         catch (Exception ex)
         {
-            var errorResponse = Util_GenericResponse<bool>.Response(false, false, ex.ToString(), null, System.Net.HttpStatusCode.InternalServerError);
-
-            _logger.LogError(ex, $"Somewthing went wrong in [Authentication Module] - [AssignUserToUserRole Method], user with Ip {Util_GetIpAddres.GetLocation(_httpContextAccessor)}", errorResponse);
-
-            errorResponse.Message = "Internal server error.";
-
-            return errorResponse;
+            return await Util_LogsHelper<bool, AUTH_Register>.ReturnInternalServerError(ex, _logger, $"Somewthing went wrong in [Authentication Module] - [AssignUserToUserRole Method], user with [UserName] {userName}", false, _httpContextAccessor);
         }
     }
 }

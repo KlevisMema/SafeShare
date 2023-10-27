@@ -6,34 +6,26 @@
 
 using AutoMapper;
 using SafeShare.Utilities.IP;
+using SafeShare.Utilities.Log;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using SafeShare.Utilities.Services;
 using Microsoft.AspNetCore.Identity;
 using SafeShare.Utilities.Responses;
 using SafeShare.Security.JwtSecurity;
+using SafeShare.Utilities.Dependencies;
 using SafeShare.DataAccessLayer.Models;
 using SafeShare.Authentication.Interfaces;
 using SafeShare.DataTransormObject.Authentication;
+using SafeShare.DataTransormObject.UserManagment;
 
 namespace SafeShare.Authentication.Auth;
 
 /// <summary>
 /// Provides functionality to authenticate and log in users within the Authentication module.
 /// </summary>
-public class AUTH_Login : IAUTH_Login
+public class AUTH_Login : Util_BaseAuthDependencies<AUTH_Login, ApplicationUser>, IAUTH_Login
 {
-    /// <summary>
-    /// Mapper instance to map between different object types.
-    /// </summary>
-    private readonly IMapper _mapper;
-    /// <summary>
-    /// Logger instance to log information and errors.
-    /// </summary>
-    private readonly ILogger<AUTH_Login> _logger;
-    /// <summary>
-    /// Manager to handle user-related operations.
-    /// </summary>
-    private readonly UserManager<ApplicationUser> _userManager;
     /// <summary>
     /// Service to handle JWT token operations.
     /// </summary>
@@ -42,10 +34,6 @@ public class AUTH_Login : IAUTH_Login
     /// Manager to handle user sign-in operations.
     /// </summary>
     private readonly SignInManager<ApplicationUser> _signInManager;
-    /// <summary>
-    /// Accessor to get information about the current HTTP context.
-    /// </summary>
-    private readonly IHttpContextAccessor _httpContextAccessor;
     /// <summary>
     /// Initializes a new instance of the <see cref="AUTH_Login"/> class.
     /// </summary>
@@ -63,14 +51,17 @@ public class AUTH_Login : IAUTH_Login
         ISecurity_JwtTokenAuth jwtTokenService,
         SignInManager<ApplicationUser> signInManager,
         IHttpContextAccessor httpContextAccessor
+    ) 
+    : base
+    (
+        mapper, 
+        logger, 
+        httpContextAccessor, 
+        userManager
     )
     {
-        _logger = logger;
-        _userManager = userManager;
         _signInManager = signInManager;
         _jwtTokenService = jwtTokenService;
-        _httpContextAccessor = httpContextAccessor;
-        _mapper = mapper;
     }
     /// <summary>
     /// Authenticates and logs in a user based on the provided login data transfer object.
@@ -92,10 +83,10 @@ public class AUTH_Login : IAUTH_Login
             if (user is null)
                 return Util_GenericResponse<string>.Response(string.Empty, false, "User doesn't exists!", null, System.Net.HttpStatusCode.NotFound);
 
-            var emailConfirmed = await _userManager.IsEmailConfirmedAsync(user);
+            //var emailConfirmed = await _userManager.IsEmailConfirmedAsync(user);
 
-            if (!emailConfirmed)
-                return Util_GenericResponse<string>.Response(null, false, "Your email is not verified", null, System.Net.HttpStatusCode.BadRequest);
+            //if (!emailConfirmed)
+            //    return Util_GenericResponse<string>.Response(null, false, "Your email is not verified", null, System.Net.HttpStatusCode.BadRequest);
 
             var signInUser = await _signInManager.PasswordSignInAsync(user, loginDto.Password, false, false);
 
@@ -107,19 +98,13 @@ public class AUTH_Login : IAUTH_Login
             userDto.Roles = roles.ToList();
             var token = _jwtTokenService.CreateToken(userDto);
 
-            _logger.LogInformation($"[Authentication Module] - [LoginUser Method], {Util_GetIpAddres.GetLocation(_httpContextAccessor)} user {loginDto.Email} credentials valiadted successfully.");
+            _logger.LogInformation($"[Authentication Module] - [LoginUser Method] => , [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} | user {loginDto.Email} credentials valiadted successfully.");
 
             return Util_GenericResponse<string>.Response(token, true, "User data succsessfully validated!", null, System.Net.HttpStatusCode.OK);
         }
         catch (Exception ex)
         {
-            var errorResponse = Util_GenericResponse<string>.Response(string.Empty, false, ex.ToString(), null, System.Net.HttpStatusCode.InternalServerError);
-
-            _logger.LogError(ex, $"Somewthing went wrong in [Authentication Module] - [LoginUser Method], user with Ip {Util_GetIpAddres.GetLocation(_httpContextAccessor)}", errorResponse);
-
-            errorResponse.Message = "Internal server error";
-
-            return errorResponse;
+            return await Util_LogsHelper<string, AUTH_Login>.ReturnInternalServerError(ex, _logger, $"Somewthing went wrong in [Authentication Module] - [LoginUser Method], user with [EMAIL] {loginDto.Email}", string.Empty, _httpContextAccessor);
         }
     }
 }

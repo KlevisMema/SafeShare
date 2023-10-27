@@ -34,6 +34,8 @@
       <ProjectReference Include="..\SafeShare.Mappings\SafeShare.Mappings.csproj" />
       <ProjectReference Include="..\SafeShare.MediatR\SafeShare.MediatR.csproj" />
       <ProjectReference Include="..\SafeShare.Security\SafeShare.Security.csproj" />
+      <ProjectReference Include="..\SafeShare.UserManagment\SafeShare.UserManagment.csproj" />
+      <ProjectReference Include="..\SafeShare.Utilities\SafeShare.Utilities.csproj" />
     </ItemGroup>
 
 </Project>

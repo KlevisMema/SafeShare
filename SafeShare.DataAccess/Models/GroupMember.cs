@@ -1,7 +1,11 @@
-
+/*
+ * Defines the GroupMember class that represents a member of a group.
+ * This file contains definitions for the GroupMember's properties, their annotations, and relationships.
+*/
 
 using SafeShare.DataAccessLayer.BaseModels;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SafeShare.DataAccessLayer.Models;
 
@@ -14,6 +18,7 @@ public class GroupMember : Base
     /// Gets or sets the balance specific to the group for the member.
     /// </summary>
     [Required]
+    [Column(TypeName = "decimal(18,4)")]
     public decimal Balance { get; set; }
     /// <summary>
     /// Gets or sets a flag indicating whether this member is the owner of the group.

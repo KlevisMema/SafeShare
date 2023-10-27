@@ -1,4 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿/*
+ * Represents a base abstract class for various entities in the application.
+ * This base class provides common properties for tracking creation, modification, and deletion timestamps.
+*/
+
+using System.ComponentModel.DataAnnotations;
 
 namespace SafeShare.DataAccessLayer.BaseModels;
 

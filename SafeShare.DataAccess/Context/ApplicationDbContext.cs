@@ -1,4 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿/*
+ * Provides the database context for the SafeShare application.
+ * This file configures the tables, relationships, and other database settings for the models in the application.
+*/
+
+using Microsoft.EntityFrameworkCore;
 using SafeShare.DataAccessLayer.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 

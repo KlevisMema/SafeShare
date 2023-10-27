@@ -1,4 +1,9 @@
-﻿using SafeShare.Utilities.Enums;
+﻿/*
+ * Represents a base identity class that extends the IdentityUser.
+ * This base class provides common properties to be used across various identity models in the application.
+*/
+
+using SafeShare.Utilities.Enums;
 using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
 

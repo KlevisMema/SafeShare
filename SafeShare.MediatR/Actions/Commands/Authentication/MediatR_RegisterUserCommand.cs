@@ -7,7 +7,7 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using SafeShare.DataTransormObject.Authentication;
 
-namespace SafeShare.MediatR.Actions.Authentication.Commands;
+namespace SafeShare.MediatR.Actions.Commands.Authentication;
 
 /// <summary>
 /// Represents a MediatR command for registering a user.

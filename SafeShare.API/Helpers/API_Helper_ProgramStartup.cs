@@ -20,11 +20,14 @@ using SafeShare.Authentication.Auth;
 using Microsoft.IdentityModel.Tokens;
 using SafeShare.Security.JwtSecurity;
 using SafeShare.DataAccessLayer.Models;
+using SafeShare.Mappings.UserManagment;
 using SafeShare.Mappings.Authentication;
 using SafeShare.DataAccessLayer.Context;
+using SafeShare.UserManagment.Interfaces;
 using SafeShare.Authentication.Interfaces;
+using SafeShare.UserManagment.UserAccount;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using SafeShare.MediatR.Handlers.Authentication.CommandsHandler;
+using SafeShare.MediatR.Handlers.CommandsHandlers.Authentication;
 
 namespace SafeShare.API.Startup;
 
@@ -75,6 +78,7 @@ public static class API_Helper_ProgramStartup
     {
         Services.AddTransient<IAUTH_Login, AUTH_Login>();
         Services.AddTransient<IAUTH_Register, AUTH_Register>();
+        Services.AddTransient<IAccountManagment, AccountManagment>();
         Services.AddTransient<ISecurity_JwtTokenAuth, Security_JwtTokenAuth>();
     }
     /// <summary>
@@ -114,6 +118,7 @@ public static class API_Helper_ProgramStartup
     )
     {
         Services.AddAutoMapper(typeof(Mapping_Authentication));
+        Services.AddAutoMapper(typeof(Mapper_AccountManagment));
     }
     /// <summary>
     ///     Add swagger configured with security in the container

@@ -7,9 +7,9 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using SafeShare.Utilities.Responses;
 using SafeShare.Authentication.Interfaces;
-using SafeShare.MediatR.Actions.Authentication.Commands;
+using SafeShare.MediatR.Actions.Commands.Authentication;
 
-namespace SafeShare.MediatR.Handlers.Authentication.CommandsHandler;
+namespace SafeShare.MediatR.Handlers.CommandsHandlers.Authentication;
 
 /// <summary>
 /// Handles the MediatR_LoginUserCommand.

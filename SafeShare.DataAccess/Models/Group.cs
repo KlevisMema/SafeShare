@@ -1,4 +1,7 @@
-
+/*
+ * Defines the Group class that represents a group of users for encoding common expenses.
+ * This file contains definitions for the Group's properties, their annotations, and relationships.
+*/
 
 using SafeShare.DataAccessLayer.BaseModels;
 using System.ComponentModel.DataAnnotations;

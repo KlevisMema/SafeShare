@@ -14,6 +14,7 @@
   <ItemGroup>
     <ProjectReference Include="..\SafeShare.Authentication\SafeShare.Authentication.csproj" />
     <ProjectReference Include="..\SafeShare.DataTransormObject\SafeShare.DataTransormObject.csproj" />
+    <ProjectReference Include="..\SafeShare.UserManagment\SafeShare.UserManagment.csproj" />
   </ItemGroup>
 
 </Project>
