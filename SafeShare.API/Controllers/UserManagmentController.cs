@@ -61,7 +61,7 @@ public class UserManagmentController : BaseController
     /// <param name="id">Unique identifier of the user to be updated.</param>
     /// <param name="userInfo">User's new information.</param>
     /// <returns>Returns user's updated information.</returns>
-    [HttpPost("UpdateUser/{id}")]
+    [HttpPut("UpdateUser/{id}")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<DTO_UserUpdatedInfo>))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<DTO_UserUpdatedInfo>))]
     [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Util_GenericResponse<DTO_UserUpdatedInfo>))]
@@ -77,33 +77,13 @@ public class UserManagmentController : BaseController
 
         return await _mediator.Send(new MediatR_UpdateUserCommand(id, userInfo));
     }
-
-    /// <summary>
-    /// Delete a user by their ID.
-    /// </summary>
-    /// <param name="id">Unique identifier of the user to be deleted.</param>
-    /// <returns>Returns a boolean indicating the success of the deletion operation.</returns>
-    [HttpPost("DeleteUser/{id}")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<bool>))]
-    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<bool>))]
-    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(Util_GenericResponse<bool>))]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Util_GenericResponse<bool>))]
-    public async Task<ActionResult<Util_GenericResponse<bool>>>
-    DeleteUser
-    (
-        Guid id
-    )
-    {
-        return await _mediator.Send(new MediatR_DeleteUserCommand(id));
-    }
-
     /// <summary>
     /// Change a user's password by their ID.
     /// </summary>
     /// <param name="id">Unique identifier of the user.</param>
     /// <param name="changePassword">Details for changing the user's password.</param>
     /// <returns>Returns a boolean indicating the success of the password change operation.</returns>
-    [HttpPost("ChangePassword/{id}")]
+    [HttpPut("ChangePassword/{id}")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<bool>))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<bool>))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(Util_GenericResponse<bool>))]
@@ -119,5 +99,23 @@ public class UserManagmentController : BaseController
             return BadRequest(ModelState);
 
         return await _mediator.Send(new MediatR_ChangeUserPasswordCommand(id, changePassword));
+    }
+    /// <summary>
+    /// Delete a user by their ID.
+    /// </summary>
+    /// <param name="id">Unique identifier of the user to be deleted.</param>
+    /// <returns>Returns a boolean indicating the success of the deletion operation.</returns>
+    [HttpDelete("DeleteUser/{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<bool>))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<bool>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(Util_GenericResponse<bool>))]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Util_GenericResponse<bool>))]
+    public async Task<ActionResult<Util_GenericResponse<bool>>>
+    DeleteUser
+    (
+        Guid id
+    )
+    {
+        return await _mediator.Send(new MediatR_DeleteUserCommand(id));
     }
 }
