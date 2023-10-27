@@ -75,12 +75,18 @@ public class AUTH_Register : Util_BaseAuthDependencies<AUTH_Register, Applicatio
             var createUserResult = await _userManager.CreateAsync(test, registerDto.Password);
 
             if (!createUserResult.Succeeded)
+            {
+                _logger.Log(LogLevel.Information, $"[RegisterUser Method] => user was not created Created =>  [RESULT] : {createUserResult.Succeeded} and {@createUserResult.Errors.Select(x => x.Description)}");
                 return Util_GenericResponse<bool>.Response(false, false, "Something went wrong when creating the user!", createUserResult.Errors.Select(x => x.Description).ToList(), System.Net.HttpStatusCode.BadRequest);
+            }
 
             var assignRole = await AssignUserToUserRole(registerDto.UserName);
 
             if (!assignRole.Succsess)
+            {
+                _logger.Log(LogLevel.Information, $"[RegisterUser Method] => user was not assigend to a role =>  [RESULT] : {assignRole.Succsess} and {assignRole.Message}");
                 return assignRole;
+            }
 
             _logger.LogInformation($"[Authentication Module] - [RegisterUser Method] =>, [IP] [{await Util_GetIpAddres.GetLocation(_httpContextAccessor)}] | user {registerDto.Email} was succsessfully created created.");
 

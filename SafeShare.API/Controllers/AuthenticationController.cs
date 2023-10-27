@@ -50,9 +50,7 @@ public class AuthenticationController : BaseController
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var result = await _mediator.Send(new MediatR_RegisterUserCommand(register));
-
-        return result;
+        return await _mediator.Send(new MediatR_RegisterUserCommand(register));
     }
     /// <summary>
     /// Logs a user in.
@@ -72,8 +70,6 @@ public class AuthenticationController : BaseController
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var result = await _mediator.Send(new MediatR_LoginUserCommand(loginDto));
-
-        return result;
+        return await _mediator.Send(new MediatR_LoginUserCommand(loginDto));
     }
 }

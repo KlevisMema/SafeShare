@@ -81,7 +81,10 @@ public class AUTH_Login : Util_BaseAuthDependencies<AUTH_Login, ApplicationUser>
             user ??= await _userManager.FindByNameAsync(loginDto.Email);
 
             if (user is null)
+            {
+                _logger.Log(LogLevel.Information, $"[LoginUser Method] => [RESULT] : user doesnt exists");
                 return Util_GenericResponse<string>.Response(string.Empty, false, "User doesn't exists!", null, System.Net.HttpStatusCode.NotFound);
+            }
 
             //var emailConfirmed = await _userManager.IsEmailConfirmedAsync(user);
 
@@ -91,7 +94,10 @@ public class AUTH_Login : Util_BaseAuthDependencies<AUTH_Login, ApplicationUser>
             var signInUser = await _signInManager.PasswordSignInAsync(user, loginDto.Password, false, false);
 
             if (!signInUser.Succeeded)
+            {
+                _logger.Log(LogLevel.Information, $"[LoginUser Method] => user was not logged in =>  [RESULT] : {signInUser.Succeeded} | Invalid Credentials");
                 return Util_GenericResponse<string>.Response(string.Empty, false, "Invalid credentials!", null, System.Net.HttpStatusCode.NotFound);
+            }
 
             var roles = await _userManager.GetRolesAsync(user);
             var userDto = _mapper.Map<DTO_AuthUser>(user);
