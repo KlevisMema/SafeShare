@@ -121,9 +121,11 @@ public static class API_Helper_ProgramStartup
             (
                 options =>
                 {
-                    //options.SignIn.RequireConfirmedEmail = false;
                     options.User.RequireUniqueEmail = true;
                     options.Password.RequiredLength = 6;
+                    options.Lockout.MaxFailedAccessAttempts = 4;
+                    options.Lockout.AllowedForNewUsers = true;
+                    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
                 }
             )
             .AddEntityFrameworkStores<ApplicationDbContext>()

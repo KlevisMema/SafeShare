@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using SafeShare.Utilities.Services;
 using Microsoft.AspNetCore.Identity;
 using SafeShare.Utilities.Responses;
+using Microsoft.EntityFrameworkCore;
 using SafeShare.Security.JwtSecurity;
 using SafeShare.Utilities.Dependencies;
 using SafeShare.DataAccessLayer.Models;
@@ -51,12 +52,12 @@ public class AUTH_Login : Util_BaseAuthDependencies<AUTH_Login, ApplicationUser>
         ISecurity_JwtTokenAuth jwtTokenService,
         SignInManager<ApplicationUser> signInManager,
         IHttpContextAccessor httpContextAccessor
-    ) 
+    )
     : base
     (
-        mapper, 
-        logger, 
-        httpContextAccessor, 
+        mapper,
+        logger,
+        httpContextAccessor,
         userManager
     )
     {
@@ -91,26 +92,61 @@ public class AUTH_Login : Util_BaseAuthDependencies<AUTH_Login, ApplicationUser>
             //if (!emailConfirmed)
             //    return Util_GenericResponse<string>.Response(null, false, "Your email is not verified", null, System.Net.HttpStatusCode.BadRequest);
 
-            var signInUser = await _signInManager.PasswordSignInAsync(user, loginDto.Password, false, false);
+            var signInUser = await _signInManager.PasswordSignInAsync(user, loginDto.Password, false, lockoutOnFailure: true);
+
+            if (signInUser.IsLockedOut)
+            {
+                _logger.Log(LogLevel.Information, $"[LoginUser Method] => user {loginDto.Email} was not logged in =>  [RESULT] : {signInUser.IsLockedOut} | User {loginDto.Email} is locked");
+                return Util_GenericResponse<string>.Response(string.Empty, false, $"You are locked out, please wait for {await GetLockoutTimeRemaining(user)} and try again!", null, System.Net.HttpStatusCode.BadRequest);
+            }
 
             if (!signInUser.Succeeded)
             {
-                _logger.Log(LogLevel.Information, $"[LoginUser Method] => user was not logged in =>  [RESULT] : {signInUser.Succeeded} | Invalid Credentials");
+                _logger.Log(LogLevel.Information, $"[LoginUser Method] => user {loginDto.Email} was not logged in =>  [RESULT] : {signInUser.Succeeded} | Invalid Credentials");
                 return Util_GenericResponse<string>.Response(string.Empty, false, "Invalid credentials!", null, System.Net.HttpStatusCode.NotFound);
             }
 
-            var roles = await _userManager.GetRolesAsync(user);
-            var userDto = _mapper.Map<DTO_AuthUser>(user);
-            userDto.Roles = roles.ToList();
-            var token = _jwtTokenService.CreateToken(userDto);
-
             _logger.LogInformation($"[Authentication Module] - [LoginUser Method] => , [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} | user {loginDto.Email} credentials valiadted successfully.");
 
-            return Util_GenericResponse<string>.Response(token, true, "User data succsessfully validated!", null, System.Net.HttpStatusCode.OK);
+            return Util_GenericResponse<string>.Response(await GetToken(user), true, "User data succsessfully validated!", null, System.Net.HttpStatusCode.OK);
         }
         catch (Exception ex)
         {
             return await Util_LogsHelper<string, AUTH_Login>.ReturnInternalServerError(ex, _logger, $"Somewthing went wrong in [Authentication Module] - [LoginUser Method], user with [EMAIL] {loginDto.Email}", string.Empty, _httpContextAccessor);
         }
+    }
+    /// <summary>
+    ///     Get the time remaining a user is locked out.
+    /// </summary>
+    /// <param name="user"> The application user</param>
+    /// <returns> The time remaining the user has its account locked</returns>
+    private async Task<TimeSpan?>
+    GetLockoutTimeRemaining
+    (
+        ApplicationUser user
+    )
+    {
+        var lockoutEnd = await _userManager.GetLockoutEndDateAsync(user);
+        var lockoutTimeRemaining = lockoutEnd?.UtcDateTime.Subtract(DateTime.UtcNow);
+
+        return lockoutTimeRemaining;
+    }
+    /// <summary>
+    /// Get the jwt token.
+    /// </summary>
+    /// <param name="user">The <see cref="ApplicationUser"/> object </param>
+    /// <returns> The Jwt token </returns>
+    private async Task<string>
+    GetToken
+    (
+        ApplicationUser user
+    )
+    {
+        var roles = await _userManager.GetRolesAsync(user);
+        var userDto = _mapper.Map<DTO_AuthUser>(user);
+        userDto.Roles = roles.ToList();
+        var token = _jwtTokenService.CreateToken(userDto);
+
+        return token;
     }
 }

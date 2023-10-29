@@ -16,40 +16,33 @@ public abstract class BaseIdentity : IdentityUser
     /// </summary>
     [Required, StringLength(100)]
     public string FullName { get; set; } = null!;
-
     /// <summary>
     /// Gets or sets the birthday of the user.
     /// </summary>
     [Required]
     public DateTime Birthday { get; set; }
-
     /// <summary>
     /// Gets or sets the age of the user.
     /// </summary>
     [Required, Range(minimum: 18, maximum: 100)]
     public int Age { get; set; }
-
     /// <summary>
     /// Gets or sets the gender of the user.  
     /// </summary>
     [Required]
     public Gender Gender { get; set; }
-
     /// <summary>
     /// Gets or sets the is deleted of the user
     /// </summary>
     public bool IsDeleted { get; set; }
-
     /// <summary>
     /// Gets or sets the date created of the user
     /// </summary>
     public DateTime CreatedAt { get; set; }
-
     /// <summary>
     /// Gets or sets the date modified of the user
     /// </summary>
     public DateTime? ModifiedAt { get; set; }
-
     /// <summary>
     /// Gets or sets the date deleted of the user
     /// </summary>
