@@ -24,6 +24,10 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+app.UseHttpsRedirection();
+
+app.UseHsts();
+
 app.UseSerilogRequestLogging();
 
 app.Run();

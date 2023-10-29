@@ -19,6 +19,7 @@ using Microsoft.EntityFrameworkCore;
 using SafeShare.Authentication.Auth;
 using Microsoft.IdentityModel.Tokens;
 using SafeShare.Security.JwtSecurity;
+using System.Security.Authentication;
 using SafeShare.DataAccessLayer.Models;
 using SafeShare.Mappings.UserManagment;
 using SafeShare.Mappings.Authentication;
@@ -28,6 +29,7 @@ using SafeShare.Authentication.Interfaces;
 using SafeShare.UserManagment.UserAccount;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using SafeShare.MediatR.Handlers.CommandsHandlers.Authentication;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 namespace SafeShare.API.Startup;
 
@@ -63,9 +65,29 @@ public static class API_Helper_ProgramStartup
         AddAPIRateLimiting(Services);
         AddSerilog(host);
         AddMediatR(Services);
+        EnforceTLS(Services);
 
         return Services;
     }
+    /// <summary>
+    ///     Enfoce the usage of TLS of latest versions
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/></param>
+    public static void
+    EnforceTLS
+    (
+        IServiceCollection services
+    )
+    {
+        services.Configure<KestrelServerOptions>(options =>
+        {
+            options.ConfigureHttpsDefaults(httpsOptions =>
+            {
+                httpsOptions.SslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13;
+            });
+        });
+    }
+
     /// <summary>
     ///     Add custom services in the container.
     /// </summary>
