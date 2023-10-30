@@ -16,6 +16,7 @@ using SafeShare.Utilities.Responses;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SafeShare.DataAccessLayer.Models;
+using SafeShare.Utilities.Dependencies;
 using SafeShare.DataAccessLayer.Context;
 using SafeShare.UserManagment.Interfaces;
 using SafeShare.DataTransormObject.UserManagment;
@@ -25,12 +26,8 @@ namespace SafeShare.UserManagment.UserAccount;
 /// <summary>
 /// This class encapsulates all the operations related to account management within the SafeShare application
 /// </summary>
-public class AccountManagment : Util_BaseDependencies<AccountManagment>, IAccountManagment
+public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContext, AccountManagment>, IAccountManagment
 {
-    /// <summary>
-    /// Provides methods to interact with the application's database.
-    /// </summary>
-    private readonly ApplicationDbContext _db;
     /// <summary>
     /// Provides the APIs for managing user in a persistence store.
     /// </summary>
@@ -45,22 +42,22 @@ public class AccountManagment : Util_BaseDependencies<AccountManagment>, IAccoun
     /// <param name="httpContextAccessor">Provides information about the HTTP request.</param>
     public AccountManagment
     (
-        IMapper mapper,
         ApplicationDbContext db,
+        IMapper mapper,
         ILogger<AccountManagment> logger,
-        UserManager<ApplicationUser> userManager,
-        IHttpContextAccessor httpContextAccessor
+        IHttpContextAccessor httpContextAccessor,
+        UserManager<ApplicationUser> userManager
     )
     :
     base
     (
+        db,
         mapper,
         logger,
         httpContextAccessor
     )
     {
         _userManager = userManager;
-        _db = db;
     }
     /// <summary>
     /// Retrieves the user details based on the provided user ID.
@@ -107,7 +104,7 @@ public class AccountManagment : Util_BaseDependencies<AccountManagment>, IAccoun
             newValuesOfApplicationUser.CreatedAt = getUser.CreatedAt;
 
             _db.Entry(getUser).CurrentValues.SetValues(newValuesOfApplicationUser);
-            await _db.SaveChangesAsync();   
+            await _db.SaveChangesAsync();
 
             _logger.Log(LogLevel.Information, $"[UserManagment Module] [UpdateUser Method], User with => [IP] [{await Util_GetIpAddres.GetLocation(_httpContextAccessor)}] | [ID] : [{id}] just updated his data at {newValuesOfApplicationUser.ModifiedAt}");
 

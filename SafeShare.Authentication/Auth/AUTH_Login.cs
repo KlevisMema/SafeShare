@@ -17,8 +17,8 @@ using SafeShare.Security.JwtSecurity;
 using SafeShare.Utilities.Dependencies;
 using SafeShare.DataAccessLayer.Models;
 using SafeShare.Authentication.Interfaces;
-using SafeShare.DataTransormObject.Authentication;
 using SafeShare.DataTransormObject.UserManagment;
+using SafeShare.DataTransormObject.Authentication;
 
 namespace SafeShare.Authentication.Auth;
 

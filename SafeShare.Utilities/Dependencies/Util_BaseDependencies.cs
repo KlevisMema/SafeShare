@@ -17,7 +17,8 @@ namespace SafeShare.Utilities.Services
     /// Represents the base dependencies required for utility services.
     /// </summary>
     /// <typeparam name="T">The type of the class utilizing this utility.</typeparam>
-    public class Util_BaseDependencies<T> where T : class
+    public class Util_BaseDependencies<T>
+    where T : class
     {
         /// <summary>
         /// Provides a mapping capability to convert from one object type to another.

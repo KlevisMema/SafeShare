@@ -18,13 +18,11 @@ public abstract class Base
     /// <summary>
     /// Gets or sets the date modified of the entity
     /// </summary>
-    [Required]
     public DateTime? ModifiedAt { get; set; }
 
     /// <summary>
     /// Gets or sets the date deleted of the entity
     /// </summary>
-    [Required]
     public DateTime? DeletedAt { get; set; }
 
     /// <summary>

@@ -1,6 +1,6 @@
 /*
- * Defines the ApplicationUser class that represents registered users within the system.
- * This file contains definitions for the ApplicationUser's properties and their relationships.
+* Defines the ApplicationUser class that represents registered users within the system.
+* This file contains definitions for the ApplicationUser's properties and their relationships.
 */
 
 using SafeShare.DataAccessLayer.BaseModels;
@@ -22,4 +22,7 @@ public class ApplicationUser : BaseIdentity
     /// Navigation property for the relationship of the user as a member in various expenses.
     /// </summary>
     public virtual ICollection<ExpenseMember>? ExpenseMembers { get; set; }
+
+    public virtual ICollection<GroupInvitation>? SentInvitations { get; set; }
+    public virtual ICollection<GroupInvitation>? ReceivedInvitations { get; set; }
 }

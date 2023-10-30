@@ -23,13 +23,16 @@ using System.Security.Authentication;
 using SafeShare.DataAccessLayer.Models;
 using SafeShare.Mappings.UserManagment;
 using SafeShare.Mappings.Authentication;
+using SafeShare.Mappings.GroupManagment;
 using SafeShare.DataAccessLayer.Context;
 using SafeShare.UserManagment.Interfaces;
 using SafeShare.Authentication.Interfaces;
+using SafeShare.GroupManagment.Interfaces;
 using SafeShare.UserManagment.UserAccount;
+using SafeShare.GroupManagment.GroupManagment;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using SafeShare.MediatR.Handlers.CommandsHandlers.Authentication;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 namespace SafeShare.API.Startup;
 
@@ -102,6 +105,8 @@ public static class API_Helper_ProgramStartup
         Services.AddTransient<IAUTH_Register, AUTH_Register>();
         Services.AddTransient<IAccountManagment, AccountManagment>();
         Services.AddTransient<ISecurity_JwtTokenAuth, Security_JwtTokenAuth>();
+        Services.AddTransient<IGroupManagment_GroupRepository, GroupManagment_GroupRepository>();
+        Services.AddTransient<IGroupManagment_GroupInvitationsRepository, GroupManagment_GroupInvitationsRepository>();
     }
     /// <summary>
     ///     Add sql database with connection string in the container.
@@ -141,6 +146,7 @@ public static class API_Helper_ProgramStartup
         IServiceCollection Services
     )
     {
+        Services.AddAutoMapper(typeof(Mapper_GroupManagment));
         Services.AddAutoMapper(typeof(Mapping_Authentication));
         Services.AddAutoMapper(typeof(Mapper_AccountManagment));
     }

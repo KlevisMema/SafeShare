@@ -47,6 +47,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     /// </summary>
     public DbSet<ExpenseMember> ExpenseMembers { get; set; }
 
+    public DbSet<GroupInvitation> GroupInvitations { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -62,7 +64,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .HasOne<Group>(u => u.Group)
             .WithMany(gm => gm.GroupMembers)
             .HasForeignKey(fk => fk.GroupId)
-            .OnDelete(deleteBehavior: DeleteBehavior.Restrict); ;
+            .OnDelete(deleteBehavior: DeleteBehavior.Restrict);
 
         modelBuilder.Entity<ExpenseMember>().HasKey(pk => new { pk.UserId, pk.ExpenseId });
 
@@ -70,13 +72,25 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .HasOne<ApplicationUser>(u => u.User)
             .WithMany(gm => gm.ExpenseMembers)
             .HasForeignKey(fk => fk.UserId)
-            .OnDelete(deleteBehavior: DeleteBehavior.Restrict); ;
+            .OnDelete(deleteBehavior: DeleteBehavior.Restrict);
 
         modelBuilder.Entity<ExpenseMember>()
             .HasOne<Expense>(u => u.Expense)
             .WithMany(gm => gm.ExpenseMembers)
             .HasForeignKey(fk => fk.ExpenseId)
-            .OnDelete(deleteBehavior: DeleteBehavior.Restrict); ;
+            .OnDelete(deleteBehavior: DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<GroupInvitation>()
+            .HasOne(gi => gi.InvitingUser) 
+            .WithMany(u => u.SentInvitations)
+            .HasForeignKey(gi => gi.InvitingUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<GroupInvitation>()
+            .HasOne(gi => gi.InvitedUser)
+            .WithMany(u => u.ReceivedInvitations)
+            .HasForeignKey(gi => gi.InvitedUserId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         base.OnModelCreating(modelBuilder);
     }

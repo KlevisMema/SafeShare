@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SafeShare.DataAccessLayer.Context;
 
@@ -11,9 +12,11 @@ using SafeShare.DataAccessLayer.Context;
 namespace SafeShare.DataAccessLayer.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231030142137_AddedDescriptionPropInTheGroupModel")]
+    partial class AddedDescriptionPropInTheGroupModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -357,54 +360,6 @@ namespace SafeShare.DataAccessLayer.Migrations
                     b.ToTable("Groups");
                 });
 
-            modelBuilder.Entity("SafeShare.DataAccessLayer.Models.GroupInvitation", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("GroupId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("InvitationMessage")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<int>("InvitationStatus")
-                        .HasColumnType("int");
-
-                    b.Property<string>("InvitedUserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("InvitingUserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("ModifiedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GroupId");
-
-                    b.HasIndex("InvitedUserId");
-
-                    b.HasIndex("InvitingUserId");
-
-                    b.ToTable("GroupInvitations");
-                });
-
             modelBuilder.Entity("SafeShare.DataAccessLayer.Models.GroupMember", b =>
                 {
                     b.Property<string>("UserId")
@@ -542,33 +497,6 @@ namespace SafeShare.DataAccessLayer.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("SafeShare.DataAccessLayer.Models.GroupInvitation", b =>
-                {
-                    b.HasOne("SafeShare.DataAccessLayer.Models.Group", "Group")
-                        .WithMany("Invitations")
-                        .HasForeignKey("GroupId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("SafeShare.DataAccessLayer.Models.ApplicationUser", "InvitedUser")
-                        .WithMany("ReceivedInvitations")
-                        .HasForeignKey("InvitedUserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("SafeShare.DataAccessLayer.Models.ApplicationUser", "InvitingUser")
-                        .WithMany("SentInvitations")
-                        .HasForeignKey("InvitingUserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Group");
-
-                    b.Navigation("InvitedUser");
-
-                    b.Navigation("InvitingUser");
-                });
-
             modelBuilder.Entity("SafeShare.DataAccessLayer.Models.GroupMember", b =>
                 {
                     b.HasOne("SafeShare.DataAccessLayer.Models.Group", "Group")
@@ -593,10 +521,6 @@ namespace SafeShare.DataAccessLayer.Migrations
                     b.Navigation("ExpenseMembers");
 
                     b.Navigation("GroupMembers");
-
-                    b.Navigation("ReceivedInvitations");
-
-                    b.Navigation("SentInvitations");
                 });
 
             modelBuilder.Entity("SafeShare.DataAccessLayer.Models.Expense", b =>
@@ -609,8 +533,6 @@ namespace SafeShare.DataAccessLayer.Migrations
                     b.Navigation("Expenses");
 
                     b.Navigation("GroupMembers");
-
-                    b.Navigation("Invitations");
                 });
 #pragma warning restore 612, 618
         }

@@ -4,8 +4,8 @@
 
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using SafeShare.MediatR.Actions.Commands.UserManagment;
 using SafeShare.UserManagment.Interfaces;
+using SafeShare.MediatR.Actions.Commands.UserManagment;
 
 namespace SafeShare.MediatR.Dependencies;
 

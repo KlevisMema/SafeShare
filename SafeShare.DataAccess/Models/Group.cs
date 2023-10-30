@@ -24,6 +24,11 @@ public class Group : Base
     [Required, StringLength(100)]
     public string Name { get; set; } = null!;
     /// <summary>
+    /// Gets or sets the description of the group.
+    /// </summary>
+    [Required, StringLength(200)]
+    public string Description { get; set; } = null!;
+    /// <summary>
     /// Navigation property for the users belonging to this group.
     /// </summary>
     public virtual ICollection<GroupMember> GroupMembers { get; set; } = null!;
@@ -31,4 +36,6 @@ public class Group : Base
     /// Navigation property for the expenses associated with this group.
     /// </summary>
     public virtual ICollection<Expense>? Expenses { get; set; }
+
+    public virtual ICollection<GroupInvitation>? Invitations { get; set; }
 }
