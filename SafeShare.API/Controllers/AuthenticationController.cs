@@ -4,8 +4,11 @@
 */
 
 using MediatR;
+using System.Net;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using SafeShare.Utilities.Responses;
+using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authorization;
 using SafeShare.DataTransormObject.Authentication;
 using SafeShare.MediatR.Actions.Commands.Authentication;
@@ -53,15 +56,30 @@ public class AuthenticationController : BaseController
         return await _mediator.Send(new MediatR_RegisterUserCommand(register));
     }
     /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="confirmRegistrationDto"></param>
+    /// <returns></returns>
+    [HttpPost("ConfirmRegistration")]
+    public async Task<ActionResult<Util_GenericResponse<bool>>>
+    ConfirmRegistration
+    (
+        DTO_ConfirmRegistration confirmRegistrationDto
+    )
+    {
+        return await _mediator.Send(new MediatR_ConfirmUserRegistrationCommand(confirmRegistrationDto));
+    }
+    /// <summary>
     /// Logs a user in.
     /// </summary>
     /// <param name="loginDto">The login data.</param>
     /// <returns>A response containing the token or an error message.</returns>
     [HttpPost("Login")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<string>))]
-    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<string>))]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Util_GenericResponse<string>))]
-    public async Task<ActionResult<Util_GenericResponse<string>>>
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<DTO_LoginResult>))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<DTO_LoginResult>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(Util_GenericResponse<DTO_LoginResult>))]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Util_GenericResponse<DTO_LoginResult>))]
+    public async Task<ActionResult<Util_GenericResponse<DTO_LoginResult>>>
     LoginUser
     (
         [FromForm] DTO_Login loginDto
@@ -71,5 +89,35 @@ public class AuthenticationController : BaseController
             return BadRequest(ModelState);
 
         return await _mediator.Send(new MediatR_LoginUserCommand(loginDto));
+    }
+    /// <summary>
+    /// Confirms the log in.
+    /// </summary>
+    /// <param name="otp">The otp </param>
+    /// <returns>A response containing the token or an error message.</returns>
+    [HttpPost("ConfirmLogin")]
+    [Authorize(AuthenticationSchemes = "ConfirmLogin")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<DTO_LoginResult>))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<DTO_LoginResult>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(Util_GenericResponse<DTO_LoginResult>))]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Util_GenericResponse<DTO_LoginResult>))]
+    public async Task<ActionResult<Util_GenericResponse<DTO_LoginResult>>>
+    ConfirmLogin
+    (
+        string otp
+    )
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        return await _mediator.Send(new MediatR_ConfirmLoginUserCommand(otp));
+    }
+
+    [HttpPost("LogOut")]
+    [Authorize(AuthenticationSchemes = "Default")]
+    public async Task<ActionResult>
+    LogOut()
+    {
+        return Ok();
     }
 }

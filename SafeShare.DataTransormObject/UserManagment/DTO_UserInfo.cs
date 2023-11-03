@@ -37,12 +37,6 @@ public class DTO_UserInfo
     public string UserName { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the email address of the user.
-    /// </summary>
-    [Required, DataType(DataType.EmailAddress)]
-    public string Email { get; set; } = string.Empty;
-
-    /// <summary>
     /// Gets or sets the phone number of the user.
     /// </summary>
     [Required, DataType(DataType.PhoneNumber)]

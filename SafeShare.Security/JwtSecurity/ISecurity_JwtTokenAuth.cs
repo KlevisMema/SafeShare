@@ -9,16 +9,16 @@ namespace SafeShare.Security.JwtSecurity;
 /// <summary>
 /// Interface for creating JWT tokens for authentication.
 /// </summary>
-public interface ISecurity_JwtTokenAuth
+public interface ISecurity_JwtTokenAuth<TService, TFuncInputParamType>
 {
     /// <summary>
     /// Creates a JWT token for the specified user.
     /// </summary>
-    /// <param name="user">The user information. <see cref="UserDto"/></param>
+    /// <param name="TFuncInputParamType">The user information. <see cref="TFuncInputParamType"/></param>
     /// <returns>The generated JWT token.</returns>
     string
     CreateToken
     (
-        DTO_AuthUser user
+        TFuncInputParamType user
     );
 }

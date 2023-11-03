@@ -26,11 +26,14 @@ using SafeShare.Mappings.Authentication;
 using SafeShare.Mappings.GroupManagment;
 using SafeShare.DataAccessLayer.Context;
 using SafeShare.UserManagment.Interfaces;
+using Microsoft.Extensions.Configuration;
 using SafeShare.Authentication.Interfaces;
 using SafeShare.GroupManagment.Interfaces;
 using SafeShare.UserManagment.UserAccount;
 using SafeShare.GroupManagment.GroupManagment;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using SafeShare.Utilities.ConfigurationSettings;
+using SafeShare.DataTransormObject.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using SafeShare.MediatR.Handlers.CommandsHandlers.Authentication;
 
@@ -59,8 +62,11 @@ public static class API_Helper_ProgramStartup
         Services.AddMemoryCache();
         Services.AddEndpointsApiExplorer();
         Services.AddSwaggerGen();
+        Services.AddHttpContextAccessor();
+
 
         AddDatabase(Services, Configuration);
+        AddConfigurations(Services, Configuration);
         AddAutomapper(Services);
         AddSwagger(Services, Configuration);
         AddServices(Services);
@@ -73,10 +79,32 @@ public static class API_Helper_ProgramStartup
         return Services;
     }
     /// <summary>
+    ///     Add configurations in the container
+    /// </summary>
+    /// <param name="services"> The services collection </param>
+    /// <param name="configuration"> The configurations collection </param>
+    private static void
+    AddConfigurations
+    (
+        IServiceCollection services,
+        IConfiguration configuration
+    )
+    {
+        services.Configure<Util_JwtSettings>(configuration.GetSection(Util_JwtSettings.SectionName));
+        services.Configure<DataProtectionTokenProviderOptions>
+        (
+            opt => opt.TokenLifespan = TimeSpan.FromHours(double.Parse(configuration.GetSection("DefaultTokenExpirationTimeInHours").Value!))
+        );
+        services.Configure<Util_ResetPasswordSettings>(configuration.GetSection(Util_ResetPasswordSettings.SectionName));
+        services.Configure<Util_ActivateAccountSettings>(configuration.GetSection(Util_ActivateAccountSettings.SectionName));
+        services.Configure<Util_ChangeEmailAddressSettings>(configuration.GetSection(Util_ChangeEmailAddressSettings.SectionName));
+        services.Configure<Util_ConfirmRegistrationSettings>(configuration.GetSection(Util_ConfirmRegistrationSettings.SectionName));
+    }
+    /// <summary>
     ///     Enfoce the usage of TLS of latest versions
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/></param>
-    public static void
+    private static void
     EnforceTLS
     (
         IServiceCollection services
@@ -101,12 +129,13 @@ public static class API_Helper_ProgramStartup
         IServiceCollection Services
     )
     {
-        Services.AddTransient<IAUTH_Login, AUTH_Login>();
-        Services.AddTransient<IAUTH_Register, AUTH_Register>();
-        Services.AddTransient<IAccountManagment, AccountManagment>();
-        Services.AddTransient<ISecurity_JwtTokenAuth, Security_JwtTokenAuth>();
-        Services.AddTransient<IGroupManagment_GroupRepository, GroupManagment_GroupRepository>();
-        Services.AddTransient<IGroupManagment_GroupInvitationsRepository, GroupManagment_GroupInvitationsRepository>();
+        Services.AddScoped<IAUTH_Login, AUTH_Login>();
+        Services.AddScoped<IAUTH_Register, AUTH_Register>();
+        Services.AddScoped<IAccountManagment, AccountManagment>();
+        Services.AddScoped<IGroupManagment_GroupRepository, GroupManagment_GroupRepository>();
+        Services.AddScoped<ISecurity_JwtTokenAuth<Security_JwtTokenAuth, DTO_AuthUser>, Security_JwtTokenAuth>();
+        Services.AddScoped<IGroupManagment_GroupInvitationsRepository, GroupManagment_GroupInvitationsRepository>();
+        Services.AddScoped<ISecurity_JwtTokenAuth<Security_JwtShortLivedToken, string>, Security_JwtShortLivedToken>();
     }
     /// <summary>
     ///     Add sql database with connection string in the container.
@@ -128,9 +157,11 @@ public static class API_Helper_ProgramStartup
                 {
                     options.User.RequireUniqueEmail = true;
                     options.Password.RequiredLength = 6;
-                    options.Lockout.MaxFailedAccessAttempts = 4;
+                    options.Lockout.MaxFailedAccessAttempts = 20;
                     options.Lockout.AllowedForNewUsers = true;
                     options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+                    options.SignIn.RequireConfirmedEmail = true;
+                    options.SignIn.RequireConfirmedPhoneNumber = false;
                 }
             )
             .AddEntityFrameworkStores<ApplicationDbContext>()
@@ -163,14 +194,13 @@ public static class API_Helper_ProgramStartup
     )
     {
         // Services Settings
-        Services.Configure<Security_JwtSettings>(Configuration.GetSection(Security_JwtSettings.SectionName));
-        var jwtSetting = Configuration.GetSection(Security_JwtSettings.SectionName);
+        var jwtSetting = Configuration.GetSection(Util_JwtSettings.SectionName);
 
         // Add the custom auth filter, a filter that is used by all enpoints
         Services.AddScoped<IApiKeyAuthorizationFilter>(provider =>
         {
             var config = provider.GetService<IConfiguration>();
-            string apikey = config!.GetValue<string>("API_KEY")!;
+            string apikey = Environment.GetEnvironmentVariable("SAFE_SHARE_API_KEY");
             return new ApiKeyAuthorizationFilter(apikey);
         });
         // Cofigure Authetication
@@ -180,51 +210,45 @@ public static class API_Helper_ProgramStartup
             options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 
         })
-           .AddJwtBearer(options =>
-           {
-               options.TokenValidationParameters = new TokenValidationParameters
-               {
-                   ValidateAudience = Configuration.GetValue<bool>("Jwt:ValidateAudience"),
-                   ValidateIssuer = Configuration.GetValue<bool>("Jwt:ValidateIssuer"),
-                   ValidateLifetime = Configuration.GetValue<bool>("Jwt:ValidateLifetime"),
-                   ValidateIssuerSigningKey = Configuration.GetValue<bool>("Jwt:ValidateIssuerSigningKey"),
-                   ValidIssuer = jwtSetting.GetSection("Issuer").Value,
-                   ValidAudience = jwtSetting.GetSection("Audience").Value,
-                   IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSetting.GetSection("Key").Value!)),
-               };
-           });
+        .AddJwtBearer("Default", options =>
+        {
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateAudience = true,
+                ValidateIssuer = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = jwtSetting.GetSection("Issuer").Value,
+                ValidAudience = jwtSetting.GetSection("Audience").Value,
+                ClockSkew = TimeSpan.Zero,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSetting.GetSection("Key").Value!)),
+            };
+        })
+        .AddJwtBearer("ConfirmLogin", options =>
+        {
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateAudience = true,
+                ValidateIssuer = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = jwtSetting.GetSection("Issuer").Value,
+                ValidAudience = jwtSetting.GetSection("Audience").Value,
+                ClockSkew = TimeSpan.Zero,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSetting.GetSection("KeyConfrimLogin").Value!)),
+            };
+        });
 
         Services.AddSwaggerGen(options =>
         {
-            options.AddSecurityDefinition(Configuration.GetSection("Swagger:ApplicationAuth:SecurityDefinition:Definition").Value, new OpenApiSecurityScheme
+            options.AddSecurityDefinition("Default", new OpenApiSecurityScheme
             {
-                In = ParameterLocation.Header,
-                Name = Configuration.GetSection("Swagger:ApplicationAuth:SecurityDefinition:Name").Value,
+                Name = "Authorization",
+                Description = "Enter 'Bearer' [Space] and then your token in the input field below.",
                 Type = SecuritySchemeType.ApiKey,
-                Description = Configuration.GetSection("Swagger:ApplicationAuth:SecurityDefinition:Description").Value
-            });
-
-            options.AddSecurityRequirement(new OpenApiSecurityRequirement
-                {
-                    {
-                        new OpenApiSecurityScheme
-                        {
-                            Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = Configuration.GetSection("Swagger:ApplicationAuth:SecurityRequirement:Id").Value },
-                            Name = Configuration.GetSection("Swagger:ApplicationAuth:SecurityRequirement:Name").Value,
-                            In = ParameterLocation.Header
-                        },
-                        new List<string>()
-                    }
-                });
-
-            options.AddSecurityDefinition(Configuration.GetSection("Swagger:JwtAuth:SecurityDefinition:Definition").Value, new OpenApiSecurityScheme
-            {
-                Description = Configuration.GetSection("Swagger:JwtAuth:SecurityDefinition:Description").Value,
-                Name = Configuration.GetSection("Swagger:JwtAuth:SecurityDefinition:Name").Value,
                 In = ParameterLocation.Header,
-                Type = SecuritySchemeType.ApiKey,
-                Scheme = Configuration.GetSection("Swagger:JwtAuth:SecurityDefinition:Scheme").Value,
-                BearerFormat = Configuration.GetSection("Swagger:JwtAuth:SecurityDefinition:BearerFormat").Value
+                Scheme = "Bearer",
+                BearerFormat = "Jwt"
             });
 
             options.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -235,16 +259,64 @@ public static class API_Helper_ProgramStartup
                             Reference = new OpenApiReference
                             {
                                 Type = ReferenceType.SecurityScheme,
-                                Id = Configuration.GetSection("Swagger:JwtAuth:SecurityRequirement:Reference:Id").Value
+                                Id = "Default"
                             },
-                            Scheme = Configuration.GetSection("Swagger:JwtAuth:SecurityRequirement:Scheme").Value,
-                            Name = Configuration.GetSection("Swagger:JwtAuth:SecurityRequirement:Name").Value,
+                            Scheme = "0auth2",
+                            Name = "Bearer",
                             In = ParameterLocation.Header,
                         },
                         new List<string>()
                     }
                 });
 
+            options.AddSecurityDefinition("ConfirmLogin", new OpenApiSecurityScheme
+            {
+                Name = "Authorization",
+                Description = "Enter 'Bearer' [Space] and then your token in the input field below.",
+                Type = SecuritySchemeType.Http,
+                In = ParameterLocation.Header,
+                Scheme = "Bearer",
+                BearerFormat = "Jwt"
+            });
+
+            options.AddSecurityRequirement(new OpenApiSecurityRequirement
+            {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "ConfirmLogin"
+                        },
+                        Scheme = "0auth2",
+                        Name = "Bearer",
+                        In = ParameterLocation.Header,
+                    },
+                    new List<string>()
+                }
+            });
+
+            options.AddSecurityDefinition("ApiKey", new OpenApiSecurityScheme
+            {
+                Name = "X-Api-Key",
+                Description = "API Key authentication",
+                Type = SecuritySchemeType.ApiKey,
+                In = ParameterLocation.Header,
+            });
+
+            options.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "ApiKey" },
+                            Name = "X-Api-Key",
+                            In = ParameterLocation.Header
+                        },
+                        new List<string>()
+                    }
+            });
 
             options.SwaggerDoc(Configuration.GetSection("Swagger:Doc:Version").Value, new OpenApiInfo
             {

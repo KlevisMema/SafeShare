@@ -32,4 +32,11 @@ public interface IGroupManagment_GroupRepository
         Guid groupId,
         DTO_EditGroup editGroup
     );
+
+    Task<Util_GenericResponse<bool>>
+    DeleteGroup
+    (
+        Guid ownerId,
+        Guid groupId
+    );
 }

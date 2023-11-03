@@ -42,9 +42,10 @@ public interface IAccountManagment
     /// <param name="id">The ID of the user to delete.</param>
     /// <returns>A generic response indicating whether the user was successfully deleted or not.</returns>
     Task<Util_GenericResponse<bool>>
-    DeleteUser
+    DeactivateAccount
     (
-        Guid id
+        Guid id,
+         DTO_DeactivateAccount deactivateAccount
     );
     /// <summary>
     /// Changes the password of a user based on the provided user ID and password details.
@@ -57,5 +58,65 @@ public interface IAccountManagment
     (
         Guid id,
         DTO_UserChangePassword updatePassword
+    );
+    /// <summary>
+    /// Send an email to the user email with the link to reset his password.
+    /// </summary>
+    /// <param name="email"> The email of the user </param>
+    /// <returns> A generic result indicating the result of the operation </returns>
+    Task<Util_GenericResponse<bool>>
+    ForgotPassword
+    (
+        string email
+    );
+    /// <summary>
+    /// Reset the password of the user.
+    /// </summary>
+    /// <param name="resetPassword">The reset password object</param>
+    /// <returns>A generic response indicating if the result of the operation</returns>
+    Task<Util_GenericResponse<bool>>
+    ResetPassword
+    (
+        DTO_ResetPassword resetPassword
+    );
+    /// <summary>
+    /// Reactivate the account request
+    /// </summary>
+    /// <param name="email"> The email of the user </param>
+    /// <returns> A generic response indicating whether the user activation request was successfully or not </returns>
+    Task<Util_GenericResponse<bool>>
+    ActivateAccountRequest
+    (
+        string email
+    );
+    /// <summary>
+    /// Confirms the account activation
+    /// </summary>
+    /// <param name="accountConfirmation"> The <see cref=DTO_ActivateAccountConfirmation""/> object </param>
+    /// <returns> A generic response indicating if the users account was activated or not </returns>
+    Task<Util_GenericResponse<bool>>
+    ActivateAccountConfirmation
+    (
+        DTO_ActivateAccountConfirmation accountConfirmation
+    );
+    /// <summary>
+    /// Request for changing the email
+    /// </summary>
+    /// <param name="newEmailAddressDto">The <see cref="DTO_ChangeEmailAddressRequest"/> object dto </param>
+    /// <returns>A generic response indicating the result of the operation</returns>
+    Task<Util_GenericResponse<bool>>
+    RequestChangeEmailAddress
+    (
+       DTO_ChangeEmailAddressRequest newEmailAddressDto
+    );
+    /// <summary>
+    /// Confirms the request of changing the email.
+    /// </summary>
+    /// <param name="changeEmailAddressConfirmDto"> The <see cref="DTO_ChangeEmailAddressRequestConfirm"/> object dto </param>
+    /// <returns>A generic response indicating the result of the operation</returns>
+    Task<Util_GenericResponse<bool>>
+    ConfirmChangeEmailAddressRequest
+    (
+        DTO_ChangeEmailAddressRequestConfirm changeEmailAddressConfirmDto
     );
 }

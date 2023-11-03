@@ -20,9 +20,20 @@ public interface IAUTH_Login
     /// </summary>
     /// <param name="loginDto">The data transfer object containing user login details.</param>
     /// <returns>A generic response with a JWT token (if successful) or an error message.</returns>
-    Task<Util_GenericResponse<string>>
+    Task<Util_GenericResponse<DTO_LoginResult>>
     LoginUser
     (
         DTO_Login loginDto
+    );
+    /// <summary>
+    /// Confirm the login of the user
+    /// </summary>
+    /// <param name="userId">The id of the user</param>
+    /// <param name="otp">The one time password </param>
+    /// <returns>A generic respone with jwt token or a error message</returns>
+    Task<Util_GenericResponse<DTO_LoginResult>>
+    ConfirmLogin
+    (
+        string otp
     );
 }

@@ -51,5 +51,29 @@ namespace SafeShare.API.Controllers
         {
             return await _mediator.Send(new MediatR_CreateGroupCommand(ownerId, createGroup));
         }
+
+        [HttpPut("EditGroup/{userId}/{groupId}")]
+        public async Task<ActionResult<Util_GenericResponse<DTO_GroupType>>>
+        EditGroup
+        (
+            Guid userId,
+            Guid groupId,
+            [FromForm] DTO_EditGroup editGroup
+        )
+        {
+            return await _mediator.Send(new MediatR_EditGroupCommand(userId, groupId, editGroup));
+        }
+
+        [HttpDelete("DeleteGroup/{ownerId}/{groupId}")]
+        public async Task<ActionResult<Util_GenericResponse<bool>>>
+        DeleteGroup
+        (
+            Guid ownerId,
+            Guid groupId
+        )
+        {
+            return await _mediator.Send(new MediatR_DeleteGroupCommand(ownerId, groupId));
+        }
+
     }
 }

@@ -47,4 +47,24 @@ public abstract class BaseIdentity : IdentityUser
     /// Gets or sets the date deleted of the user
     /// </summary>
     public DateTime? DeletedAt { get; set; }
+    /// <summary>
+    /// Gets or sets the one time password of the user
+    /// </summary>
+    public string? OTP { get; set; }
+    /// <summary>
+    /// Gets or sets the one time password duration of the user
+    /// </summary>
+    public DateTime? OTP_Duration { get; set; }
+    /// <summary>
+    /// Gets or sets a flag that requires the otp during login.
+    /// </summary>
+    public bool RequireOTPDuringLogin { get; set; }
+    /// <summary>
+    /// Gets or sets the date time of last login of the user
+    /// </summary>
+    public DateTime? LastLogIn { get; set; }
+    /// <summary>
+    /// Gets or sets the date of last log out of the user
+    /// </summary>
+    public DateTime? LastLogOut { get; set; }
 }

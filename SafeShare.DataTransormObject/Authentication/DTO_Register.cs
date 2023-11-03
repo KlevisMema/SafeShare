@@ -66,4 +66,8 @@ public class DTO_Register
     /// </summary>
     [Required(ErrorMessage = "Confirm password is required"), DataType(DataType.Password), Compare("Password")]
     public string ConfirmPassword { get; set; } = string.Empty;
+    /// <summary>
+    /// Gets or sets the 2 factor auth of the user registering.
+    /// </summary>
+    public bool Enable2FA { get; set; } = false;
 }

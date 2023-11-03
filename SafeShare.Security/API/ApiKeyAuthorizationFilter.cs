@@ -5,6 +5,7 @@
 
 
 using Microsoft.AspNetCore.Mvc;
+using SafeShare.Security.Decryption;
 using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace SafeShare.Security.API;
@@ -41,12 +42,28 @@ public class ApiKeyAuthorizationFilter : IAuthorizationFilter, IApiKeyAuthorizat
         AuthorizationFilterContext context
     )
     {
-        string? apiKey = context.HttpContext.Request.Headers["X-Api-Key"].FirstOrDefault();
+        string? encryptedApiKey = context.HttpContext.Request.Headers["X-Api-Key"].FirstOrDefault();
 
-        if (string.IsNullOrEmpty(apiKey))
+        if (string.IsNullOrEmpty(encryptedApiKey))
+        {
             context.Result = new UnauthorizedResult();
+            return;
+        }
 
-        if (apiKey != _apiKey)
+        string decryptedApiKey;
+        try
+        {
+            decryptedApiKey = Security_DecryptHelper.DecryptWithPrivateKey(encryptedApiKey);
+        }
+        catch
+        {
             context.Result = new UnauthorizedResult();
+            return;
+        }
+
+        if (decryptedApiKey != _apiKey)
+        {
+            context.Result = new UnauthorizedResult();
+        }
     }
 }

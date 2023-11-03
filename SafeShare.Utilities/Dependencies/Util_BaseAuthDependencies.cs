@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using SafeShare.Utilities.Services;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 
 namespace SafeShare.Utilities.Dependencies;
 
@@ -33,6 +34,10 @@ where TApplicationUser : class
     /// </summary>
     protected readonly UserManager<TApplicationUser> _userManager;
     /// <summary>
+    /// Gets the configurations.
+    /// </summary>
+    protected readonly IConfiguration _configuration;
+    /// <summary>
     /// Initializes a new instance of the <see cref="Util_BaseAuthDependencies{T, TApplicationUser}"/> class.
     /// </summary>
     /// <param name="mapper">An instance of IMapper to handle object mappings.</param>
@@ -44,7 +49,8 @@ where TApplicationUser : class
         IMapper mapper,
         ILogger<T> logger,
         IHttpContextAccessor httpContextAccessor,
-        UserManager<TApplicationUser> userManager
+        UserManager<TApplicationUser> userManager,
+        IConfiguration configuration
     )
     : base
     (
@@ -54,5 +60,6 @@ where TApplicationUser : class
     )
     {
         _userManager = userManager;
+        _configuration = configuration;
     }
 }

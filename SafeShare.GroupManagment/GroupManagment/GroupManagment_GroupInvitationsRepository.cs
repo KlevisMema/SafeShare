@@ -7,9 +7,9 @@ using SafeShare.Utilities.Services;
 using Microsoft.EntityFrameworkCore;
 using SafeShare.Utilities.Responses;
 using Microsoft.AspNetCore.Identity;
-using SafeShare.DataAccessLayer.Context;
-using SafeShare.DataAccessLayer.Models;
 using SafeShare.Utilities.Dependencies;
+using SafeShare.DataAccessLayer.Models;
+using SafeShare.DataAccessLayer.Context;
 using SafeShare.GroupManagment.Interfaces;
 
 namespace SafeShare.GroupManagment.GroupManagment;
@@ -58,7 +58,14 @@ public class GroupManagment_GroupInvitationsRepository : Util_BaseContextDepende
         }
         catch (Exception ex)
         {
-            return await Util_LogsHelper<bool, GroupManagment_GroupInvitationsRepository>.ReturnInternalServerError(ex, _logger, $"Somewthing went wrong in [GroupManagment Module] - [SendInvitation Method], user with [ID] {invitingUserId}", false, _httpContextAccessor);
+            return await Util_LogsHelper<bool, GroupManagment_GroupInvitationsRepository>.ReturnInternalServerError
+                (
+                    ex,
+                    _logger, 
+                    $"Somewthing went wrong in [GroupManagment Module] - [SendInvitation Method], user with [ID] {invitingUserId} tried to send an invite to user with [ID] {invitedUserId} to the group with [ID] {groupId}",
+                    false,
+                    _httpContextAccessor
+                );
         }
     }
 

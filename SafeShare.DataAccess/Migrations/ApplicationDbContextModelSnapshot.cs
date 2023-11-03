@@ -17,7 +17,7 @@ namespace SafeShare.DataAccessLayer.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.12")
+                .HasAnnotation("ProductVersion", "7.0.13")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -197,6 +197,12 @@ namespace SafeShare.DataAccessLayer.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
+                    b.Property<DateTime?>("LastLogIn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("LastLogOut")
+                        .HasColumnType("datetime2");
+
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
 
@@ -214,6 +220,12 @@ namespace SafeShare.DataAccessLayer.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
+                    b.Property<string>("OTP")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("OTP_Duration")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("PasswordHash")
                         .HasColumnType("nvarchar(max)");
 
@@ -221,6 +233,9 @@ namespace SafeShare.DataAccessLayer.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("PhoneNumberConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("RequireOTPDuringLogin")
                         .HasColumnType("bit");
 
                     b.Property<string>("SecurityStamp")
@@ -288,7 +303,7 @@ namespace SafeShare.DataAccessLayer.Migrations
 
                     b.HasIndex("GroupId");
 
-                    b.ToTable("Expenses");
+                    b.ToTable("Expenses", (string)null);
                 });
 
             modelBuilder.Entity("SafeShare.DataAccessLayer.Models.ExpenseMember", b =>
@@ -321,7 +336,7 @@ namespace SafeShare.DataAccessLayer.Migrations
 
                     b.HasIndex("ExpenseId");
 
-                    b.ToTable("ExpenseMembers");
+                    b.ToTable("ExpenseMembers", (string)null);
                 });
 
             modelBuilder.Entity("SafeShare.DataAccessLayer.Models.Group", b =>
@@ -354,7 +369,7 @@ namespace SafeShare.DataAccessLayer.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Groups");
+                    b.ToTable("Groups", (string)null);
                 });
 
             modelBuilder.Entity("SafeShare.DataAccessLayer.Models.GroupInvitation", b =>
@@ -402,7 +417,7 @@ namespace SafeShare.DataAccessLayer.Migrations
 
                     b.HasIndex("InvitingUserId");
 
-                    b.ToTable("GroupInvitations");
+                    b.ToTable("GroupInvitations", (string)null);
                 });
 
             modelBuilder.Entity("SafeShare.DataAccessLayer.Models.GroupMember", b =>
@@ -435,7 +450,7 @@ namespace SafeShare.DataAccessLayer.Migrations
 
                     b.HasIndex("GroupId");
 
-                    b.ToTable("GroupMembers");
+                    b.ToTable("GroupMembers", (string)null);
                 });
 
             modelBuilder.Entity("SafeShare.DataAccessLayer.Models.LogEntry", b =>
@@ -458,7 +473,7 @@ namespace SafeShare.DataAccessLayer.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("LogEntries");
+                    b.ToTable("LogEntries", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

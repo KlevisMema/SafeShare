@@ -20,9 +20,19 @@ public interface IAUTH_Register
     /// </summary>
     /// <param name="registerDto">The data transfer object containing user registration details.</param>
     /// <returns>A generic response indicating the success or failure of the registration operation.</returns>
-    Task<Util_GenericResponse<bool>> 
+    Task<Util_GenericResponse<bool>>
     RegisterUser
     (
         DTO_Register registerDto
+    );
+    /// <summary>
+    /// Confirms user registration
+    /// </summary>
+    /// <param name="confirmRegistrationDto"> The <see cref="DTO_ConfirmRegistration"/> object dto </param>
+    /// <returns>A generic response indicating the success or failure of the registration confirmation.</returns>
+    Task<Util_GenericResponse<bool>>
+    ConfirmRegistration
+    (
+        DTO_ConfirmRegistration confirmRegistrationDto
     );
 }

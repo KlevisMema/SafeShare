@@ -7,6 +7,7 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using SafeShare.Utilities.Responses;
 using SafeShare.Authentication.Interfaces;
+using SafeShare.DataTransormObject.Authentication;
 using SafeShare.MediatR.Actions.Commands.Authentication;
 
 namespace SafeShare.MediatR.Handlers.CommandsHandlers.Authentication;
@@ -46,6 +47,6 @@ public class MediatR_LoginUserCommandHandler : IRequestHandler<MediatR_LoginUser
     {
         var loginResult = await _login.LoginUser(request.Login);
 
-        return Util_GenericControllerResponse<string>.ControllerResponse(loginResult);
+        return Util_GenericControllerResponse<DTO_LoginResult>.ControllerResponse(loginResult);
     }
 }

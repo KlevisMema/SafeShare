@@ -8,6 +8,7 @@ using System.Security.Claims;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using SafeShare.Utilities.ConfigurationSettings;
 using SafeShare.DataTransormObject.Authentication;
 
 namespace SafeShare.Security.JwtSecurity;
@@ -15,19 +16,19 @@ namespace SafeShare.Security.JwtSecurity;
 /// <summary>
 /// Service for creating JWT tokens for authentication.
 /// </summary>
-public class Security_JwtTokenAuth : ISecurity_JwtTokenAuth
+public class Security_JwtTokenAuth : ISecurity_JwtTokenAuth<Security_JwtTokenAuth, DTO_AuthUser>
 {
     /// <summary>
     /// Represents the JWT authentication options.
     /// </summary>
-    private readonly IOptions<Security_JwtSettings> _jwtOptions;
+    private readonly IOptions<Util_JwtSettings> _jwtOptions;
     /// <summary>
     /// Initializes a new instance of the <see cref="OAuthJwtTokenService"/> class.
     /// </summary>
     /// <param name="jwtOptions">The JWT authentication options.</param>
     public Security_JwtTokenAuth
     (
-        IOptions<Security_JwtSettings> jwtOptions
+        IOptions<Util_JwtSettings> jwtOptions
     )
     {
         _jwtOptions = jwtOptions;
@@ -43,22 +44,11 @@ public class Security_JwtTokenAuth : ISecurity_JwtTokenAuth
         DTO_AuthUser user
     )
     {
-        var singinCredentials = GetSinginCredentials();
+        var singinCredentials = Security_JwtTokenGeneratorHelper.GetSinginCredentials(_jwtOptions.Value.Key);
         var claims = GetClaims(user);
-        var token = GenerateToken(singinCredentials, claims);
+        var token = Security_JwtTokenGeneratorHelper.GenerateToken(singinCredentials, claims, _jwtOptions.Value.Issuer, Convert.ToDouble(_jwtOptions.Value.LifeTime), true);
 
         return new JwtSecurityTokenHandler().WriteToken(token);
-    }
-    /// <summary>
-    /// Gets the signing credentials for JWT token generation.
-    /// </summary>
-    /// <returns>The signing credentials.</returns>
-    private SigningCredentials
-    GetSinginCredentials()
-    {
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.Value.Key));
-
-        return new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
     }
     /// <summary>
     /// Gets the claims for the specified user.
@@ -74,10 +64,11 @@ public class Security_JwtTokenAuth : ISecurity_JwtTokenAuth
         var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, user.Email),
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
                 new Claim(JwtRegisteredClaimNames.NameId, user.Id!),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim(JwtRegisteredClaimNames.Aud, _jwtOptions.Value.Audience),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(JwtRegisteredClaimNames.Aud, _jwtOptions.Value.Audience),
                 new Claim(JwtRegisteredClaimNames.Iss, _jwtOptions.Value.Issuer),
                 new Claim(JwtRegisteredClaimNames.FamilyName, user.FullName),
             };
@@ -85,28 +76,5 @@ public class Security_JwtTokenAuth : ISecurity_JwtTokenAuth
         claims.AddRange(user.Roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
         return claims;
-    }
-    /// <summary>
-    /// Generates a JWT token with the specified signing credentials and claims.
-    /// </summary>
-    /// <param name="singinCredentials">The signing credentials.</param>
-    /// <param name="claims">The list of claims.</param>
-    /// <returns>The generated JWT token.</returns>
-    private JwtSecurityToken
-    GenerateToken
-    (
-        SigningCredentials singinCredentials,
-        List<Claim> claims
-    )
-    {
-        var token = new JwtSecurityToken
-        (
-            issuer: _jwtOptions.Value.Issuer,
-            claims: claims,
-            expires: DateTime.Now.AddHours(Convert.ToDouble(_jwtOptions.Value.LifeTime)),
-            signingCredentials: singinCredentials
-        );
-
-        return token;
     }
 }

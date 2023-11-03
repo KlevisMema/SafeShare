@@ -3,12 +3,12 @@
  * It includes settings such as audience, secret key, issuer, and token lifetime.
 */
 
-namespace SafeShare.Security.JwtSecurity;
+namespace SafeShare.Utilities.ConfigurationSettings;
 
 /// <summary>
 /// Represents the authentication settings for JWT tokens.
 /// </summary>
-public class Security_JwtSettings
+public class Util_JwtSettings
 {
     /// <summary>
     /// The name of the section in the configuration file.
@@ -24,6 +24,10 @@ public class Security_JwtSettings
     /// The secret key used for signing the JWT token.
     /// </summary>
     public string Key { get; set; } = string.Empty;
+    /// <summary>
+    /// The secret key used for signing the JWT confrim login token.
+    /// </summary>
+    public string KeyConfrimLogin { get; set; } = string.Empty;
 
     /// <summary>
     /// The issuer of the JWT token.

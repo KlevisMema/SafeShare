@@ -4,6 +4,8 @@
 */
 
 using AutoMapper;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Protocols;
 using SafeShare.DataAccessLayer.Models;
 using SafeShare.DataTransormObject.Authentication;
 
@@ -16,10 +18,12 @@ public class Mapping_Authentication : Profile
 {
     public Mapping_Authentication()
     {
+
         // Mapping from DTO_Register to ApplicationUser
         CreateMap<DTO_Register, ApplicationUser>()
             .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.Now))
             .ForMember(dest => dest.LockoutEnabled, opt => opt.MapFrom(src => true))
+            .ForMember(dest => dest.RequireOTPDuringLogin, opt => opt.MapFrom(src => src.Enable2FA))
             .ForMember(dest => dest.Age, opt => opt.MapFrom(src => DateTime.UtcNow.Year - src.Birthday.Year));
 
         // Mapping from ApplicationUser to DTO_AuthUser
