@@ -1,0 +1,13 @@
+﻿<MudGrid>
+    <MudItem>
+        <MudPaper Class="pa-4">
+            <MudForm @ref="form">
+
+                <MudTextField T="string" Label="Username" Required="true" @bind-Value="clientDto_Login.Email"  />
+
+                <MudTextField T="string" Label="Username" Required="true" @bind-Value="clientDto_Login.Password"  />
+
+            </MudForm>
+        </MudPaper>
+    </MudItem>
+</MudGrid>

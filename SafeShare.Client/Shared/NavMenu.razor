@@ -1,0 +1,59 @@
+﻿@using SafeShare.Client.Shared.Forms;
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
+<MudPaper Width="350px" Class="d-inline-flex py-3" Elevation="0">
+
+    <MudNavMenu Bordered="true" Class="mud-width-full" Color="Color.Surface">
+
+        <MudNavLink Href="" Icon="@Icons.Material.Filled.Dashboard" IconColor="Color.Inherit">Dashboard</MudNavLink>
+
+        <MudNavGroup Title="Profile" Icon="@Icons.Material.Filled.Person" IconColor="Color.Inherit" Expanded="false">
+            <MudNavLink Icon="@Icons.Material.Filled.RemoveRedEye" IconColor="Color.Inherit">See profile</MudNavLink>
+            <MudNavLink Icon="@Icons.Material.Filled.Edit" IconColor="Color.Inherit">Update Data</MudNavLink>
+            <MudNavLink Icon="@Icons.Material.Filled.Password" IconColor="Color.Inherit">Change Email</MudNavLink>
+            <MudNavLink Icon="@Icons.Material.Filled.Email" IconColor="Color.Inherit">Change Password</MudNavLink>
+            <MudNavLink Icon="@Icons.Material.Filled.Delete" IconColor="Color.Inherit">Deactivate Account</MudNavLink>
+        </MudNavGroup>
+
+        <MudDivider Class="my-2" />
+
+        <MudTooltip Text="Create" Color="Color.Primary" Placement="Placement.Bottom">
+            <MudFab @onclick="OpenDialog" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Create" Size="Size.Small" Class="m-sm-2" />
+        </MudTooltip>
+
+        <MudTooltip Text="Invite" Color="Color.Primary" Placement="Placement.Bottom">
+            <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.GroupAdd" Size="Size.Small" Class="m-sm-2" />
+        </MudTooltip>
+
+        <MudTooltip Text="Search" Color="Color.Primary" Placement="Placement.Bottom">
+            <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Search" Size="Size.Small" Class="m-sm-2" />
+        </MudTooltip>
+
+        <MudNavGroup Title="Groups Created" Icon="@Icons.Material.Filled.PeopleAlt" IconColor="Color.Inherit" Expanded="false">
+            <MudNavLink Icon="@Icons.Material.Filled.People" IconColor="Color.Inherit">Users</MudNavLink>
+        </MudNavGroup>
+
+        <MudNavGroup Title="Groups Joined" Icon="@Icons.Material.Filled.PeopleAlt" IconColor="Color.Inherit" Expanded="false">
+            <MudNavLink Icon="@Icons.Material.Filled.People" IconColor="Color.Inherit">Users</MudNavLink>
+        </MudNavGroup>
+
+    </MudNavMenu>
+
+</MudPaper>
+
+@code {
+    protected override Task OnInitializedAsync()
+    {
+        Snackbar.Add("Reactor meltdown is imminent", Severity.Error);
+
+        return base.OnInitializedAsync();
+    }
+
+    private void OpenDialog()
+    {
+        DialogOptions closeOnEscapeKey = new DialogOptions() { CloseOnEscapeKey = false };
+
+        DialogService.Show<Test1>("Simple Dialog", closeOnEscapeKey);
+    }
+}
