@@ -131,17 +131,23 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
 
             if (getUser is null || getUser.IsDeleted)
             {
-                _logger.Log(LogLevel.Information, $"[UserManagment Module]-[AccountManagment Class]-[UpdateUser Method] => [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} User with [ID] [{id}] doesn't exists");
-                return Util_GenericResponse<DTO_UserUpdatedInfo>.Response(null, false, "User doesn't exists", null, System.Net.HttpStatusCode.NotFound);
+                _logger.Log
+                (
+                    LogLevel.Information,
+                    $"[UserManagment Module]-[AccountManagment Class]-[UpdateUser Method] => " +
+                    $"[IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} " +
+                    $"User with [ID] [{id}] doesn't exists"
+                );
+
+                return Util_GenericResponse<DTO_UserUpdatedInfo>.Response
+                (
+                    null,
+                    false,
+                    "User doesn't exists",
+                    null,
+                    System.Net.HttpStatusCode.NotFound
+                );
             }
-
-            //var newValuesOfApplicationUser = _mapper.Map<ApplicationUser>(dtoUser);
-
-            //newValuesOfApplicationUser.Id = id.ToString();
-            //newValuesOfApplicationUser.PasswordHash = getUser.PasswordHash;
-            //newValuesOfApplicationUser.CreatedAt = getUser.CreatedAt;
-
-            //_db.Entry(getUser).CurrentValues.SetValues(newValuesOfApplicationUser);
 
             getUser.ModifiedAt = DateTime.UtcNow;
             getUser.FullName = dtoUser.FullName;
@@ -152,8 +158,6 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
             getUser.PhoneNumber = dtoUser.PhoneNumber;
             getUser.RequireOTPDuringLogin = dtoUser.Enable2FA;
 
-            //await _db.SaveChangesAsync();
-
             await DeleteUserRefreshTokens(getUser.Id);
 
             var token = await GetToken(getUser);
@@ -161,7 +165,8 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
             _logger.Log
             (
                 LogLevel.Information,
-                $"[UserManagment Module]-[AccountManagment Class]-[UpdateUser Method], [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} " +
+                $"[UserManagment Module]-[AccountManagment Class]-[UpdateUser Method], " +
+                $"[IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} " +
                 $"User with [ID] : [{id}] just updated his data at {getUser.ModifiedAt}"
             );
 
@@ -169,7 +174,15 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
         }
         catch (Exception ex)
         {
-            return await Util_LogsHelper<DTO_UserUpdatedInfo, AccountManagment>.ReturnInternalServerError(ex, _logger, $"Somewthing went wrong in [UserManagment Module]-[AccountManagment Class]-[UpdateUser Method], user with [ID] {id}", null, _httpContextAccessor);
+            return await Util_LogsHelper<DTO_UserUpdatedInfo, AccountManagment>.ReturnInternalServerError
+            (
+                ex,
+                _logger,
+                $"Somewthing went wrong in [UserManagment Module]-[AccountManagment Class]-[UpdateUser Method], " +
+                $"user with [ID] {id}",
+                null,
+                _httpContextAccessor
+            );
         }
     }
     /// <summary>
@@ -191,16 +204,44 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
 
             if (user is null || user.IsDeleted)
             {
-                _logger.Log(LogLevel.Information, $"[UserManagment Module]-[AccountManagment Class]-[DeactivateAccount Method] => [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} User with [ID] [{id}] doesn't exists");
-                return Util_GenericResponse<bool>.Response(false, false, "User doesn't exists", null, System.Net.HttpStatusCode.NotFound);
+                _logger.Log
+                (
+                    LogLevel.Information,
+                    $"[UserManagment Module]-[AccountManagment Class]-[DeactivateAccount Method] => " +
+                    $"[IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} " +
+                    $"User with [ID] [{id}] doesn't exists"
+                );
+
+                return Util_GenericResponse<bool>.Response
+                (
+                    false,
+                    false,
+                    "User doesn't exists",
+                    null,
+                    System.Net.HttpStatusCode.NotFound
+                );
             }
 
             var identifyDeletionIsByTheUser = await _userManager.CheckPasswordAsync(user, deactivateAccount.Password);
 
             if (!identifyDeletionIsByTheUser)
             {
-                _logger.Log(LogLevel.Information, $"[UserManagment Module]-[AccountManagment Class]-[DeactivateAccount Method] => User with [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} tried to delete user with [ID] [{id}] doesn't exists");
-                return Util_GenericResponse<bool>.Response(false, false, "Something went wrong, try again later.", null, System.Net.HttpStatusCode.BadRequest);
+                _logger.Log
+                (
+                    LogLevel.Information,
+                    $"[UserManagment Module]-[AccountManagment Class]-[DeactivateAccount Method] => " +
+                    $"User with [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} " +
+                    $"tried to delete user with [ID] [{id}] doesn't exists"
+                );
+
+                return Util_GenericResponse<bool>.Response
+                (
+                    false,
+                    false,
+                    "Something went wrong, try again later.",
+                    null,
+                    System.Net.HttpStatusCode.BadRequest
+                );
             }
 
             user.IsDeleted = true;
@@ -210,13 +251,40 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
 
             if (!updateResult.Succeeded)
             {
-                _logger.Log(LogLevel.Information, $"[UserManagment Module]-[AccountManagment Class]-[DeactivateAccount Method] => [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} User with [ID] [{id}] could not deactivate his profile due to errors.{@updateResult.Errors}", updateResult);
-                return Util_GenericResponse<bool>.Response(false, false, "Something went wrong while deactivating the account", updateResult.Errors.Select(x => x.Description).ToList(), System.Net.HttpStatusCode.BadRequest);
+                _logger.Log
+                (
+                    LogLevel.Information,
+                    $"[UserManagment Module]-[AccountManagment Class]-[DeactivateAccount Method] => " +
+                    $"[IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} " +
+                    $"User with [ID] [{id}] could not deactivate his profile due to errors.{@updateResult.Errors.Select(x => x.Description).ToList()}", updateResult
+                );
+
+                return Util_GenericResponse<bool>.Response
+                (
+                    false,
+                    false,
+                    "Something went wrong while deactivating the account",
+                    updateResult.Errors.Select(x => x.Description).ToList(),
+                    System.Net.HttpStatusCode.BadRequest
+                );
             }
 
-            _logger.Log(LogLevel.Information, $"[UserManagment Module]-[AccountManagment Class]-[DeactivateAccount Method], [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} User with [ID] : [{id}] deactivated his account at {user.DeletedAt}");
+            _logger.Log
+            (
+                LogLevel.Information,
+                $"[UserManagment Module]-[AccountManagment Class]-[DeactivateAccount Method], " +
+                $"[IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} " +
+                $"User with [ID] : [{id}] deactivated his account at {user.DeletedAt}"
+            );
 
-            return Util_GenericResponse<bool>.Response(true, true, "Your account was deactivated succsessfully", null, System.Net.HttpStatusCode.OK);
+            return Util_GenericResponse<bool>.Response
+            (
+                true,
+                true,
+                "Your account was deactivated succsessfully",
+                null,
+                System.Net.HttpStatusCode.OK
+            );
 
         }
         catch (Exception ex)
@@ -247,7 +315,14 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
                 $"[Email] {email} tried to activate the account. User doesn't exists."
             );
 
-            return Util_GenericResponse<bool>.Response(false, false, "User doesn't exists", null, System.Net.HttpStatusCode.NotFound);
+            return Util_GenericResponse<bool>.Response
+            (
+                false,
+                false,
+                "User doesn't exists",
+                null,
+                System.Net.HttpStatusCode.NotFound
+            );
         }
 
         if (!user.IsDeleted)
@@ -260,7 +335,14 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
                $"[Email] {email} tried to activate the account. User account is already active."
            );
 
-            return Util_GenericResponse<bool>.Response(false, false, "Your account is already active.", null, System.Net.HttpStatusCode.BadRequest);
+            return Util_GenericResponse<bool>.Response
+            (
+                false,
+                false,
+                "Your account is already active.",
+                null,
+                System.Net.HttpStatusCode.BadRequest
+            );
         }
 
         try
@@ -298,7 +380,8 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
                   LogLevel.Information,
                   $"[UserManagment Module]- [AccountManagment Class]-[ActivateAccount Method] => " +
                   $"User with [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} and " +
-                  $"[Email] {email} tried to activate the account. Email was not sent. {await @sendEmailResult.DeserializeResponseBodyAsync(sendEmailResult.Body)}"
+                  $"[Email] {email} tried to activate the account. Email was not sent. " +
+                  $"{await @sendEmailResult.DeserializeResponseBodyAsync(sendEmailResult.Body)}"
                );
 
                 return Util_GenericResponse<bool>.Response
@@ -357,7 +440,14 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
                 $"[Email] {accountConfirmation.Email} tried to confirm the activation of the account. User doesn't exists."
             );
 
-            return Util_GenericResponse<bool>.Response(false, false, "User doesn't exists", null, System.Net.HttpStatusCode.NotFound);
+            return Util_GenericResponse<bool>.Response
+            (
+                false,
+                false,
+                "User doesn't exists",
+                null,
+                System.Net.HttpStatusCode.NotFound
+            );
         }
 
         if (!user.IsDeleted)
@@ -473,28 +563,76 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
 
             if (user is null || user.IsDeleted)
             {
-                _logger.Log(LogLevel.Information, $"[UserManagment Module]-[AccountManagment Class]-[ChangePassword Method] => [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} User with [ID] [{id}] doesn't exists");
-                return Util_GenericResponse<bool>.Response(false, false, "User doesn't exists", null, System.Net.HttpStatusCode.NotFound);
+                _logger.Log
+                (
+                    LogLevel.Information,
+                    $"[UserManagment Module]-[AccountManagment Class]-[ChangePassword Method] => " +
+                    $"[IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} " +
+                    $"User with [ID] [{id}] doesn't exists"
+                );
+
+                return Util_GenericResponse<bool>.Response
+                (
+                    false,
+                    false,
+                    "User doesn't exists",
+                    null,
+                    System.Net.HttpStatusCode.NotFound
+                );
             }
 
             var updatePasswordResult = await _userManager.ChangePasswordAsync(user, updatePassword.OldPassword, updatePassword.ConfirmNewPassword);
 
             if (!updatePasswordResult.Succeeded)
             {
-                _logger.Log(LogLevel.Information, $"[UserManagment Module]-[AccountManagment Class]-[ChangePassword Method] => [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} User with [ID] [{id}] could not update his password due to errors. {@updatePasswordResult.Errors}", updatePasswordResult);
-                return Util_GenericResponse<bool>.Response(false, false, "Something went wrong while trying to update the password.", updatePasswordResult.Errors.Select(x => x.Description).ToList(), System.Net.HttpStatusCode.BadRequest);
+                _logger.Log
+                (
+                    LogLevel.Information,
+                    $"[UserManagment Module]-[AccountManagment Class]-[ChangePassword Method] => " +
+                    $"[IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} " +
+                    $"User with [ID] [{id}] could not update his password due to errors. " +
+                    $"{@updatePasswordResult.Errors}", updatePasswordResult
+                );
+
+                return Util_GenericResponse<bool>.Response
+                (
+                    false,
+                    false,
+                    "Something went wrong while trying to update the password.",
+                    updatePasswordResult.Errors.Select(x => x.Description).ToList(),
+                    System.Net.HttpStatusCode.BadRequest
+                );
             }
 
             user.ModifiedAt = DateTime.Now;
             await _userManager.UpdateAsync(user);
 
-            _logger.Log(LogLevel.Information, $"[UserManagment Module]-[AccountManagment Class]-[ChangePassword Method] => [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)}, User with [ID] {id} just changed his password.");
+            _logger.Log
+            (
+                LogLevel.Information,
+                $"[UserManagment Module]-[AccountManagment Class]-[ChangePassword Method] => " +
+                $"[IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)}, " +
+                $"User with [ID] {id} just changed his password."
+            );
 
-            return Util_GenericResponse<bool>.Response(true, true, "Password updated successfully", null, System.Net.HttpStatusCode.OK);
+            return Util_GenericResponse<bool>.Response
+            (
+                true,
+                true,
+                "Password updated successfully",
+                null,
+                System.Net.HttpStatusCode.OK
+            );
         }
         catch (Exception ex)
         {
-            return await Util_LogsHelper<bool, AccountManagment>.ReturnInternalServerError(ex, _logger, $"Somewthing went wrong in [UserManagment Module]-[AccountManagment Class]-[ChangePassword Method], user with [ID] {id}", false, _httpContextAccessor);
+            return await Util_LogsHelper<bool, AccountManagment>.ReturnInternalServerError
+            (
+                ex,
+                _logger,
+                $"Somewthing went wrong in [UserManagment Module]-[AccountManagment Class]-[ChangePassword Method], " +
+                $"user with [ID] {id}", false, _httpContextAccessor
+            );
         }
     }
     /// <summary>
@@ -521,7 +659,14 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
                  """
             );
 
-            return Util_GenericResponse<bool>.Response(false, false, "User doesn't exists", null, System.Net.HttpStatusCode.NotFound);
+            return Util_GenericResponse<bool>.Response
+            (
+                false,
+                false,
+                "User doesn't exists",
+                null,
+                System.Net.HttpStatusCode.NotFound
+            );
         }
 
         if (user.IsDeleted)
@@ -535,7 +680,14 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
                  """
             );
 
-            return Util_GenericResponse<bool>.Response(false, false, "User doesn't exists", null, System.Net.HttpStatusCode.NotFound);
+            return Util_GenericResponse<bool>.Response
+            (
+                false,
+                false,
+                "User doesn't exists",
+                null,
+                System.Net.HttpStatusCode.NotFound
+            );
         }
 
         try
@@ -553,14 +705,29 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
                     LogLevel.Information,
                     $"""
                         [UserManagment Module]-[AccountManagment Class]-[ForgotPassword Method] => 
-                        [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} user with email {email} doesn't exists.
+                        [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} 
+                        user with email {email} doesn't exists.
                      """
                 );
 
-                return Util_GenericResponse<bool>.Response(false, false, "Something went wrong in email sending.", null, System.Net.HttpStatusCode.BadRequest);
+                return Util_GenericResponse<bool>.Response
+                (
+                    false,
+                    false,
+                    "Something went wrong in email sending.",
+                    null,
+                    System.Net.HttpStatusCode.BadRequest
+                );
             }
 
-            return Util_GenericResponse<bool>.Response(true, true, "An email has been sent to you with the link to restore the password.", null, System.Net.HttpStatusCode.OK);
+            return Util_GenericResponse<bool>.Response
+            (
+                true,
+                true,
+                "An email has been sent to you with the link to restore the password.",
+                null,
+                System.Net.HttpStatusCode.OK
+            );
 
         }
         catch (Exception ex)
@@ -595,11 +762,19 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
                 LogLevel.Information,
                 $"""
                     [UserManagment Module]-[AccountManagment Class]-[GetUserInfoMapped Method] => 
-                    [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} user with email {resetPassword.Email} doesn't exists.
+                    [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} 
+                    user with email {resetPassword.Email} doesn't exists.
                  """
             );
 
-            return Util_GenericResponse<bool>.Response(false, false, "User doesn't exists", null, System.Net.HttpStatusCode.NotFound);
+            return Util_GenericResponse<bool>.Response
+            (
+                false,
+                false,
+                "User doesn't exists",
+                null,
+                System.Net.HttpStatusCode.NotFound
+            );
         }
 
         if (user.IsDeleted)
@@ -613,7 +788,14 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
                  """
             );
 
-            return Util_GenericResponse<bool>.Response(false, false, "User doesn't exists", null, System.Net.HttpStatusCode.NotFound);
+            return Util_GenericResponse<bool>.Response
+            (
+                false,
+                false,
+                "User doesn't exists",
+                null,
+                System.Net.HttpStatusCode.NotFound
+            );
         }
 
         try
@@ -688,11 +870,19 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
                     LogLevel.Information,
                     $"""
                         [UserManagment Module]-[AccountManagment Class]-[ChangeEmailAddress Method] => 
-                        [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} user with email {newEmailAddressDto.CurrentEmailAddress} doesn't exists.
+                        [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} 
+                        user with email {newEmailAddressDto.CurrentEmailAddress} doesn't exists.
                      """
                 );
 
-                return Util_GenericResponse<bool>.Response(false, false, "User doesn't exists", null, System.Net.HttpStatusCode.NotFound);
+                return Util_GenericResponse<bool>.Response
+                (
+                    false,
+                    false,
+                    "User doesn't exists",
+                    null,
+                    System.Net.HttpStatusCode.NotFound
+                );
             }
 
             if (user.Email != newEmailAddressDto.CurrentEmailAddress)
@@ -702,11 +892,19 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
                     LogLevel.Information,
                     $"""
                         [UserManagment Module]-[AccountManagment Class]-[ChangeEmailAddress Method] => 
-                        [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} user with email {newEmailAddressDto.CurrentEmailAddress} is not correct.
+                        [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} 
+                        user with email {newEmailAddressDto.CurrentEmailAddress} is not correct.
                      """
                 );
 
-                return Util_GenericResponse<bool>.Response(false, false, "Your old email address is incorrect", null, System.Net.HttpStatusCode.BadRequest);
+                return Util_GenericResponse<bool>.Response
+                (
+                    false,
+                    false,
+                    "Your old email address is incorrect",
+                    null,
+                    System.Net.HttpStatusCode.BadRequest
+                );
             }
 
             if (_userManager.Users.Any(x => x.Email == newEmailAddressDto.ConfirmNewEmailAddress))
@@ -721,7 +919,14 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
                      """
                 );
 
-                return Util_GenericResponse<bool>.Response(false, false, "Email is taken", null, System.Net.HttpStatusCode.BadRequest);
+                return Util_GenericResponse<bool>.Response
+                (
+                    false,
+                    false,
+                    "Email is taken",
+                    null,
+                    System.Net.HttpStatusCode.BadRequest
+                );
             }
 
             var tokenForEmailConfirmation = await _userManager.GenerateChangeEmailTokenAsync(user, newEmailAddressDto.ConfirmNewEmailAddress);
@@ -742,10 +947,24 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
                     """
                 );
 
-                return Util_GenericResponse<bool>.Response(false, false, "Your old email address is incorrect", null, System.Net.HttpStatusCode.BadRequest);
+                return Util_GenericResponse<bool>.Response
+                (
+                    false,
+                    false,
+                    "Your old email address is incorrect",
+                    null,
+                    System.Net.HttpStatusCode.BadRequest
+                );
             }
 
-            return Util_GenericResponse<bool>.Response(true, true, "An email has been sent to your new email.", null, System.Net.HttpStatusCode.OK);
+            return Util_GenericResponse<bool>.Response
+            (
+                true, 
+                true, 
+                "An email has been sent to your new email.", 
+                null, 
+                System.Net.HttpStatusCode.OK
+            );
 
         }
         catch (Exception ex)
@@ -754,7 +973,8 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
             (
                 ex,
                 _logger,
-                $"Somewthing went wrong in [UserManagment Module]-[ChangeEmailAddress Class]-[RequestChangeEmailAddress Method], user with [ID] {userId} and [Email] {newEmailAddressDto.CurrentEmailAddress}",
+                $"Somewthing went wrong in [UserManagment Module]-[ChangeEmailAddress Class]-[RequestChangeEmailAddress Method], " +
+                $"user with [ID] {userId} and [Email] {newEmailAddressDto.CurrentEmailAddress}",
                 false,
                 _httpContextAccessor
             );
@@ -789,7 +1009,14 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
                      """
                 );
 
-                return Util_GenericResponse<DTO_Token>.Response(null, false, "Something went wrong, please log in and try again.", null, System.Net.HttpStatusCode.BadRequest);
+                return Util_GenericResponse<DTO_Token>.Response
+                (
+                    null, 
+                    false, 
+                    "Something went wrong, please log in and try again.", 
+                    null, 
+                    System.Net.HttpStatusCode.BadRequest
+                );
             }
 
             user.ModifiedAt = DateTime.Now;
@@ -808,14 +1035,28 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
                     """
                 );
 
-                return Util_GenericResponse<DTO_Token>.Response(null, false, "Something went wrong, your email was not verified succsessfully", null, System.Net.HttpStatusCode.BadRequest);
+                return Util_GenericResponse<DTO_Token>.Response
+                (
+                    null, 
+                    false, 
+                    "Something went wrong, your email was not verified succsessfully", 
+                    null, 
+                    System.Net.HttpStatusCode.BadRequest
+                );
             }
 
             await DeleteUserRefreshTokens(user.Id);
 
             var token = await GetToken(user);
 
-            return Util_GenericResponse<DTO_Token>.Response(token, true, "Your email was succsessfully changed.", null, System.Net.HttpStatusCode.OK);
+            return Util_GenericResponse<DTO_Token>.Response
+            (
+                token, 
+                true, 
+                "Your email was succsessfully changed.", 
+                null, 
+                System.Net.HttpStatusCode.OK
+            );
 
         }
         catch (Exception ex)
@@ -852,16 +1093,32 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
                 _logger.Log
                 (
                     LogLevel.Information,
-                    $"[UserManagment Module]-[AccountManagment Class]-[GetUserInfoMapped Method] => [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} User with [ID] [{id}] doesn't exists"
+                    $"[UserManagment Module]-[AccountManagment Class]-[GetUserInfoMapped Method] => " +
+                    $"[IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} " +
+                    $"User with [ID] [{id}] doesn't exists"
                 );
 
-                return Util_GenericResponse<DTO_UserUpdatedInfo>.Response(null, false, "User doesn't exists", null, System.Net.HttpStatusCode.NotFound);
+                return Util_GenericResponse<DTO_UserUpdatedInfo>.Response
+                (
+                    null, 
+                    false, 
+                    "User doesn't exists", 
+                    null, 
+                    System.Net.HttpStatusCode.NotFound
+                );
             }
 
             var userInfoMapped = _mapper.Map<DTO_UserUpdatedInfo>(user);
             userInfoMapped.UserToken = userToken;
 
-            return Util_GenericResponse<DTO_UserUpdatedInfo>.Response(userInfoMapped, true, "User retrieved succsessfully", null, System.Net.HttpStatusCode.OK);
+            return Util_GenericResponse<DTO_UserUpdatedInfo>.Response
+            (
+                userInfoMapped, 
+                true, 
+                "User retrieved succsessfully", 
+                null, 
+                System.Net.HttpStatusCode.OK
+            );
         }
         catch (Exception ex)
         {
@@ -923,7 +1180,11 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
 
         return token;
     }
-
+    /// <summary>
+    /// Deletes users refresh tokens 
+    /// </summary>
+    /// <param name="userId">The id of the user</param>
+    /// <returns>A async task</returns>
     private async Task
     DeleteUserRefreshTokens
     (

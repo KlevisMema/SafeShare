@@ -1,14 +1,44 @@
-﻿using SafeShare.DataAccessLayer.Models;
-using SafeShare.Utilities.Responses;
+﻿using SafeShare.Utilities.Responses;
+using SafeShare.DataAccessLayer.Models;
+using SafeShare.DataTransormObject.GroupManagment.GroupInvitations;
 
-namespace SafeShare.GroupManagment.Interfaces
+namespace SafeShare.GroupManagment.Interfaces;
+
+public interface IGroupManagment_GroupInvitationsRepository
 {
-    public interface IGroupManagment_GroupInvitationsRepository
-    {
-        Task<Util_GenericResponse<bool>> AcceptInvitation(Guid invitationId);
-        List<GroupInvitation> GetReceivedInvitations(string userId);
-        List<GroupInvitation> GetSentInvitations(string userId);
-        void RejectInvitation(int invitationId);
-        Task<Util_GenericResponse<bool>> SendInvitation(string invitingUserId, string invitedUserId, Guid groupId);
-    }
+    Task<Util_GenericResponse<List<DTO_RecivedInvitations>>>
+    GetRecivedGroupsInvitations
+    (
+        Guid userId
+    );
+
+    Task<Util_GenericResponse<bool>>
+    AcceptInvitation
+    (
+        DTO_InvitationRequestActions accepInvitation
+    );
+
+    Task<Util_GenericResponse<List<DTO_SentInvitations>>>
+     GetSentGroupInvitations
+     (
+        Guid userId
+     );
+
+    Task<Util_GenericResponse<bool>>
+    RejectInvitation
+    (
+        DTO_InvitationRequestActions rejectInvitation
+    );
+
+    Task<Util_GenericResponse<bool>>
+    SendInvitation
+    (
+       DTO_SendInvitationRequest sendInvitation
+    );
+
+    Task<Util_GenericResponse<bool>>
+    DeleteSentInvitation
+    (
+        DTO_InvitationRequestActions deleteInvitation
+    );
 }

@@ -3,8 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using SafeShare.Utilities.Responses;
 using SafeShare.DataTransormObject.GroupManagment;
-using SafeShare.MediatR.Actions.Commands.GroupManagment;
 using SafeShare.MediatR.Actions.Queries.GroupManagment;
+using SafeShare.MediatR.Actions.Commands.GroupManagment;
+using SafeShare.DataTransormObject.GroupManagment.GroupInvitations;
 
 namespace SafeShare.API.Controllers
 {
@@ -73,6 +74,78 @@ namespace SafeShare.API.Controllers
         )
         {
             return await _mediator.Send(new MediatR_DeleteGroupCommand(ownerId, groupId));
+        }
+
+        [HttpGet("GetGroupsInvitations")]
+        public async Task<ActionResult<Util_GenericResponse<List<DTO_RecivedInvitations>>>>
+        GetGroupsInvitations
+        (
+            Guid userId
+        )
+        {
+            return await _mediator.Send(new MediatR_GetGetGroupsInvitationsQuery(userId));
+        }
+
+        [HttpGet("GetSentGroupInvitations")]
+        public async Task<ActionResult<Util_GenericResponse<List<DTO_SentInvitations>>>>
+        GetSentGroupInvitations
+        (
+            Guid userId
+        )
+        {
+            return await _mediator.Send(new MediatR_GetSentGroupInvitationsQuery(userId));
+        }
+
+        [HttpPost("SendInvitation")]
+        public async Task<ActionResult<Util_GenericResponse<bool>>>
+        SendInvitation
+        (
+            DTO_SendInvitationRequest dTO_SendInvitation
+        )
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            return await _mediator.Send(new MediatR_SendInvitationCommand(dTO_SendInvitation));
+        }
+
+        [HttpPost("AcceptInvitation")]
+        public async Task<ActionResult<Util_GenericResponse<bool>>>
+        AcceptInvitation
+        (
+            DTO_InvitationRequestActions acceptInvitationRequest
+        )
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            return await _mediator.Send(new MediatR_AcceptInvitationRequestCommand(acceptInvitationRequest));
+        }
+
+        [HttpPost("RejectInvitation")]
+        public async Task<ActionResult<Util_GenericResponse<bool>>>
+        RejectInvitation
+        (
+            DTO_InvitationRequestActions rejectInvitationRequest
+        )
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            return await _mediator.Send(new MediatR_RejectInvitationRequestCommand(rejectInvitationRequest));
+        }
+
+        [HttpDelete("DeleteInvitation")]
+        public async Task<ActionResult<Util_GenericResponse<bool>>>
+        DeleteInvitation
+        (
+            DTO_InvitationRequestActions deleteInvitationRequest
+        )
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            return await _mediator.Send(new MediatR_DeleteSentInvitationCommand(deleteInvitationRequest));
         }
 
     }
