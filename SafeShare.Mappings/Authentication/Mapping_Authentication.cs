@@ -21,7 +21,7 @@ public class Mapping_Authentication : Profile
 
         // Mapping from DTO_Register to ApplicationUser
         CreateMap<DTO_Register, ApplicationUser>()
-            .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.Now))
+            .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
             .ForMember(dest => dest.LockoutEnabled, opt => opt.MapFrom(src => true))
             .ForMember(dest => dest.RequireOTPDuringLogin, opt => opt.MapFrom(src => src.Enable2FA))
             .ForMember(dest => dest.Age, opt => opt.MapFrom(src => DateTime.UtcNow.Year - src.Birthday.Year));

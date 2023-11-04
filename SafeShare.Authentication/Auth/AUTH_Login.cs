@@ -16,13 +16,16 @@ using SafeShare.Utilities.Services;
 using Microsoft.AspNetCore.Identity;
 using SafeShare.Utilities.Responses;
 using Microsoft.EntityFrameworkCore;
-using SafeShare.Security.JwtSecurity;
 using SafeShare.Utilities.Dependencies;
 using SafeShare.DataAccessLayer.Models;
 using Microsoft.Extensions.Configuration;
 using SafeShare.Authentication.Interfaces;
+using SafeShare.DataTransormObject.Security;
+using SafeShare.Security.JwtSecurity.Interfaces;
 using SafeShare.DataTransormObject.UserManagment;
 using SafeShare.DataTransormObject.Authentication;
+using SafeShare.Security.JwtSecurity.Implementations;
+using SafeShare.DataAccessLayer.Context;
 
 namespace SafeShare.Authentication.Auth;
 
@@ -34,36 +37,43 @@ public class AUTH_Login : Util_BaseAuthDependencies<AUTH_Login, ApplicationUser>
     /// <summary>
     /// Service to handle JWT token operations.
     /// </summary>
-    private readonly ISecurity_JwtTokenAuth<Security_JwtTokenAuth, DTO_AuthUser> _jwtTokenService;
+    private readonly ISecurity_JwtTokenAuth<Security_JwtTokenAuth, DTO_AuthUser, DTO_Token> _jwtTokenService;
     /// <summary>
     /// Service to handle JWT token operations.
     /// </summary>
-    private readonly ISecurity_JwtTokenAuth<Security_JwtShortLivedToken, string> _jwtShortTokenService;
+    private readonly ISecurity_JwtTokenAuth<Security_JwtShortLivedToken, string, string> _jwtShortTokenService;
     /// <summary>
     /// Manager to handle user sign-in operations.
     /// </summary>
     private readonly SignInManager<ApplicationUser> _signInManager;
+    /// <summary>
+    /// The application db context for db operations
+    /// </summary>
+    private readonly ApplicationDbContext _db;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="AUTH_Login"/> class.
     /// </summary>
     /// <param name="mapper">The mapper.</param>
     /// <param name="logger">The logger.</param>
     /// <param name="userManager">The user manager.</param>
+    /// <param name="configuration">The configurations </param>
+    /// <param name="signInManager">The sign-in manager.</param>
     /// <param name="jwtTokenService">The JWT token service.</param>
     /// <param name="jwtShortTokenService">The JWT token service.</param>
-    /// <param name="signInManager">The sign-in manager.</param>
-    /// <param name="configuration">The configurations </param>
     /// <param name="httpContextAccessor">The HTTP context accessor.</param>
+    /// <param name="db">The application db context for db operations</param>
     public AUTH_Login
     (
         IMapper mapper,
+        ApplicationDbContext db,
         ILogger<AUTH_Login> logger,
         IConfiguration configuration,
         IHttpContextAccessor httpContextAccessor,
         UserManager<ApplicationUser> userManager,
         SignInManager<ApplicationUser> signInManager,
-        ISecurity_JwtTokenAuth<Security_JwtTokenAuth, DTO_AuthUser> jwtTokenService,
-        ISecurity_JwtTokenAuth<Security_JwtShortLivedToken, string> jwtShortTokenService
+        ISecurity_JwtTokenAuth<Security_JwtTokenAuth, DTO_AuthUser, DTO_Token> jwtTokenService,
+        ISecurity_JwtTokenAuth<Security_JwtShortLivedToken, string, string> jwtShortTokenService
     )
     : base
     (
@@ -74,6 +84,7 @@ public class AUTH_Login : Util_BaseAuthDependencies<AUTH_Login, ApplicationUser>
         configuration
     )
     {
+        _db = db;
         _signInManager = signInManager;
         _jwtTokenService = jwtTokenService;
         _jwtShortTokenService = jwtShortTokenService;
@@ -133,20 +144,29 @@ public class AUTH_Login : Util_BaseAuthDependencies<AUTH_Login, ApplicationUser>
 
             if (user.RequireOTPDuringLogin)
             {
-                user.OTP_Duration = DateTime.Now.AddMinutes(double.Parse(_configuration.GetSection("OTP_Duration").Value!));
+                user.OTP_Duration = DateTime.UtcNow.AddMinutes(double.Parse(_configuration.GetSection("OTP_Duration").Value!));
                 user.OTP = Guid.NewGuid().ToString()[..8];
                 await _userManager.UpdateAsync(user);
                 await Util_Email.SendOTP_Email(user.Email!, user.FullName, user.OTP!);
             }
             else
             {
-                user.LastLogIn = DateTime.Now;
+                user.LastLogIn = DateTime.UtcNow;
                 await _userManager.UpdateAsync(user);
             }
 
             _logger.LogInformation($"[Authentication Module]-[AUTH_Login Class]-[LoginUser Method] => , [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} | user {loginDto.Email} credentials valiadted successfully.");
 
-            loginResult.Token = user.RequireOTPDuringLogin ? GetShortToken(user.Id) : await GetToken(user);
+            if (user.RequireOTPDuringLogin)
+            {
+                loginResult.Token.RefreshToken = null;
+                loginResult.Token.Token = await GetShortToken(user.Id);
+            }
+            else
+            {
+                loginResult.Token = await GetToken(user);
+            }
+
             loginResult.RequireOtpDuringLogin = user.RequireOTPDuringLogin;
 
             return Util_GenericResponse<DTO_LoginResult>.Response(loginResult, true, "User data succsessfully validated!", null, System.Net.HttpStatusCode.OK);
@@ -192,7 +212,7 @@ public class AUTH_Login : Util_BaseAuthDependencies<AUTH_Login, ApplicationUser>
                 return Util_GenericResponse<DTO_LoginResult>.Response(null, false, "You don't require otp during login.", null, System.Net.HttpStatusCode.BadRequest);
             }
 
-            if (user.OTP_Duration is not null && DateTime.Now > user.OTP_Duration)
+            if (user.OTP_Duration is not null && DateTime.UtcNow > user.OTP_Duration)
             {
                 _logger.Log(LogLevel.Information, $"[Authentication Module]-[AUTH_Login Class]-[ConfirmLogin Method] => [Result] : [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} User with [ID] {userId} otp expired");
                 return Util_GenericResponse<DTO_LoginResult>.Response(null, false, "Your one time password has expired", null, System.Net.HttpStatusCode.BadRequest);
@@ -218,7 +238,7 @@ public class AUTH_Login : Util_BaseAuthDependencies<AUTH_Login, ApplicationUser>
 
             user.OTP = null;
             user.OTP_Duration = null;
-            user.LastLogIn = DateTime.Now;
+            user.LastLogIn = DateTime.UtcNow;
             await _userManager.UpdateAsync(user);
 
             return Util_GenericResponse<DTO_LoginResult>.Response(confirmLoginResult, true, "OTP validated succsessfully", null, System.Net.HttpStatusCode.OK);
@@ -233,24 +253,48 @@ public class AUTH_Login : Util_BaseAuthDependencies<AUTH_Login, ApplicationUser>
     /// Log out a user
     /// </summary>
     /// <returns> Asyncronous Task</returns>
-    public async Task
-    UserLogOut
-    ()
+    public async Task<bool>
+    LogOut
+    (
+        string userId
+    )
     {
-        var userId = Util_FindUserIdFromToken.UserId(_httpContextAccessor);
+        var userIdFromToken = Util_FindUserIdFromToken.UserId(_httpContextAccessor);
 
         try
         {
+            if (userId != userIdFromToken)
+                return false;
 
             var user = await _userManager.FindByIdAsync(userId);
 
             if (user is null)
-                _logger.Log(LogLevel.Information, $"");
+                return false;
+
+            user.LastLogOut = DateTime.UtcNow;
+
+            var result = await _userManager.UpdateAsync(user);
+
+            if (!result.Succeeded)
+                return false;
+
+            var userTokens = await _db.RefreshTokens.Include(x => x.User)
+                                                    .Where(x => x.UserId == user.Id)
+                                                    .ToArrayAsync();
+
+            if (userIdFromToken is not null)
+            {
+                _db.RefreshTokens.RemoveRange(userTokens);
+                await _db.SaveChangesAsync();
+            }
+
+            return true;
+
+
         }
         catch (Exception ex)
         {
-
-            throw;
+            return false;
         }
     }
     /// <summary>
@@ -274,7 +318,7 @@ public class AUTH_Login : Util_BaseAuthDependencies<AUTH_Login, ApplicationUser>
     /// </summary>
     /// <param name="user">The <see cref="ApplicationUser"/> object </param>
     /// <returns> The Jwt token </returns>
-    private async Task<string>
+    private async Task<DTO_Token>
     GetToken
     (
         ApplicationUser user
@@ -283,7 +327,7 @@ public class AUTH_Login : Util_BaseAuthDependencies<AUTH_Login, ApplicationUser>
         var roles = await _userManager.GetRolesAsync(user);
         var userDto = _mapper.Map<DTO_AuthUser>(user);
         userDto.Roles = roles.ToList();
-        var token = _jwtTokenService.CreateToken(userDto);
+        var token = await _jwtTokenService.CreateToken(userDto);
 
         return token;
     }
@@ -292,13 +336,13 @@ public class AUTH_Login : Util_BaseAuthDependencies<AUTH_Login, ApplicationUser>
     /// </summary>
     /// <param name="userId">The id of the user</param>
     /// <returns> The Jwt token </returns>
-    private string
+    private async Task<string>
     GetShortToken
     (
         string userId
     )
     {
-        return _jwtShortTokenService.CreateToken(userId);
+        return await _jwtShortTokenService.CreateToken(userId);
     }
 
 }

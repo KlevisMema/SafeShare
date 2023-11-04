@@ -5,10 +5,11 @@
 
 
 using Microsoft.AspNetCore.Mvc;
-using SafeShare.Security.Decryption;
 using Microsoft.AspNetCore.Mvc.Filters;
+using SafeShare.Security.API.Decryption;
+using SafeShare.Security.API.Interfaces;
 
-namespace SafeShare.Security.API;
+namespace SafeShare.Security.API.Imeplementations;
 
 /// <summary>
 /// Represents an API key authorization filter for application authorization.

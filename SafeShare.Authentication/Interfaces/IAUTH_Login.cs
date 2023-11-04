@@ -36,4 +36,13 @@ public interface IAUTH_Login
     (
         string otp
     );
+    /// <summary>
+    /// Log out a user
+    /// </summary>
+    /// <returns> Asyncronous Task</returns>
+    Task<bool>
+    LogOut
+    (
+        string userId
+    );
 }

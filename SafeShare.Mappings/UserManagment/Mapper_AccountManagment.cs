@@ -23,7 +23,7 @@ public class Mapper_AccountManagment : Profile
 
         // Map from DTO_UserInfo to ApplicationUser with custom property mappings
         CreateMap<DTO_UserInfo, ApplicationUser>()
-            .ForMember(dest => dest.ModifiedAt, opt => opt.MapFrom(src => DateTime.Now))
+            .ForMember(dest => dest.ModifiedAt, opt => opt.MapFrom(src => DateTime.UtcNow))
             .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
             .ForMember(dest => dest.NormalizedUserName, opt => opt.MapFrom(src => src.UserName.ToUpper()))
             .ForMember(dest => dest.Age, opt => opt.MapFrom(src => DateTime.UtcNow.Year - src.Birthday.Year));

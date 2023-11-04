@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using System.Security.Cryptography;
 
-namespace SafeShare.Security.Decryption;
+namespace SafeShare.Security.API.Decryption;
 
 internal class Security_DecryptHelper
 {

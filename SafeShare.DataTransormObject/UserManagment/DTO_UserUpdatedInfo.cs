@@ -2,6 +2,7 @@
  * Defines a data transfer object for updated user information.
  */
 
+using SafeShare.DataTransormObject.Security;
 using SafeShare.Utilities.Enums;
 using System.ComponentModel.DataAnnotations;
 
@@ -44,4 +45,6 @@ public class DTO_UserUpdatedInfo
     /// Gets or sets the phone number of the user.
     /// </summary>
     public string PhoneNumber { get; set; } = string.Empty;
+
+    public DTO_Token? UserToken { get; set; }
 }

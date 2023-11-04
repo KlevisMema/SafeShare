@@ -35,4 +35,15 @@ public interface IAUTH_Register
     (
         DTO_ConfirmRegistration confirmRegistrationDto
     );
+    /// <summary>
+    /// Re confirms a user if the user fogot the check his email 
+    /// to confirm his registration.
+    /// </summary>
+    /// <param name="email">The email of the user</param>
+    /// <returns>A generic response indicating the success or failure of the re registration confirmation.</returns>
+    Task<Util_GenericResponse<bool>>
+    ReConfirmRegistrationRequest
+    (
+        string email
+    );
 }

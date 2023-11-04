@@ -111,7 +111,25 @@ public class AUTH_Register : Util_BaseAuthDependencies<AUTH_Register, Applicatio
 
             if (!emailResult.IsSuccessStatusCode)
             {
-                // do smth
+                _logger.Log
+               (
+                 LogLevel.Information,
+                 $"""
+                        [Authentication Module]-[AUTH_Register Class]-[RegisterUser Method] => 
+                        [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} a token for user with email {registerDto.Email} 
+                        was succsessfully issued but the email send failed. {@emailResult}
+                  """,
+                 @emailResult
+               );
+
+                return Util_GenericResponse<bool>.Response
+                (
+                    false,
+                    false,
+                    "Something went wrong, please try again",
+                    null,
+                    System.Net.HttpStatusCode.BadRequest
+                );
             }
 
             _logger.LogInformation($"[Authentication Module] - [RegisterUser Method] =>, [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} | user {registerDto.Email} was succsessfully created created.");
@@ -146,13 +164,14 @@ public class AUTH_Register : Util_BaseAuthDependencies<AUTH_Register, Applicatio
                    $"""
                         [Authentication Module]-[AUTH_Register Class]-[ConfirmRegistration Method] => 
                         [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} user with email {confirmRegistrationDto.Email} doesn't exists.
-                    """
+                    """,
+                   @confirmRegistrationDto
                 );
 
                 return Util_GenericResponse<bool>.Response(false, false, "User doesn't exists", null, System.Net.HttpStatusCode.NotFound);
             }
 
-            user.ModifiedAt = DateTime.Now;
+            user.ModifiedAt = DateTime.UtcNow;
 
             var verifyToken = await _userManager.ConfirmEmailAsync(user, confirmRegistrationDto.Token);
 
@@ -183,6 +202,116 @@ public class AUTH_Register : Util_BaseAuthDependencies<AUTH_Register, Applicatio
                 _logger,
                 $"Somewthing went wrong in [Authentication Module]-[AUTH_Register Class]-[ConfirmRegistration Method], " +
                 $"user with  [Email] {confirmRegistrationDto.Email} tried to verify his registration.",
+                false,
+                _httpContextAccessor
+            );
+        }
+    }
+    /// <summary>
+    /// Re confirms a user if the user fogot the check his email 
+    /// to confirm his registration.
+    /// </summary>
+    /// <param name="email">The email of the user</param>
+    /// <returns>A generic response indicating the success or failure of the re registration confirmation.</returns>
+    public async Task<Util_GenericResponse<bool>>
+    ReConfirmRegistrationRequest
+    (
+        string email
+    )
+    {
+        try
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+
+            if (user is null)
+            {
+                _logger.Log
+                (
+                  LogLevel.Information,
+                  $"""
+                        [Authentication Module]-[AUTH_Register Class]-[ReConfirmRegistrationRequest Method] => 
+                        [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} user with email {email} doesn't exists.
+                   """
+                );
+
+                return Util_GenericResponse<bool>.Response(false, false, "User doesn't exists", null, System.Net.HttpStatusCode.NotFound);
+            }
+
+            if (user.IsDeleted)
+            {
+                _logger.Log
+                (
+                  LogLevel.Information,
+                  $"""
+                        [Authentication Module]-[AUTH_Register Class]-[ReConfirmRegistrationRequest Method] => 
+                        [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} user with email {email} account is disabled.
+                   """
+                );
+
+                return Util_GenericResponse<bool>.Response(false, false, "User doesn't exists", null, System.Net.HttpStatusCode.NotFound);
+            }
+
+            if (user.EmailConfirmed)
+            {
+                _logger.Log
+                (
+                  LogLevel.Information,
+                  $"""
+                        [Authentication Module]-[AUTH_Register Class]-[ReConfirmRegistrationRequest Method] => 
+                        [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} user with email {email} account already confirmed.
+                       """
+                 );
+
+                return Util_GenericResponse<bool>.Response(false, false, "Account is already confirmed.", null, System.Net.HttpStatusCode.BadRequest);
+            }
+
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+
+            var route = _confirmRegistrationSettings.Value.Route.Replace("{token}", token).Replace("{email}", user.Email);
+
+            var emailResult = await Util_Email.SendEmailForRegistrationConfirmation(user.Email!, route, user.FullName);
+
+            if (!emailResult.IsSuccessStatusCode)
+            {
+                _logger.Log
+                (
+                  LogLevel.Information,
+                  $"""
+                        [Authentication Module]-[AUTH_Register Class]-[ReConfirmRegistrationRequest Method] => 
+                        [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} a token for user with email {email} 
+                        was succsessfully issued but the email send failed. {@emailResult}
+                   """,
+                  @emailResult
+                );
+
+                return Util_GenericResponse<bool>.Response
+                (
+                    false,
+                    false,
+                    "Something went wrong, please try again",
+                    null,
+                    System.Net.HttpStatusCode.BadRequest
+                );
+            }
+
+            return Util_GenericResponse<bool>.Response
+            (
+                true,
+                true,
+                "An email has been sent to confirm your account",
+                null,
+                System.Net.HttpStatusCode.OK
+            );
+
+        }
+        catch (Exception ex)
+        {
+            return await Util_LogsHelper<bool, AUTH_Register>.ReturnInternalServerError
+            (
+                ex,
+                _logger,
+                $"Somewthing went wrong in [Authentication Module]-[AUTH_Register Class]-[ReConfirmRegistrationRequest Method], " +
+                $"user with  [Email] {email} tried to verify his registration.",
                 false,
                 _httpContextAccessor
             );

@@ -4,7 +4,7 @@
 
 using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace SafeShare.Security.API;
+namespace SafeShare.Security.API.Interfaces;
 
 /// <summary>
 /// Interface for an API key authorization filter.

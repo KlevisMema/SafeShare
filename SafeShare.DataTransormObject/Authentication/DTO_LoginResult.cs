@@ -1,7 +1,9 @@
-﻿namespace SafeShare.DataTransormObject.Authentication;
+﻿using SafeShare.DataTransormObject.Security;
+
+namespace SafeShare.DataTransormObject.Authentication;
 
 public class DTO_LoginResult
 {
-    public string? Token { get; set; }
+    public DTO_Token Token { get; set; } = new();
     public bool RequireOtpDuringLogin { get; set; } = false;
 }

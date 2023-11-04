@@ -18,23 +18,27 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SafeShare.Authentication.Auth;
 using Microsoft.IdentityModel.Tokens;
-using SafeShare.Security.JwtSecurity;
 using System.Security.Authentication;
 using SafeShare.DataAccessLayer.Models;
 using SafeShare.Mappings.UserManagment;
 using SafeShare.Mappings.Authentication;
 using SafeShare.Mappings.GroupManagment;
+using SafeShare.Security.API.Interfaces;
 using SafeShare.DataAccessLayer.Context;
 using SafeShare.UserManagment.Interfaces;
 using Microsoft.Extensions.Configuration;
 using SafeShare.Authentication.Interfaces;
 using SafeShare.GroupManagment.Interfaces;
 using SafeShare.UserManagment.UserAccount;
+using SafeShare.DataTransormObject.Security;
 using SafeShare.GroupManagment.GroupManagment;
+using SafeShare.Security.API.Imeplementations;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using SafeShare.Security.JwtSecurity.Interfaces;
 using SafeShare.Utilities.ConfigurationSettings;
 using SafeShare.DataTransormObject.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using SafeShare.Security.JwtSecurity.Implementations;
 using SafeShare.MediatR.Handlers.CommandsHandlers.Authentication;
 
 namespace SafeShare.API.Startup;
@@ -132,10 +136,12 @@ public static class API_Helper_ProgramStartup
         Services.AddScoped<IAUTH_Login, AUTH_Login>();
         Services.AddScoped<IAUTH_Register, AUTH_Register>();
         Services.AddScoped<IAccountManagment, AccountManagment>();
+        Services.AddScoped<IAUTH_RefreshToken, AUTH_RefreshToken>();
+        Services.AddScoped<ISecurity_JwtTokenHash, Security_JwtTokenAuth>();
         Services.AddScoped<IGroupManagment_GroupRepository, GroupManagment_GroupRepository>();
-        Services.AddScoped<ISecurity_JwtTokenAuth<Security_JwtTokenAuth, DTO_AuthUser>, Security_JwtTokenAuth>();
         Services.AddScoped<IGroupManagment_GroupInvitationsRepository, GroupManagment_GroupInvitationsRepository>();
-        Services.AddScoped<ISecurity_JwtTokenAuth<Security_JwtShortLivedToken, string>, Security_JwtShortLivedToken>();
+        Services.AddScoped<ISecurity_JwtTokenAuth<Security_JwtTokenAuth, DTO_AuthUser, DTO_Token>, Security_JwtTokenAuth>();
+        Services.AddScoped<ISecurity_JwtTokenAuth<Security_JwtShortLivedToken, string, string>, Security_JwtShortLivedToken>();
     }
     /// <summary>
     ///     Add sql database with connection string in the container.
@@ -203,7 +209,24 @@ public static class API_Helper_ProgramStartup
             string apikey = Environment.GetEnvironmentVariable("SAFE_SHARE_API_KEY");
             return new ApiKeyAuthorizationFilter(apikey);
         });
+
+
         // Cofigure Authetication
+
+        var defaultTokanValidationParameters = new TokenValidationParameters
+        {
+            ValidateAudience = true,
+            ValidateIssuer = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtSetting.GetSection("Issuer").Value,
+            ValidAudience = jwtSetting.GetSection("Audience").Value,
+            ClockSkew = TimeSpan.Zero,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSetting.GetSection("Key").Value!)),
+        };
+
+        Services.AddSingleton(defaultTokanValidationParameters);
+
         Services.AddAuthentication(options =>
         {
             options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -212,17 +235,8 @@ public static class API_Helper_ProgramStartup
         })
         .AddJwtBearer("Default", options =>
         {
-            options.TokenValidationParameters = new TokenValidationParameters
-            {
-                ValidateAudience = true,
-                ValidateIssuer = true,
-                ValidateLifetime = true,
-                ValidateIssuerSigningKey = true,
-                ValidIssuer = jwtSetting.GetSection("Issuer").Value,
-                ValidAudience = jwtSetting.GetSection("Audience").Value,
-                ClockSkew = TimeSpan.Zero,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSetting.GetSection("Key").Value!)),
-            };
+            options.TokenValidationParameters = defaultTokanValidationParameters;
+
         })
         .AddJwtBearer("ConfirmLogin", options =>
         {

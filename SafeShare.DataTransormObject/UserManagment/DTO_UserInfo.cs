@@ -41,4 +41,6 @@ public class DTO_UserInfo
     /// </summary>
     [Required, DataType(DataType.PhoneNumber)]
     public string PhoneNumber { get; set; } = string.Empty;
+
+    public bool Enable2FA {  get; set; } = false;
 }

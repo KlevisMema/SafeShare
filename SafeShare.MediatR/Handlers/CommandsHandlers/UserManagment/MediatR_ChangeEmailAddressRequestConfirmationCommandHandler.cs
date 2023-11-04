@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using SafeShare.Utilities.Responses;
 using SafeShare.MediatR.Dependencies;
 using SafeShare.UserManagment.Interfaces;
+using SafeShare.DataTransormObject.Security;
 using SafeShare.MediatR.Actions.Commands.UserManagment;
 
 namespace SafeShare.MediatR.Handlers.CommandsHandlers.UserManagment;
@@ -24,6 +25,6 @@ public class MediatR_ChangeEmailAddressRequestConfirmationCommandHandler :
     {
         var confirmChangeEmailRequestResult = await _service.ConfirmChangeEmailAddressRequest(request.ChangeEmailAddressConfirm);
 
-        return Util_GenericControllerResponse<bool>.ControllerResponse(confirmChangeEmailRequestResult);
+        return Util_GenericControllerResponse<DTO_Token>.ControllerResponse(confirmChangeEmailRequestResult);
     }
 }

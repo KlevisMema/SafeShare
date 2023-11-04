@@ -5,11 +5,12 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.Extensions.Configuration;
 using SafeShare.Utilities.ConfigurationSettings;
+using SafeShare.Security.JwtSecurity.Interfaces;
 using SafeShare.DataTransormObject.Authentication;
 
-namespace SafeShare.Security.JwtSecurity;
+namespace SafeShare.Security.JwtSecurity.Implementations;
 
-public class Security_JwtShortLivedToken : ISecurity_JwtTokenAuth<Security_JwtShortLivedToken, string>
+public class Security_JwtShortLivedToken : ISecurity_JwtTokenAuth<Security_JwtShortLivedToken, string, string>
 {
     private readonly IConfiguration _configuration;
     private readonly IOptions<Util_JwtSettings> _jwtOptions;
@@ -24,7 +25,7 @@ public class Security_JwtShortLivedToken : ISecurity_JwtTokenAuth<Security_JwtSh
         _jwtOptions = jwtOptions;
     }
 
-    public string
+    public async Task<string>
     CreateToken
     (
         string userId

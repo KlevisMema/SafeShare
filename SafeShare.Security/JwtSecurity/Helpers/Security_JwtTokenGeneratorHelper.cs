@@ -3,6 +3,7 @@ using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.Extensions.Configuration;
+using SafeShare.DataAccessLayer.Models;
 
 namespace SafeShare.Security.JwtSecurity;
 
@@ -20,7 +21,7 @@ internal static class Security_JwtTokenGeneratorHelper
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
 
-        return new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+        return new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature);
     }
     /// <summary>
     /// Generates a JWT token with the specified signing credentials and claims.
@@ -37,14 +38,14 @@ internal static class Security_JwtTokenGeneratorHelper
         List<Claim> claims,
         string issuer,
         double duration,
-        bool hours
+        bool defaultToken
     )
     {
         var token = new JwtSecurityToken
         (
             issuer: issuer,
             claims: claims,
-            expires: hours ? DateTime.Now.AddHours(duration) : DateTime.Now.AddMinutes(duration),
+            expires: defaultToken ? DateTime.UtcNow.AddMinutes(duration) : DateTime.UtcNow.AddMinutes(duration),
             signingCredentials: singinCredentials
         );
 

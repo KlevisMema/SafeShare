@@ -13,6 +13,7 @@
     <ItemGroup>
       <ProjectReference Include="..\SafeShare.DataAccess\SafeShare.DataAccess.csproj" />
       <ProjectReference Include="..\SafeShare.DataTransormObject\SafeShare.DataTransormObject.csproj" />
+      <ProjectReference Include="..\SafeShare.Security\SafeShare.Security.csproj" />
     </ItemGroup>
 
 </Project>

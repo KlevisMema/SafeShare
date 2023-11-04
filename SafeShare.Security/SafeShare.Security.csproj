@@ -14,6 +14,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\SafeShare.DataAccess\SafeShare.DataAccess.csproj" />
       <ProjectReference Include="..\SafeShare.DataTransormObject\SafeShare.DataTransormObject.csproj" />
     </ItemGroup>
 

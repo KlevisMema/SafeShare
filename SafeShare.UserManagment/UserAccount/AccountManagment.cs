@@ -24,8 +24,12 @@ using SafeShare.Utilities.Dependencies;
 using SafeShare.DataAccessLayer.Context;
 using SafeShare.UserManagment.Interfaces;
 using Microsoft.Extensions.Configuration;
+using SafeShare.DataTransormObject.Security;
 using SafeShare.Utilities.ConfigurationSettings;
+using SafeShare.Security.JwtSecurity.Interfaces;
 using SafeShare.DataTransormObject.UserManagment;
+using SafeShare.DataTransormObject.Authentication;
+using SafeShare.Security.JwtSecurity.Implementations;
 
 namespace SafeShare.UserManagment.UserAccount;
 
@@ -51,6 +55,10 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
     /// </summary>
     private readonly IOptions<Util_ChangeEmailAddressSettings> _changeEmailAddressSettings;
     /// <summary>
+    /// Service to handle JWT token operations.
+    /// </summary>
+    private readonly ISecurity_JwtTokenAuth<Security_JwtTokenAuth, DTO_AuthUser, DTO_Token> _jwtTokenService;
+    /// <summary>
     /// Initializes a new instance of the AccountManagment class.
     /// </summary>
     /// <param name="resetPasswordSettings">Reset password settings</param>
@@ -60,6 +68,7 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
     /// <param name="activateAccountSettings">Activate account settings</param>
     /// <param name="mapper">The AutoMapper instance used for object-object mapping.</param>
     /// <param name="httpContextAccessor">Provides information about the HTTP request.</param>
+    /// <param name="jwtTokenService">Provides services to handle jwt token operations.</param>
     /// <param name="userManager">UserManager instance to manage users in the persistence store.</param>
     public AccountManagment
     (
@@ -70,7 +79,8 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
         UserManager<ApplicationUser> userManager,
         IOptions<Util_ResetPasswordSettings> resetPasswordSettings,
         IOptions<Util_ActivateAccountSettings> activateAccountSettings,
-        IOptions<Util_ChangeEmailAddressSettings> changeEmailAddressSettings
+        IOptions<Util_ChangeEmailAddressSettings> changeEmailAddressSettings,
+        ISecurity_JwtTokenAuth<Security_JwtTokenAuth, DTO_AuthUser, DTO_Token> jwtTokenService
     )
     :
     base
@@ -85,6 +95,7 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
         _resetPasswordSettings = resetPasswordSettings;
         _activateAccountSettings = activateAccountSettings;
         _changeEmailAddressSettings = changeEmailAddressSettings;
+        _jwtTokenService = jwtTokenService;
     }
     /// <summary>
     /// Retrieves the user details based on the provided user ID.
@@ -97,7 +108,7 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
         Guid id
     )
     {
-        var getUserResult = await GetUserInfoMapped(id);
+        var getUserResult = await GetUserInfoMapped(id, null);
 
         return getUserResult;
     }
@@ -124,18 +135,37 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
                 return Util_GenericResponse<DTO_UserUpdatedInfo>.Response(null, false, "User doesn't exists", null, System.Net.HttpStatusCode.NotFound);
             }
 
-            var newValuesOfApplicationUser = _mapper.Map<ApplicationUser>(dtoUser);
+            //var newValuesOfApplicationUser = _mapper.Map<ApplicationUser>(dtoUser);
 
-            newValuesOfApplicationUser.Id = id.ToString();
-            newValuesOfApplicationUser.PasswordHash = getUser.PasswordHash;
-            newValuesOfApplicationUser.CreatedAt = getUser.CreatedAt;
+            //newValuesOfApplicationUser.Id = id.ToString();
+            //newValuesOfApplicationUser.PasswordHash = getUser.PasswordHash;
+            //newValuesOfApplicationUser.CreatedAt = getUser.CreatedAt;
 
-            _db.Entry(getUser).CurrentValues.SetValues(newValuesOfApplicationUser);
-            await _db.SaveChangesAsync();
+            //_db.Entry(getUser).CurrentValues.SetValues(newValuesOfApplicationUser);
 
-            _logger.Log(LogLevel.Information, $"[UserManagment Module]-[AccountManagment Class]-[UpdateUser Method], [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} User with [ID] : [{id}] just updated his data at {newValuesOfApplicationUser.ModifiedAt}");
+            getUser.ModifiedAt = DateTime.UtcNow;
+            getUser.FullName = dtoUser.FullName;
+            getUser.Birthday = dtoUser.Birthday;
+            getUser.Gender = dtoUser.Gender;
+            getUser.UserName = dtoUser.UserName;
+            getUser.NormalizedUserName = dtoUser.UserName.ToUpper();
+            getUser.PhoneNumber = dtoUser.PhoneNumber;
+            getUser.RequireOTPDuringLogin = dtoUser.Enable2FA;
 
-            return await GetUserInfoMapped(id);
+            //await _db.SaveChangesAsync();
+
+            await DeleteUserRefreshTokens(getUser.Id);
+
+            var token = await GetToken(getUser);
+
+            _logger.Log
+            (
+                LogLevel.Information,
+                $"[UserManagment Module]-[AccountManagment Class]-[UpdateUser Method], [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} " +
+                $"User with [ID] : [{id}] just updated his data at {getUser.ModifiedAt}"
+            );
+
+            return await GetUserInfoMapped(id, token);
         }
         catch (Exception ex)
         {
@@ -735,7 +765,7 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
     /// </summary>
     /// <param name="changeEmailAddressConfirmDto"> The <see cref="DTO_ChangeEmailAddressRequestConfirm"/> object dto </param>
     /// <returns>A generic response indicating the result of the operation</returns>
-    public async Task<Util_GenericResponse<bool>>
+    public async Task<Util_GenericResponse<DTO_Token>>
     ConfirmChangeEmailAddressRequest
     (
         DTO_ChangeEmailAddressRequestConfirm changeEmailAddressConfirmDto
@@ -759,7 +789,7 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
                      """
                 );
 
-                return Util_GenericResponse<bool>.Response(false, false, "Something went wrong, please log in and try again.", null, System.Net.HttpStatusCode.BadRequest);
+                return Util_GenericResponse<DTO_Token>.Response(null, false, "Something went wrong, please log in and try again.", null, System.Net.HttpStatusCode.BadRequest);
             }
 
             user.ModifiedAt = DateTime.Now;
@@ -778,21 +808,25 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
                     """
                 );
 
-                return Util_GenericResponse<bool>.Response(false, false, "Something went wrong, your email was not verified succsessfully", null, System.Net.HttpStatusCode.BadRequest);
+                return Util_GenericResponse<DTO_Token>.Response(null, false, "Something went wrong, your email was not verified succsessfully", null, System.Net.HttpStatusCode.BadRequest);
             }
 
-            return Util_GenericResponse<bool>.Response(true, true, "Your email was succsessfully changed.", null, System.Net.HttpStatusCode.OK);
+            await DeleteUserRefreshTokens(user.Id);
+
+            var token = await GetToken(user);
+
+            return Util_GenericResponse<DTO_Token>.Response(token, true, "Your email was succsessfully changed.", null, System.Net.HttpStatusCode.OK);
 
         }
         catch (Exception ex)
         {
-            return await Util_LogsHelper<bool, AccountManagment>.ReturnInternalServerError
+            return await Util_LogsHelper<DTO_Token, AccountManagment>.ReturnInternalServerError
             (
                 ex,
                 _logger,
                 $"Somewthing went wrong in [UserManagment Module]-[ChangeEmailAddress Class]-[ConfirmRequestChangeEmailAddress Method], " +
                 $"user with [ID] {userId} and [Email] {changeEmailAddressConfirmDto.EmailAddress} tried to confirm the request to confirm the email.",
-                false,
+                null,
                 _httpContextAccessor
             );
         }
@@ -805,7 +839,8 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
     private async Task<Util_GenericResponse<DTO_UserUpdatedInfo>>
     GetUserInfoMapped
     (
-        Guid id
+        Guid id,
+        DTO_Token? userToken
     )
     {
         try
@@ -823,7 +858,10 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
                 return Util_GenericResponse<DTO_UserUpdatedInfo>.Response(null, false, "User doesn't exists", null, System.Net.HttpStatusCode.NotFound);
             }
 
-            return Util_GenericResponse<DTO_UserUpdatedInfo>.Response(_mapper.Map<DTO_UserUpdatedInfo>(user), true, "User retrieved succsessfully", null, System.Net.HttpStatusCode.OK);
+            var userInfoMapped = _mapper.Map<DTO_UserUpdatedInfo>(user);
+            userInfoMapped.UserToken = userToken;
+
+            return Util_GenericResponse<DTO_UserUpdatedInfo>.Response(userInfoMapped, true, "User retrieved succsessfully", null, System.Net.HttpStatusCode.OK);
         }
         catch (Exception ex)
         {
@@ -867,4 +905,38 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
 
         return user;
     }
+    /// <summary>
+    /// Get the jwt token.
+    /// </summary>
+    /// <param name="user">The <see cref="ApplicationUser"/> object </param>
+    /// <returns> The Jwt token </returns>
+    private async Task<DTO_Token>
+    GetToken
+    (
+        ApplicationUser user
+    )
+    {
+        var roles = await _userManager.GetRolesAsync(user);
+        var userDto = _mapper.Map<DTO_AuthUser>(user);
+        userDto.Roles = roles.ToList();
+        var token = await _jwtTokenService.CreateToken(userDto);
+
+        return token;
+    }
+
+    private async Task
+    DeleteUserRefreshTokens
+    (
+        string userId
+    )
+    {
+        var userRefreshTokens = await _db.RefreshTokens.Include(x => x.User)
+                                                         .Where(x => x.UserId == userId)
+                                                         .ToArrayAsync();
+
+        _db.RefreshTokens.RemoveRange(userRefreshTokens);
+
+        await _db.SaveChangesAsync();
+    }
+
 }

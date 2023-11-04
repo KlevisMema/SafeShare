@@ -6,6 +6,7 @@
 
 using SafeShare.Utilities.Responses;
 using SafeShare.DataTransormObject.UserManagment;
+using SafeShare.DataTransormObject.Security;
 
 namespace SafeShare.UserManagment.Interfaces;
 
@@ -114,7 +115,7 @@ public interface IAccountManagment
     /// </summary>
     /// <param name="changeEmailAddressConfirmDto"> The <see cref="DTO_ChangeEmailAddressRequestConfirm"/> object dto </param>
     /// <returns>A generic response indicating the result of the operation</returns>
-    Task<Util_GenericResponse<bool>>
+    Task<Util_GenericResponse<DTO_Token>>
     ConfirmChangeEmailAddressRequest
     (
         DTO_ChangeEmailAddressRequestConfirm changeEmailAddressConfirmDto

@@ -48,6 +48,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<ExpenseMember> ExpenseMembers { get; set; }
 
     public DbSet<GroupInvitation> GroupInvitations { get; set; }
+    public DbSet<RefreshToken> RefreshTokens { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -81,7 +82,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .OnDelete(deleteBehavior: DeleteBehavior.Restrict);
 
         modelBuilder.Entity<GroupInvitation>()
-            .HasOne(gi => gi.InvitingUser) 
+            .HasOne(gi => gi.InvitingUser)
             .WithMany(u => u.SentInvitations)
             .HasForeignKey(gi => gi.InvitingUserId)
             .OnDelete(DeleteBehavior.Restrict);

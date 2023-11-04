@@ -12,6 +12,7 @@ using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authorization;
 using SafeShare.DataTransormObject.Authentication;
 using SafeShare.MediatR.Actions.Commands.Authentication;
+using SafeShare.DataTransormObject.Security;
 
 namespace SafeShare.API.Controllers;
 
@@ -56,9 +57,9 @@ public class AuthenticationController : BaseController
         return await _mediator.Send(new MediatR_RegisterUserCommand(register));
     }
     /// <summary>
-    /// 
+    /// Confirms the registration of the user 
     /// </summary>
-    /// <param name="confirmRegistrationDto"></param>
+    /// <param name="confirmRegistrationDto">The <see cref="DTO_ConfirmRegistration"/> object </param>
     /// <returns></returns>
     [HttpPost("ConfirmRegistration")]
     public async Task<ActionResult<Util_GenericResponse<bool>>>
@@ -112,12 +113,42 @@ public class AuthenticationController : BaseController
 
         return await _mediator.Send(new MediatR_ConfirmLoginUserCommand(otp));
     }
-
+    /// <summary>
+    /// Re confirms the registration proccess
+    /// </summary>
+    /// <param name="email"></param>
+    /// <returns></returns>
+    [HttpPost("ReConfirmRegistrationRequest")]
+    public async Task<ActionResult<Util_GenericResponse<bool>>>
+    ReConfirmRegistrationRequest
+    (
+        string email
+    )
+    {
+        return await _mediator.Send(new MediatR_ReConfirmRegistrationRequestCommand(email));
+    }
+    /// <summary>
+    /// Logs out a user
+    /// </summary>
+    /// <returns></returns>
     [HttpPost("LogOut")]
     [Authorize(AuthenticationSchemes = "Default")]
     public async Task<ActionResult>
-    LogOut()
+    LogOut
+    (
+        Guid userId
+    )
     {
-        return Ok();
+        return await _mediator.Send(new MediatR_LogOutCommand(userId.ToString()));
+    }
+
+    [HttpPost("ValidateToken")]
+    public async Task<ActionResult<Util_GenericResponse<DTO_Token>>>
+    RefreshToken
+    (
+        DTO_ValidateToken validateToken
+    )
+    {
+        return await _mediator.Send(new MediatR_RefreshTokenCommand(validateToken));
     }
 }
