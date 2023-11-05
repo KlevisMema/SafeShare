@@ -299,8 +299,6 @@ public class GroupManagment_GroupInvitationsRepository :
                 System.Net.HttpStatusCode.NotFound
             );
 
-
-
         }
         catch (Exception)
         {

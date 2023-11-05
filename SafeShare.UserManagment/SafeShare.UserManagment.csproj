@@ -16,4 +16,8 @@
       <ProjectReference Include="..\SafeShare.Security\SafeShare.Security.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="UserAccount\" />
+    </ItemGroup>
+
 </Project>

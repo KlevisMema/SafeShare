@@ -7,6 +7,11 @@ namespace SafeShare.Security.JwtSecurity.Interfaces;
 
 public interface ISecurity_JwtTokenHash
 {
+    /// <summary>
+    /// Validates a jwt token
+    /// </summary>
+    /// <param name="tokenToValidate">The token to validate</param>
+    /// <returns>True or false</returns>
     Task<bool>
     ValidateToken
     (

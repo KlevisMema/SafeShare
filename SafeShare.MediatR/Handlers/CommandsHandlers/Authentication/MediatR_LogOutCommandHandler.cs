@@ -9,7 +9,7 @@ namespace SafeShare.MediatR.Handlers.CommandsHandlers.Authentication;
 
 public class MediatR_LogOutCommandHandler :
     MediatR_GenericHandler<IAUTH_Login>,
-    IRequestHandler<MediatR_LogOutCommand, ObjectResult>
+    IRequestHandler<MediatR_LogOutCommand>
 {
     public MediatR_LogOutCommandHandler
     (
@@ -21,15 +21,13 @@ public class MediatR_LogOutCommandHandler :
     )
     { }
 
-    public async Task<ObjectResult>
+    public async Task
     Handle
     (
         MediatR_LogOutCommand request,
         CancellationToken cancellationToken
     )
     {
-        var logOutResult = await _service.LogOut(request.Id);
-
-        return new ObjectResult(logOutResult);
+        await _service.LogOut(request.Id);
     }
 }

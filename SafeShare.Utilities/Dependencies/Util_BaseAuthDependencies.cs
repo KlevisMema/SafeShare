@@ -25,10 +25,12 @@ namespace SafeShare.Utilities.Dependencies;
 /// </summary>
 /// <typeparam name="T">The type of the class utilizing this utility.</typeparam>
 /// <typeparam name="TApplicationUser">The type of the class utilizing this utility.</typeparam>
-public class Util_BaseAuthDependencies<T, TApplicationUser> : Util_BaseDependencies<T>
+public class Util_BaseAuthDependencies<T, TApplicationUser, TContext> : Util_BaseContextDependencies<TContext, T>
 where T : class
 where TApplicationUser : class
+where TContext : class
 {
+
     /// <summary>
     /// Manager to handle user-related operations.
     /// </summary>
@@ -42,6 +44,7 @@ where TApplicationUser : class
     /// </summary>
     /// <param name="mapper">An instance of IMapper to handle object mappings.</param>
     /// <param name="logger">An instance of ILogger specific to the type T.</param>
+    /// <param name="configuration">The configurations</param>
     /// <param name="httpContextAccessor">An instance of IHttpContextAccessor to access current HTTP context.</param>
     /// <param name="userManager">Manager to handle user-related operations specific to TApplicationUser.</param>
     public Util_BaseAuthDependencies
@@ -50,10 +53,12 @@ where TApplicationUser : class
         ILogger<T> logger,
         IHttpContextAccessor httpContextAccessor,
         UserManager<TApplicationUser> userManager,
-        IConfiguration configuration
+        IConfiguration configuration,
+        TContext _db
     )
     : base
     (
+        _db,
         mapper,
         logger,
         httpContextAccessor

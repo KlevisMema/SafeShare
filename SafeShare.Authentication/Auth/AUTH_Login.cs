@@ -18,6 +18,7 @@ using SafeShare.Utilities.Responses;
 using Microsoft.EntityFrameworkCore;
 using SafeShare.Utilities.Dependencies;
 using SafeShare.DataAccessLayer.Models;
+using SafeShare.DataAccessLayer.Context;
 using Microsoft.Extensions.Configuration;
 using SafeShare.Authentication.Interfaces;
 using SafeShare.DataTransormObject.Security;
@@ -25,34 +26,28 @@ using SafeShare.Security.JwtSecurity.Interfaces;
 using SafeShare.DataTransormObject.UserManagment;
 using SafeShare.DataTransormObject.Authentication;
 using SafeShare.Security.JwtSecurity.Implementations;
-using SafeShare.DataAccessLayer.Context;
 
 namespace SafeShare.Authentication.Auth;
 
 /// <summary>
-/// Provides functionality to authenticate and log in users within the Authentication module.
+///     Provides functionality to authenticate and log in users within the Authentication module.
 /// </summary>
-public class AUTH_Login : Util_BaseAuthDependencies<AUTH_Login, ApplicationUser>, IAUTH_Login
+public class AUTH_Login : Util_BaseAuthDependencies<AUTH_Login, ApplicationUser, ApplicationDbContext>, IAUTH_Login
 {
     /// <summary>
-    /// Service to handle JWT token operations.
-    /// </summary>
-    private readonly ISecurity_JwtTokenAuth<Security_JwtTokenAuth, DTO_AuthUser, DTO_Token> _jwtTokenService;
-    /// <summary>
-    /// Service to handle JWT token operations.
-    /// </summary>
-    private readonly ISecurity_JwtTokenAuth<Security_JwtShortLivedToken, string, string> _jwtShortTokenService;
-    /// <summary>
-    /// Manager to handle user sign-in operations.
+    ///     Manager to handle user sign-in operations.
     /// </summary>
     private readonly SignInManager<ApplicationUser> _signInManager;
     /// <summary>
-    /// The application db context for db operations
+    ///     Service to handle JWT token operations.
     /// </summary>
-    private readonly ApplicationDbContext _db;
-
+    private readonly ISecurity_JwtTokenAuth<Security_JwtTokenAuth, DTO_AuthUser, DTO_Token> _jwtTokenService;
     /// <summary>
-    /// Initializes a new instance of the <see cref="AUTH_Login"/> class.
+    ///     Service to handle JWT token operations.
+    /// </summary>
+    private readonly ISecurity_JwtTokenAuth<Security_JwtShortLivedToken, string, string> _jwtShortTokenService;
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="AUTH_Login"/> class.
     /// </summary>
     /// <param name="mapper">The mapper.</param>
     /// <param name="logger">The logger.</param>
@@ -81,16 +76,16 @@ public class AUTH_Login : Util_BaseAuthDependencies<AUTH_Login, ApplicationUser>
         logger,
         httpContextAccessor,
         userManager,
-        configuration
+        configuration,
+        db
     )
     {
-        _db = db;
         _signInManager = signInManager;
         _jwtTokenService = jwtTokenService;
         _jwtShortTokenService = jwtShortTokenService;
     }
     /// <summary>
-    /// Authenticates and logs in a user based on the provided login data transfer object.
+    ///     Authenticates and logs in a user based on the provided login data transfer object.
     /// </summary>
     /// <param name="loginDto">The data transfer object containing user login details.</param>
     /// <returns>A generic response with a JWT token (if require otp during login is false) or an error message.</returns>
@@ -108,36 +103,135 @@ public class AUTH_Login : Util_BaseAuthDependencies<AUTH_Login, ApplicationUser>
 
             if (user is null)
             {
-                _logger.Log(LogLevel.Information, $"[Authentication Module]-[AUTH_Login Class]-[LoginUser Method] => [RESULT] : [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} user doesnt exists");
-                return Util_GenericResponse<DTO_LoginResult>.Response(null, false, "Invalid credentials.", null, System.Net.HttpStatusCode.NotFound);
+                _logger.Log
+                (
+                    LogLevel.Error,
+                    """
+                         [Authentication Module]-[AUTH_Login Class]-[LoginUser Method] =>
+                         [RESULT] : [IP] {IP} user doesnt exists. DTO {@DTO}
+                     """,
+                    await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                    loginDto
+                );
+
+                return Util_GenericResponse<DTO_LoginResult>.Response
+                (
+                    null,
+                    false,
+                    "Invalid credentials.",
+                    null,
+                    System.Net.HttpStatusCode.NotFound
+                );
             }
 
             var emailConfirmed = await _userManager.IsEmailConfirmedAsync(user);
 
             if (!emailConfirmed)
             {
-                _logger.Log(LogLevel.Information, $"[Authentication Module]-[AUTH_Login Class]-[LoginUser Method] => user {loginDto.Email} was not logged in =>  [RESULT] : [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} users email is not verified.");
-                return Util_GenericResponse<DTO_LoginResult>.Response(null, false, "Your email is not verified", null, System.Net.HttpStatusCode.BadRequest);
+                _logger.Log
+                (
+                    LogLevel.Error,
+                    """
+                          [Authentication Module]-[AUTH_Login Class]-[LoginUser Method] =>  
+                          user {Email} was not logged in =>  [RESULT] :  
+                          [IP] {IP} users email is not verified.
+                     """,
+                    loginDto.Email,
+                    await Util_GetIpAddres.GetLocation(_httpContextAccessor)
+                );
+
+                return Util_GenericResponse<DTO_LoginResult>.Response
+                (
+                    null,
+                    false,
+                    "Your email is not verified",
+                    null,
+                    System.Net.HttpStatusCode.BadRequest
+                );
             }
 
             var signInUser = await _signInManager.PasswordSignInAsync(user, loginDto.Password, true, lockoutOnFailure: true);
 
             if (signInUser.IsLockedOut)
             {
-                _logger.Log(LogLevel.Information, $"[Authentication Module]-[AUTH_Login Class]-[LoginUser Method] => user {loginDto.Email} was not logged in =>  [RESULT] : [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} {signInUser.IsLockedOut} | User {loginDto.Email} is locked");
-                return Util_GenericResponse<DTO_LoginResult>.Response(null, false, $"You are locked out, please wait for {await GetLockoutTimeRemaining(user)} and try again!", null, System.Net.HttpStatusCode.BadRequest);
+                _logger.Log
+                (
+                    LogLevel.Error,
+                    """
+                          [Authentication Module]-[AUTH_Login Class]-[LoginUser Method] =>  
+                          user {Email} was not logged in =>  [RESULT] :  
+                          [IP] {IP}, is user locked out : {signInUser.IsLockedOut} |
+                          User {Email} is locked.
+                     """,
+                    loginDto.Email,
+                    await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                    signInUser.IsLockedOut,
+                    loginDto.Email
+                );
+
+                return Util_GenericResponse<DTO_LoginResult>.Response
+                (
+                    null,
+                    false,
+                    $"You are locked out, please wait for {await GetLockoutTimeRemaining(user)} and try again!",
+                    null,
+                    System.Net.HttpStatusCode.BadRequest
+                );
             }
 
             if (!signInUser.Succeeded)
             {
-                _logger.Log(LogLevel.Information, $"[Authentication Module]-[AUTH_Login Class]-[LoginUser Method] => user {loginDto.Email} was not logged in =>  [RESULT] : [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} {signInUser.Succeeded} | Invalid Credentials");
-                return Util_GenericResponse<DTO_LoginResult>.Response(null, false, "Invalid credentials!", null, System.Net.HttpStatusCode.NotFound);
+                _logger.Log
+                (
+                    LogLevel.Error,
+                    """
+                         [Authentication Module]-[AUTH_Login Class]-[LoginUser Method] =>  
+                         user {loginDto.Email} was not logged in =>  [RESULT] :  
+                         [IP] {IP} | Invalid Credentials.
+                         {@signInUser}
+                     """,
+                    loginDto.Email,
+                    await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                    signInUser
+                );
+
+                return Util_GenericResponse<DTO_LoginResult>.Response
+                (
+                    null,
+                    false,
+                    "Invalid credentials!",
+                    null,
+                    System.Net.HttpStatusCode.NotFound
+                );
             }
 
             if (user.IsDeleted)
             {
-                _logger.Log(LogLevel.Information, $"[Authentication Module]-[AUTH_Login Class]-[LoginUser Method] => [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} user was not logged in => account {user.Id} is deactivated");
-                return Util_GenericResponse<DTO_LoginResult>.Response(null, false, "Something went wrong when loggining in the account, your account exists and is deactivated. Please reactivate it.", null, System.Net.HttpStatusCode.BadRequest);
+                _logger.Log
+                (
+                    LogLevel.Error,
+                    """
+                          [Authentication Module]-[AUTH_Login Class]-[LoginUser Method] =>  
+                          [IP] {IP}, user was not logged in => account {Id} is deactivated.
+                          User {@User}.
+                     """,
+                    await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                    user.Id,
+                    user
+                );
+
+                return Util_GenericResponse<DTO_LoginResult>.Response
+                (
+                    null,
+                    false,
+                    """
+                         Something went wrong when loggining in the account,
+                         your account exists and is deactivated.  
+                         Please reactivate it.
+                     """,
+                    null,
+                    System.Net.HttpStatusCode.BadRequest
+                );
             }
 
             var loginResult = new DTO_LoginResult();
@@ -155,29 +249,52 @@ public class AUTH_Login : Util_BaseAuthDependencies<AUTH_Login, ApplicationUser>
                 await _userManager.UpdateAsync(user);
             }
 
-            _logger.LogInformation($"[Authentication Module]-[AUTH_Login Class]-[LoginUser Method] => , [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} | user {loginDto.Email} credentials valiadted successfully.");
-
             if (user.RequireOTPDuringLogin)
             {
                 loginResult.Token.RefreshToken = null;
                 loginResult.Token.Token = await GetShortToken(user.Id);
             }
             else
-            {
                 loginResult.Token = await GetToken(user);
-            }
+
+            _logger.LogInformation
+            (
+                """
+                    [Authentication Module]-[AUTH_Login Class]-[LoginUser Method] => 
+                    [IP] {IP} | user {loginDto.Email} credentials valiadted successfully."
+                 """,
+                await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                loginDto.Email
+            );
 
             loginResult.RequireOtpDuringLogin = user.RequireOTPDuringLogin;
 
-            return Util_GenericResponse<DTO_LoginResult>.Response(loginResult, true, "User data succsessfully validated!", null, System.Net.HttpStatusCode.OK);
+            return Util_GenericResponse<DTO_LoginResult>.Response
+            (
+                loginResult,
+                true,
+                "User data succsessfully validated!",
+                null,
+                System.Net.HttpStatusCode.OK
+            );
         }
         catch (Exception ex)
         {
-            return await Util_LogsHelper<DTO_LoginResult, AUTH_Login>.ReturnInternalServerError(ex, _logger, $"Somewthing went wrong in [Authentication Module]-[AUTH_Login Class]-[LoginUser Method], user with [EMAIL] {loginDto.Email}", null, _httpContextAccessor);
+            return await Util_LogsHelper<DTO_LoginResult, AUTH_Login>.ReturnInternalServerError
+            (
+                ex,
+                _logger,
+                $"""
+                    Somewthing went wrong in [Authentication Module]-[AUTH_Login Class]-[LoginUser Method], 
+                    user with [EMAIL] {loginDto.Email}.
+                 """,
+                null,
+                _httpContextAccessor
+            );
         }
     }
     /// <summary>
-    /// Confirm the login of the user
+    ///     Confirm the login of the user
     /// </summary>
     /// <param name="userId">The id of the user</param>
     /// <param name="otp">The one time password </param>
@@ -194,40 +311,150 @@ public class AUTH_Login : Util_BaseAuthDependencies<AUTH_Login, ApplicationUser>
         {
             if (String.IsNullOrEmpty(otp))
             {
-                _logger.Log(LogLevel.Information, $"[Authentication Module]-[AUTH_Login Class]-[ConfirmLogin Method] => [RESULT] : [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} user with [ID] {userId} put an empty otp");
-                return Util_GenericResponse<DTO_LoginResult>.Response(null, false, "OTP empty, please provide the otp", null, System.Net.HttpStatusCode.BadRequest);
+                _logger.Log
+                (
+                    LogLevel.Error,
+                    """
+                        [Authentication Module]-[AUTH_Login Class]-[ConfirmLogin Method] => 
+                        [RESULT] : [IP] {IP}    
+                        user with [ID] {userId} put an empty ot 
+                     """,
+                    await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                    userId
+                );
+
+                return Util_GenericResponse<DTO_LoginResult>.Response
+                (
+                    null,
+                    false,
+                    "OTP empty, please provide the otp",
+                    null,
+                    System.Net.HttpStatusCode.BadRequest
+                );
             }
 
             var user = await _userManager.FindByIdAsync(userId);
 
             if (user == null)
             {
-                _logger.Log(LogLevel.Information, $"[Authentication Module]-[AUTH_Login Class]-[ConfirmLogin Method] => [RESULT] : [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} user with [ID] {userId} doesnt exists");
-                return Util_GenericResponse<DTO_LoginResult>.Response(null, false, "User doesn't exists", null, System.Net.HttpStatusCode.NotFound);  /* or token expired*/
+                _logger.Log
+                (
+                    LogLevel.Error,
+                    """
+                        [Authentication Module]-[AUTH_Login Class]-[ConfirmLogin Method] => 
+                        [RESULT] : [IP] {IP}  
+                        user with [ID] {userId} doesnt exists   
+                     """,
+                    await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                    userId
+                );
+
+                return Util_GenericResponse<DTO_LoginResult>.Response
+                (
+                    null,
+                    false,
+                    "User doesn't exists",
+                    null,
+                    System.Net.HttpStatusCode.NotFound
+                );
             }
 
             if (!user.RequireOTPDuringLogin)
             {
-                _logger.Log(LogLevel.Information, $"[Authentication Module]-[AUTH_Login Class]-[ConfirmLogin Method] => [RESULT] : [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} user with [ID] {userId} tried to confrim his login but has not the flag true to require otp during login.");
-                return Util_GenericResponse<DTO_LoginResult>.Response(null, false, "You don't require otp during login.", null, System.Net.HttpStatusCode.BadRequest);
+                _logger.Log
+                (
+                    LogLevel.Error,
+                    """
+                        [Authentication Module]-[AUTH_Login Class]-[ConfirmLogin Method] => 
+                        [RESULT] : [IP] {IP}  
+                        user with [ID] {userId} tried to confrim his login but has  
+                        not the flag true to require otp during login.  
+                     """,
+                    await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                    userId
+                );
+
+                return Util_GenericResponse<DTO_LoginResult>.Response
+                (
+                    null,
+                    false,
+                    "You don't require otp during login.",
+                    null, System.Net.HttpStatusCode.BadRequest
+                );
             }
 
             if (user.OTP_Duration is not null && DateTime.UtcNow > user.OTP_Duration)
             {
-                _logger.Log(LogLevel.Information, $"[Authentication Module]-[AUTH_Login Class]-[ConfirmLogin Method] => [Result] : [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} User with [ID] {userId} otp expired");
-                return Util_GenericResponse<DTO_LoginResult>.Response(null, false, "Your one time password has expired", null, System.Net.HttpStatusCode.BadRequest);
+                _logger.Log
+                (
+                    LogLevel.Error,
+                    """
+                        $"[Authentication Module]-[AUTH_Login Class]-[ConfirmLogin Method] => "
+                        $"[Result] : [IP] {IP} "
+                        $"User with [ID] {userId} otp expired"
+                     """,
+                    await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                    userId
+                );
+
+                return Util_GenericResponse<DTO_LoginResult>.Response
+                (
+                    null,
+                    false,
+                    "Your one time password has expired",
+                    null,
+                    System.Net.HttpStatusCode.BadRequest
+                );
             }
 
             if (user.OTP != otp)
             {
-                _logger.Log(LogLevel.Information, $"[Authentication Module]-[AUTH_Login Class]-[ConfirmLogin Method] => [Result] : [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} User with [ID] {userId} put wrong opt, opt was not verified");
-                return Util_GenericResponse<DTO_LoginResult>.Response(null, false, "Wrong otp!", null, System.Net.HttpStatusCode.BadRequest);
+                _logger.Log
+                (
+                    LogLevel.Error,
+                    """
+                        [Authentication Module]-[AUTH_Login Class]-[ConfirmLogin Method] => 
+                        [Result] : [IP] {IP}  
+                        User with [ID] {userId} put wrong opt, opt was not verified 
+                     """,
+                    await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                    userId
+                );
+
+                return Util_GenericResponse<DTO_LoginResult>.Response
+                (
+                    null,
+                    false,
+                    "Wrong otp!",
+                    null,
+                    System.Net.HttpStatusCode.BadRequest
+                );
             }
 
             if (user.IsDeleted)
             {
-                _logger.Log(LogLevel.Information, $"[Authentication Module]-[AUTH_Login Class]-[ConfirmLogin Method] => [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} user was not logged in => account {user.Id} is deactivated");
-                return Util_GenericResponse<DTO_LoginResult>.Response(null, false, "Something went wrong when loggining in the account, your account exists and is deactivated. Please reactivate it.", null, System.Net.HttpStatusCode.BadRequest);
+                _logger.Log
+                (
+                    LogLevel.Error,
+                    """
+                        [Authentication Module]-[AUTH_Login Class]-[ConfirmLogin Method] => 
+                        [IP] {IP} user was not logged in => account {ID} is deactivated.  
+                     """,
+                    await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                    user.Id
+                );
+
+                return Util_GenericResponse<DTO_LoginResult>.Response
+                (
+                    null,
+                    false,
+                    """
+                        Something went wrong when loggining in the account,
+                        your account exists and is deactivated. Please reactivate it.
+                     """,
+                    null,
+                    System.Net.HttpStatusCode.BadRequest
+                );
             }
 
             var confirmLoginResult = new DTO_LoginResult
@@ -241,19 +468,47 @@ public class AUTH_Login : Util_BaseAuthDependencies<AUTH_Login, ApplicationUser>
             user.LastLogIn = DateTime.UtcNow;
             await _userManager.UpdateAsync(user);
 
-            return Util_GenericResponse<DTO_LoginResult>.Response(confirmLoginResult, true, "OTP validated succsessfully", null, System.Net.HttpStatusCode.OK);
+            _logger.Log
+            (
+                LogLevel.Information,
+                """
+                    [Authentication Module]-[AUTH_Login Class]-[ConfirmLogin Method] => 
+                    [IP] {IP} user [ID] {ID} was succsessfully logged.   
+                 """,
+                await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                user.Id
+            );
+
+            return Util_GenericResponse<DTO_LoginResult>.Response
+            (
+                confirmLoginResult,
+                true,
+                "OTP validated succsessfully",
+                null,
+                System.Net.HttpStatusCode.OK
+            );
 
         }
         catch (Exception ex)
         {
-            return await Util_LogsHelper<DTO_LoginResult, AUTH_Login>.ReturnInternalServerError(ex, _logger, $"Somewthing went wrong in [Authentication Module]-[AUTH_Login Class]-[ConfirmLogin Method], user with [ID] {userId}", null, _httpContextAccessor);
+            return await Util_LogsHelper<DTO_LoginResult, AUTH_Login>.ReturnInternalServerError
+            (
+                ex,
+                _logger,
+                $"""
+                    Somewthing went wrong in [Authentication Module]-
+                    [AUTH_Login Class]-[ConfirmLogin Method], user with [ID] {userId}.
+                 """,
+                null,
+                _httpContextAccessor
+            );
         }
     }
     /// <summary>
-    /// Log out a user
+    ///     Log out a user
     /// </summary>
     /// <returns> Asyncronous Task</returns>
-    public async Task<bool>
+    public async Task
     LogOut
     (
         string userId
@@ -264,19 +519,60 @@ public class AUTH_Login : Util_BaseAuthDependencies<AUTH_Login, ApplicationUser>
         try
         {
             if (userId != userIdFromToken)
-                return false;
+            {
+                _logger.Log
+                (
+                    LogLevel.Error,
+                    """
+                        [Authentication Module]-[AUTH_Login Class]-[LogOut Method] =>       
+                        [RESULT] : [IP] {IP} user with [ID] {userId} is not equal with 
+                        [Id in token] {userIdFromToken}. 
+                     """,
+                    await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                    userId,
+                    userIdFromToken
+                );
+
+                return;
+            }
 
             var user = await _userManager.FindByIdAsync(userId);
 
             if (user is null)
-                return false;
+            {
+                _logger.Log
+                (
+                    LogLevel.Error,
+                    """
+                        [Authentication Module]-[AUTH_Login Class]-[LogOut Method] =>   
+                        [RESULT] : [IP] {IP}  
+                        user with [ID] {userId} doesn't exists. 
+                     """,
+                    await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                    userId
+                );
+
+                return;
+            }
 
             user.LastLogOut = DateTime.UtcNow;
 
             var result = await _userManager.UpdateAsync(user);
 
             if (!result.Succeeded)
-                return false;
+            {
+                _logger.Log
+                (
+                    LogLevel.Error,
+                    """
+                        [Authentication Module]-[AUTH_Login Class]-[LogOut Method] =>   
+                        [RESULT] : [IP] {IP}  
+                        user with [ID] {userId} update failed during logout.    
+                     """,
+                    await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                    userId
+                );
+            }
 
             var userTokens = await _db.RefreshTokens.Include(x => x.User)
                                                     .Where(x => x.UserId == user.Id)
@@ -286,15 +582,47 @@ public class AUTH_Login : Util_BaseAuthDependencies<AUTH_Login, ApplicationUser>
             {
                 _db.RefreshTokens.RemoveRange(userTokens);
                 await _db.SaveChangesAsync();
+
+                _logger.Log
+                (
+                   LogLevel.Information,
+                   """
+                        [Authentication Module]-[AUTH_Login Class]-[LogOut Method] =>   
+                        [RESULT] : [IP] {IP}    
+                        user with [ID] {userId} succsessfully logged out.   
+                    """,
+                    await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                    userId
+                );
             }
-
-            return true;
-
+            else
+            {
+                _logger.Log
+                (
+                    LogLevel.Error,
+                    """
+                        [Authentication Module]-[AUTH_Login Class]-[LogOut Method] =>   
+                        [RESULT] : [IP] {IP}  
+                        user with [ID] {userId} doesn't have any refresh tokens, the delete 
+                        process failed. 
+                     """,
+                    await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                    userId
+                );
+            }
 
         }
         catch (Exception ex)
         {
-            return false;
+            _logger.LogCritical
+            (
+                ex,
+                """
+                    Something went wrong in [Authentication Module]-
+                    [AUTH_Login Class]-[LogOut Method], [IP] {IP}.
+                 """,
+                await Util_GetIpAddres.GetLocation(_httpContextAccessor)
+            );
         }
     }
     /// <summary>
@@ -314,7 +642,7 @@ public class AUTH_Login : Util_BaseAuthDependencies<AUTH_Login, ApplicationUser>
         return lockoutTimeRemaining;
     }
     /// <summary>
-    /// Get the jwt token.
+    ///     Get the jwt token.
     /// </summary>
     /// <param name="user">The <see cref="ApplicationUser"/> object </param>
     /// <returns> The Jwt token </returns>
@@ -332,7 +660,7 @@ public class AUTH_Login : Util_BaseAuthDependencies<AUTH_Login, ApplicationUser>
         return token;
     }
     /// <summary>
-    /// Get the short jwt token.
+    ///     Get the short jwt token.
     /// </summary>
     /// <param name="userId">The id of the user</param>
     /// <returns> The Jwt token </returns>
@@ -344,5 +672,4 @@ public class AUTH_Login : Util_BaseAuthDependencies<AUTH_Login, ApplicationUser>
     {
         return await _jwtShortTokenService.CreateToken(userId);
     }
-
 }

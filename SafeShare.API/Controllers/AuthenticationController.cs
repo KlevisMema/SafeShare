@@ -139,7 +139,9 @@ public class AuthenticationController : BaseController
         Guid userId
     )
     {
-        return await _mediator.Send(new MediatR_LogOutCommand(userId.ToString()));
+        await _mediator.Send(new MediatR_LogOutCommand(userId.ToString()));
+
+        return Ok();
     }
 
     [HttpPost("ValidateToken")]

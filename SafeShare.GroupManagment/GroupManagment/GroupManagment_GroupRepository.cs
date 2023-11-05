@@ -42,8 +42,25 @@ public class GroupManagment_GroupRepository : Util_BaseContextDependencies<Appli
         {
             if (!await UserExists(userId))
             {
-                _logger.Log(LogLevel.Information, $"[GroupManagment Module]-[GroupManagment_GroupRepository class]-[GetGroupsTypes Method] => [RESULT] : [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} user with id {userId} doesnt exists");
-                return Util_GenericResponse<DTO_GroupsTypes>.Response(null, false, $"User with id {userId} doesn't exist", null, System.Net.HttpStatusCode.NotFound);
+                _logger.Log
+                (
+                    LogLevel.Information,
+                    """
+                        [GroupManagment Module]-[GroupManagment_GroupRepository class]-[GetGroupsTypes Method] => 
+                        [RESULT] : [IP] {IP} user with [ID] {ID} doesnt exists""
+                     """,
+                    await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                    userId
+                );
+
+                return Util_GenericResponse<DTO_GroupsTypes>.Response
+                (
+                    null,
+                    false,
+                    $"User with id {userId} doesn't exist",
+                    null,
+                    System.Net.HttpStatusCode.NotFound
+                );
             }
 
             var allGroups = await _db.GroupMembers.Include(x => x.Group)
@@ -52,16 +69,26 @@ public class GroupManagment_GroupRepository : Util_BaseContextDependencies<Appli
 
             var groupTypes = _mapper.Map<DTO_GroupsTypes>(allGroups);
 
-            return Util_GenericResponse<DTO_GroupsTypes>.Response(groupTypes, true, "Group types retrieved succsessfully", null, System.Net.HttpStatusCode.OK);
+            return Util_GenericResponse<DTO_GroupsTypes>.Response
+            (
+                groupTypes,
+                true,
+                "Group types retrieved succsessfully",
+                null,
+                System.Net.HttpStatusCode.OK
+            );
         }
         catch (Exception ex)
         {
-            return
-            await Util_LogsHelper<DTO_GroupsTypes, GroupManagment_GroupRepository>.ReturnInternalServerError
+
+            return await Util_LogsHelper<DTO_GroupsTypes, GroupManagment_GroupRepository>.ReturnInternalServerError
             (
                 ex,
                 _logger,
-                $"Somewthing went wrong in [GroupManagment Module]-[GroupManagment_GroupRepository class]-[GetGroupsTypes Method], user with [ID] {userId} tried to get all the groups he is joined and created.",
+                $"""
+                    Somewthing went wrong in [GroupManagment Module]-[GroupManagment_GroupRepository class]-[GetGroupsTypes Method],
+                    user with [ID] {userId} tried to get all the groups he is joined and created.
+                 """,
                 null,
                 _httpContextAccessor
             );
@@ -79,8 +106,25 @@ public class GroupManagment_GroupRepository : Util_BaseContextDependencies<Appli
         {
             if (!await UserExists(userId))
             {
-                _logger.Log(LogLevel.Information, $"[GroupManagment Module]--[GroupManagment_GroupRepository class]--[GetGroupDetails Method] => [RESULT] : [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} user with id {userId} doesnt exists");
-                return Util_GenericResponse<DTO_GroupDetails>.Response(null, false, $"User with id {userId} doesn't exist", null, System.Net.HttpStatusCode.NotFound);
+                _logger.Log
+                (
+                    LogLevel.Error,
+                    """
+                        [GroupManagment Module]--[GroupManagment_GroupRepository class]--[GetGroupDetails Method] => 
+                        [RESULT] : [IP] {IP} user with [ID] {ID} doesnt exists".
+                     """,
+                    await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                    userId
+                );
+
+                return Util_GenericResponse<DTO_GroupDetails>.Response
+                (
+                    null,
+                    false,
+                    $"User with id {userId} doesn't exist",
+                    null,
+                    System.Net.HttpStatusCode.NotFound
+                );
             }
 
             var group = await _db.GroupMembers.Include(gr => gr.Group)
@@ -99,14 +143,48 @@ public class GroupManagment_GroupRepository : Util_BaseContextDependencies<Appli
 
             if (group is null)
             {
-                _logger.Log(LogLevel.Information, $"[GroupManagment Module]--[GroupManagment_GroupRepository class]--[GetGroupDetails Method] => [RESULT] : [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} group with id {groupId} doesnt exists");
-                return Util_GenericResponse<DTO_GroupDetails>.Response(null, false, $"Group with id {groupId} doesn't exist", null, System.Net.HttpStatusCode.NotFound);
+                _logger.Log
+                (
+                    LogLevel.Error,
+                    """
+                        [GroupManagment Module]--[GroupManagment_GroupRepository class]--[GetGroupDetails Method] => 
+                        [RESULT] : [IP] {IP} group with [ID] {ID} doesnt exists.
+                     """,
+                    await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                    groupId
+                );
+
+                return Util_GenericResponse<DTO_GroupDetails>.Response
+                (
+                    null,
+                    false,
+                    $"Group with id {groupId} doesn't exist",
+                    null,
+                    System.Net.HttpStatusCode.NotFound
+                );
             }
 
             if (String.IsNullOrEmpty(group.GroupOwner))
             {
-                _logger.Log(LogLevel.Information, $"[GroupManagment Module]--[GroupManagment_GroupRepository class]--[GetGroupDetails Method] => [RESULT] : [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} group with id {groupId} doesnt have an admin.");
-                return Util_GenericResponse<DTO_GroupDetails>.Response(null, false, $"Group with id {groupId} doesn't have an admin.", null, System.Net.HttpStatusCode.NotFound);
+                _logger.Log
+                (
+                    LogLevel.Error,
+                    """
+                        [GroupManagment Module]--[GroupManagment_GroupRepository class]--[GetGroupDetails Method] => 
+                        [RESULT] : [IP] {IP} group with [ID] {ID} doesnt have an admin.
+                     """,
+                    await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                    groupId
+                );
+
+                return Util_GenericResponse<DTO_GroupDetails>.Response
+                (
+                    null,
+                    false,
+                    $"Group with id {groupId} doesn't have an admin.",
+                    null,
+                    System.Net.HttpStatusCode.NotFound
+                );
             }
 
             var groupDetails = new DTO_GroupDetails
@@ -120,7 +198,14 @@ public class GroupManagment_GroupRepository : Util_BaseContextDependencies<Appli
                 NumberOfMembers = group.NumberOfMembers
             };
 
-            return Util_GenericResponse<DTO_GroupDetails>.Response(groupDetails, true, null, null, System.Net.HttpStatusCode.OK);
+            return Util_GenericResponse<DTO_GroupDetails>.Response
+            (
+                groupDetails,
+                true,
+                null,
+                null,
+                System.Net.HttpStatusCode.OK
+            );
         }
         catch (Exception ex)
         {
@@ -129,7 +214,10 @@ public class GroupManagment_GroupRepository : Util_BaseContextDependencies<Appli
             (
                 ex,
                 _logger,
-                $"Somewthing went wrong in [GroupManagment Module]--[GroupManagment_GroupRepository class]--[GetGroupDetails Method], user with [ID] {userId} tried to get group with [ID] {groupId} details.",
+                $"""
+                    Somewthing went wrong in [GroupManagment Module]--[GroupManagment_GroupRepository class]--[GetGroupDetails Method], 
+                    user with [ID] {userId} tried to get group with [ID] {groupId} details.
+                 """,
                 null,
                 _httpContextAccessor
             );
@@ -147,8 +235,25 @@ public class GroupManagment_GroupRepository : Util_BaseContextDependencies<Appli
         {
             if (!await UserExists(ownerId))
             {
-                _logger.Log(LogLevel.Information, $"[GroupManagment Module]--[GroupManagment_GroupRepository class]--[CreateGroup Method] => [RESULT] : [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} user with id {ownerId} doesnt exists");
-                return Util_GenericResponse<DTO_GroupType>.Response(null, false, $"User with id {ownerId} doesn't exist", null, System.Net.HttpStatusCode.NotFound);
+                _logger.Log
+                (
+                    LogLevel.Error,
+                    """
+                        [GroupManagment Module]--[GroupManagment_GroupRepository class]--[CreateGroup Method] => 
+                        [RESULT] : [IP] {IP} user with id {ID} doesnt exists
+                     """,
+                    await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                    ownerId
+                );
+
+                return Util_GenericResponse<DTO_GroupType>.Response
+                (
+                    null,
+                    false,
+                    $"User with id {ownerId} doesn't exist",
+                    null,
+                    System.Net.HttpStatusCode.NotFound
+                );
             }
 
             var group = _mapper.Map<Group>(createGroup);
@@ -174,7 +279,27 @@ public class GroupManagment_GroupRepository : Util_BaseContextDependencies<Appli
                 GroupId = group.Id
             };
 
-            return Util_GenericResponse<DTO_GroupType>.Response(groupType, true, "Group was created succsessfully", null, System.Net.HttpStatusCode.OK);
+            _logger.Log
+            (
+                LogLevel.Information,
+                """
+                    [GroupManagment Module]--[GroupManagment_GroupRepository class]--[CreateGroup Method] => 
+                    [RESULT] : [IP] {IP} user with id {ID} create the group with [ID] {groupId} and is a 
+                    owner and a memeber of the group with
+                 """,
+                await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                ownerId,
+                group.Id
+            );
+
+            return Util_GenericResponse<DTO_GroupType>.Response
+            (
+                groupType,
+                true,
+                "Group was created succsessfully",
+                null,
+                System.Net.HttpStatusCode.OK
+            );
         }
         catch (Exception ex)
         {
@@ -183,7 +308,10 @@ public class GroupManagment_GroupRepository : Util_BaseContextDependencies<Appli
             (
                 ex,
                 _logger,
-                $"Somewthing went wrong in [GroupManagment Module]--[GroupManagment_GroupRepository class]--[CreateGroup Method], user with [ID] {ownerId} tried to create a group.",
+                $"""
+                    Somewthing went wrong in [GroupManagment Module]--[GroupManagment_GroupRepository class]--[CreateGroup Method], 
+                    user with [ID] {ownerId} tried to create a group.
+                 """,
                 null,
                 _httpContextAccessor
             );
@@ -202,16 +330,55 @@ public class GroupManagment_GroupRepository : Util_BaseContextDependencies<Appli
         {
             if (!await UserExists(userId))
             {
-                _logger.Log(LogLevel.Information, $"[GroupManagment Module]--[GroupManagment_GroupRepository class]--[EditGroup Method] => [RESULT] : [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} user with id {userId} doesnt exists");
-                return Util_GenericResponse<DTO_GroupType>.Response(null, false, $"User with id {userId} doesn't exist", null, System.Net.HttpStatusCode.NotFound);
+                _logger.Log
+                (
+                    LogLevel.Error,
+                    """
+                        [GroupManagment Module]--[GroupManagment_GroupRepository class]--[EditGroup Method] => 
+                        [RESULT] : [IP] {IP} user with [ID] {ID} doesn't exists. DTO {@DTO}
+                     """,
+                    await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                    userId,
+                    editGroup
+                );
+
+                return Util_GenericResponse<DTO_GroupType>.Response
+                (
+                    null,
+                    false,
+                    $"User with id {userId} doesn't exist",
+                    null,
+                    System.Net.HttpStatusCode.NotFound
+                );
             }
 
             var isInTheGroup = await IsUserInTheGroup(userId, groupId);
 
             if (isInTheGroup is null)
             {
-                _logger.Log(LogLevel.Information, $"[GroupManagment Module]--[GroupManagment_GroupRepository class]--[EditGroup Method] => [RESULT] : [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} group with id {groupId} created by user with id {userId} doesn't exists.");
-                return Util_GenericResponse<DTO_GroupType>.Response(null, false, $"Group with id {groupId} doesn't exists.", null, System.Net.HttpStatusCode.NotFound);
+                _logger.Log
+                (
+                    LogLevel.Error,
+                    """
+                        [GroupManagment Module]--[GroupManagment_GroupRepository class]--[EditGroup Method] => 
+                        [RESULT] : [IP] {IP}, group with id {groupId} 
+                        created by user with id {userId} doesn't exists.
+                        DTO {@DTO}
+                     """,
+                    await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                    groupId,
+                    userId,
+                    editGroup
+                );
+
+                return Util_GenericResponse<DTO_GroupType>.Response
+                (
+                    null,
+                    false,
+                    $"Group with id {groupId} doesn't exists.",
+                    null,
+                    System.Net.HttpStatusCode.NotFound
+                );
             }
 
             var group = new Group
@@ -231,7 +398,30 @@ public class GroupManagment_GroupRepository : Util_BaseContextDependencies<Appli
                 GroupName = editGroup.GroupName
             };
 
-            return Util_GenericResponse<DTO_GroupType>.Response(_group, true, $"Group {editGroup.GroupName} edited succsessfully", null, System.Net.HttpStatusCode.OK);
+            _logger.Log
+            (
+                LogLevel.Information,
+                """
+                    [GroupManagment Module]--[GroupManagment_GroupRepository class]--[EditGroup Method] => 
+                    [RESULT] : [IP] {IP}, group with id {groupId} 
+                    created by user with id {userId} editted succsessfully at {groupEdittedTime}.
+                    DTO {@DTO}
+                 """,
+                await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                groupId,
+                userId,
+                editGroup,
+                group.ModifiedAt
+            );
+
+            return Util_GenericResponse<DTO_GroupType>.Response
+            (
+                _group,
+                true,
+                $"Group {editGroup.GroupName} edited succsessfully",
+                null,
+                System.Net.HttpStatusCode.OK
+            );
 
         }
         catch (Exception ex)
@@ -241,7 +431,10 @@ public class GroupManagment_GroupRepository : Util_BaseContextDependencies<Appli
             (
                ex,
                _logger,
-               $"Somewthing went wrong in [GroupManagment Module]--[GroupManagment_GroupRepository class]--[EditGroup Method], user with [ID] {userId} tried to edit group with [ID] {groupId}.",
+               $"""
+                    Somewthing went wrong in [GroupManagment Module]--[GroupManagment_GroupRepository class]--[EditGroup Method], 
+                    user with [ID] {userId} tried to edit group with [ID] {groupId}.
+                """,
                null,
                _httpContextAccessor
             );
@@ -259,22 +452,77 @@ public class GroupManagment_GroupRepository : Util_BaseContextDependencies<Appli
         {
             if (!await UserExists(ownerId))
             {
-                _logger.Log(LogLevel.Information, $"[GroupManagment Module]--[GroupManagment_GroupRepository class]--[EditGroup Method] => [RESULT] : [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} user with id {ownerId} doesnt exists");
-                return Util_GenericResponse<bool>.Response(false, false, $"User with id {ownerId} doesn't exist", null, System.Net.HttpStatusCode.NotFound);
+                _logger.Log
+                (
+                    LogLevel.Error,
+                    """
+                        [GroupManagment Module]--[GroupManagment_GroupRepository class]--[EditGroup Method] => 
+                        [RESULT] : [IP] {IP},
+                        user with [ID] {ownerId} doesnt exists.
+                     """,
+                    await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                    ownerId
+                );
+
+                return Util_GenericResponse<bool>.Response
+                (
+                    false,
+                    false,
+                    $"User with id {ownerId} doesn't exist",
+                    null,
+                    System.Net.HttpStatusCode.NotFound
+                );
             }
 
             var isInTheGroup = await IsUserInTheGroup(ownerId, groupId);
 
             if (isInTheGroup is null)
             {
-                _logger.Log(LogLevel.Information, $"[GroupManagment Module]--[GroupManagment_GroupRepository class]--[DeleteGroup Method] => [RESULT] : [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} group with id {groupId} created by user with id {ownerId} doesn't exists.");
-                return Util_GenericResponse<bool>.Response(false, false, $"Group with id {groupId} doesn't exists.", null, System.Net.HttpStatusCode.NotFound);
+                _logger.Log
+                (
+                    LogLevel.Error,
+                    """
+                        [GroupManagment Module]--[GroupManagment_GroupRepository class]--[DeleteGroup Method] => 
+                        [RESULT] : [IP] {IP}, group with id {groupId} created by user with id {ownerId} doesn't exists.
+                     """,
+                    await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                    groupId,
+                    ownerId
+                );
+
+                return Util_GenericResponse<bool>.Response
+                (
+                    false,
+                    false,
+                    $"Group with id {groupId} doesn't exists.",
+                    null,
+                    System.Net.HttpStatusCode.NotFound
+                );
             }
 
             if (!isInTheGroup.IsOwner)
             {
-                _logger.Log(LogLevel.Information, $"[GroupManagment Module]--[GroupManagment_GroupRepository class]--[DeleteGroup Method] => [RESULT] : [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} group with id {groupId} cant be deleted from the user with [ID] {ownerId}. Not the owner of the group.");
-                return Util_GenericResponse<bool>.Response(false, false, $"Group with id {groupId} can't be deleted because you are not the owner.", null, System.Net.HttpStatusCode.BadRequest);
+                _logger.Log
+                (
+                    LogLevel.Error,
+                    """
+                        [GroupManagment Module]--[GroupManagment_GroupRepository class]--[DeleteGroup Method] => 
+                        [RESULT] : [IP] {IP}, group with [ID] {groupId} 
+                        cant be deleted from the user with [ID] {ownerId}. Not the owner of the group.
+                     """,
+                    await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                    groupId,
+                    ownerId
+                );
+
+                return Util_GenericResponse<bool>.Response
+                (
+                    false,
+                    false,
+                    $"Group with id {groupId} can't be deleted because you are not the owner.",
+                    null,
+                    System.Net.HttpStatusCode.BadRequest
+                );
             }
 
             isInTheGroup.Group.IsDeleted = true;
@@ -288,7 +536,28 @@ public class GroupManagment_GroupRepository : Util_BaseContextDependencies<Appli
             _db.GroupMembers.UpdateRange(groupMembers);
             await _db.SaveChangesAsync();
 
-            return Util_GenericResponse<bool>.Response(true, true, $"Group with id {groupId} was succsessfully deleted", null, System.Net.HttpStatusCode.OK);
+            _logger.Log
+            (
+                LogLevel.Information,
+                """
+                    [GroupManagment Module]--[GroupManagment_GroupRepository class]--[DeleteGroup Method] => 
+                    [RESULT] : [IP] {IP}, group with [ID] {groupId} 
+                    was deleted from the user with [ID] {ownerId} at {deleteTime}.
+                 """,
+                await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                groupId,
+                ownerId,
+                isInTheGroup.Group.DeletedAt
+            );
+
+            return Util_GenericResponse<bool>.Response
+            (
+                true,
+                true,
+                $"Group with id {groupId} was succsessfully deleted",
+                null,
+                System.Net.HttpStatusCode.OK
+            );
         }
         catch (Exception ex)
         {
@@ -297,7 +566,10 @@ public class GroupManagment_GroupRepository : Util_BaseContextDependencies<Appli
             (
                 ex,
                 _logger,
-                $"Somewthing went wrong in [GroupManagment Module]--[GroupManagment_GroupRepository class]--[DeleteGroup Method], owner with [ID] {ownerId} tried to delete group with [ID] {groupId}.",
+                $"""
+                    Somewthing went wrong in [GroupManagment Module]--[GroupManagment_GroupRepository class]--[DeleteGroup Method], 
+                    owner with [ID] {ownerId} tried to delete group with [ID] {groupId}.
+                 """,
                 false,
                 _httpContextAccessor
             );
@@ -320,6 +592,13 @@ public class GroupManagment_GroupRepository : Util_BaseContextDependencies<Appli
         Guid groupId
     )
     {
-        return await _db.GroupMembers.Include(x => x.Group).FirstOrDefaultAsync(x => x.GroupId == groupId && x.UserId == userId.ToString() && !x.Group.IsDeleted && !x.IsDeleted);
+        return await _db.GroupMembers.Include(x => x.Group)
+                                     .FirstOrDefaultAsync
+                                     (
+                                        x => x.GroupId == groupId &&
+                                        x.UserId == userId.ToString() &&
+                                        !x.Group.IsDeleted &&
+                                        !x.IsDeleted
+                                     );
     }
 }

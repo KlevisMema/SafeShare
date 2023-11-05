@@ -36,9 +36,22 @@ public static class Util_LogsHelper<TReturnType, TLogger>
 
     )
     {
-        var errorResponse = Util_GenericResponse<TReturnType>.Response(value, false, ex.ToString(), null, System.Net.HttpStatusCode.InternalServerError);
+        var errorResponse = Util_GenericResponse<TReturnType>.Response
+        (
+            value,
+            false,
+            ex.ToString(),
+            null,
+            System.Net.HttpStatusCode.InternalServerError
+        );
 
-        _logger.LogError(ex, $"{errorMessage}, [IP] {await Util_GetIpAddres.GetLocation(httpContextAccessor)}", errorResponse);
+        _logger.LogCritical
+        (
+            ex,
+            "{errorMessage}, [IP] {IP}",
+            errorResponse,
+            await Util_GetIpAddres.GetLocation(httpContextAccessor)
+        );
 
         errorResponse.Message = "Internal server error";
 

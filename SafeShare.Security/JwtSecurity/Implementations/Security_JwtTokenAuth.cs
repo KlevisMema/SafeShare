@@ -26,13 +26,13 @@ namespace SafeShare.Security.JwtSecurity.Implementations;
 public class Security_JwtTokenAuth : ISecurity_JwtTokenAuth<Security_JwtTokenAuth, DTO_AuthUser, DTO_Token>, ISecurity_JwtTokenHash
 {
     /// <summary>
-    /// Represents the JWT authentication options.
-    /// </summary>
-    private readonly IOptions<Util_JwtSettings> _jwtOptions;
-    /// <summary>
     /// The database context
     /// </summary>
     private readonly ApplicationDbContext _db;
+    /// <summary>
+    /// Represents the JWT authentication options.
+    /// </summary>
+    private readonly IOptions<Util_JwtSettings> _jwtOptions;
     /// <summary>
     /// A Instance of <see cref="HashAlgorithm"/>
     /// </summary>
@@ -40,16 +40,16 @@ public class Security_JwtTokenAuth : ISecurity_JwtTokenAuth<Security_JwtTokenAut
     /// <summary>
     /// Initializes a new instance of the <see cref="OAuthJwtTokenService"/> class.
     /// </summary>
-    /// <param name="jwtOptions">The JWT authentication options.</param>
     /// <param name="db">The database context</param>
+    /// <param name="jwtOptions">The JWT authentication options.</param>
     public Security_JwtTokenAuth
     (
-        IOptions<Util_JwtSettings> jwtOptions,
-        ApplicationDbContext db
+        ApplicationDbContext db,
+        IOptions<Util_JwtSettings> jwtOptions
     )
     {
-        _jwtOptions = jwtOptions;
         _db = db;
+        _jwtOptions = jwtOptions;
     }
     /// <summary>
     /// Creates a JWT token for the specified user.
@@ -72,10 +72,10 @@ public class Security_JwtTokenAuth : ISecurity_JwtTokenAuth<Security_JwtTokenAut
         return tokenDto;
     }
     /// <summary>
-    /// 
+    /// Validates a jwt token
     /// </summary>
-    /// <param name="tokenToValidate"></param>
-    /// <returns></returns>
+    /// <param name="tokenToValidate">The token to validate</param>
+    /// <returns>True or false</returns>
     public async Task<bool>
     ValidateToken
     (
@@ -90,7 +90,12 @@ public class Security_JwtTokenAuth : ISecurity_JwtTokenAuth<Security_JwtTokenAut
 
         return false;
     }
-
+    /// <summary>
+    /// Add the refresh token in the database
+    /// </summary>
+    /// <param name="tokenId">The id of the token</param>
+    /// <param name="userId">The id of the user</param>
+    /// <returns>A <see cref="DTO_Token"/> object </returns>
     private async Task<DTO_Token>
     AddToDb
     (
@@ -124,7 +129,6 @@ public class Security_JwtTokenAuth : ISecurity_JwtTokenAuth<Security_JwtTokenAut
             throw;
         }
     }
-
     /// <summary>
     /// Gets the claims for the specified user.
     /// </summary>

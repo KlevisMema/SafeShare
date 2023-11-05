@@ -30,12 +30,8 @@ namespace SafeShare.Authentication.Auth;
 /// <summary>
 /// Handles user registration within the authentication module.
 /// </summary>
-public class AUTH_Register : Util_BaseAuthDependencies<AUTH_Register, ApplicationUser>, IAUTH_Register
+public class AUTH_Register : Util_BaseAuthDependencies<AUTH_Register, ApplicationUser, ApplicationDbContext>, IAUTH_Register
 {
-    /// <summary>
-    /// The primary database context for the application.
-    /// </summary>
-    private readonly ApplicationDbContext _db;
     /// <summary>
     /// The confirm registration settings
     /// </summary>
@@ -66,10 +62,10 @@ public class AUTH_Register : Util_BaseAuthDependencies<AUTH_Register, Applicatio
         logger,
         httpContextAccessor,
         userManager,
-        configuration
+        configuration,
+        db
     )
     {
-        _db = db;
         _confirmRegistrationSettings = confirmRegistrationSettings;
     }
     /// <summary>
@@ -91,15 +87,44 @@ public class AUTH_Register : Util_BaseAuthDependencies<AUTH_Register, Applicatio
 
             if (!createUserResult.Succeeded)
             {
-                _logger.Log(LogLevel.Information, $"[RegisterUser Method] => [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} user was not created Created =>  [RESULT] : {createUserResult.Succeeded} and {@createUserResult.Errors.Select(x => x.Description)}");
-                return Util_GenericResponse<bool>.Response(false, false, "Something went wrong when creating the account!", createUserResult.Errors.Select(x => x.Description).ToList(), System.Net.HttpStatusCode.BadRequest);
+                _logger.Log
+                (
+                    LogLevel.Error,
+                    """
+                        [RegisterUser Method] => [IP] {IP} 
+                        user was not created Created =>  [RESULT] : {@createUserResult} 
+                        and {@createUserResultErrors}
+                     """,
+                    await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                    createUserResult,
+                    createUserResult.Errors.Select(x => x.Description)
+                );
+
+                return Util_GenericResponse<bool>.Response
+                (
+                    false,
+                    false,
+                    "Something went wrong when creating the account!",
+                    createUserResult.Errors.Select(x => x.Description).ToList(),
+                    System.Net.HttpStatusCode.BadRequest
+                );
             }
 
             var assignRole = await AssignUserToUserRole(registerDto.UserName);
 
             if (!assignRole.Succsess)
             {
-                _logger.Log(LogLevel.Information, $"[RegisterUser Method] => [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} user was not assigend to a role =>  [RESULT] : {assignRole.Succsess} and {assignRole.Message}");
+                _logger.Log
+                (
+                    LogLevel.Error,
+                    """
+                        [RegisterUser Method] => [IP] {IP}    
+                        user was not assigend to a role =>  [RESULT] : {@assignRole}. 
+                     """,
+                    await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                    assignRole
+                );
+
                 return assignRole;
             }
 
@@ -112,15 +137,17 @@ public class AUTH_Register : Util_BaseAuthDependencies<AUTH_Register, Applicatio
             if (!emailResult.IsSuccessStatusCode)
             {
                 _logger.Log
-               (
-                 LogLevel.Information,
-                 $"""
-                        [Authentication Module]-[AUTH_Register Class]-[RegisterUser Method] => 
-                        [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} a token for user with email {registerDto.Email} 
-                        was succsessfully issued but the email send failed. {@emailResult}
-                  """,
-                 @emailResult
-               );
+                (
+                     LogLevel.Error,
+                     """
+                            [Authentication Module]-[AUTH_Register Class]-[RegisterUser Method] => 
+                            [IP] {IP} a token for user with email {registerDto.Email} 
+                            was succsessfully issued but the email send failed. {@emailResult}
+                      """,
+                     await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                     registerDto.Email,
+                     emailResult
+                );
 
                 return Util_GenericResponse<bool>.Response
                 (
@@ -132,13 +159,41 @@ public class AUTH_Register : Util_BaseAuthDependencies<AUTH_Register, Applicatio
                 );
             }
 
-            _logger.LogInformation($"[Authentication Module] - [RegisterUser Method] =>, [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} | user {registerDto.Email} was succsessfully created created.");
+            _logger.LogInformation
+            (
+                """
+                    [Authentication Module] - [RegisterUser Method] =>, 
+                    [IP] {IP} | user with email {Email} was succsessfully created. 
+                 """,
+                await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                registerDto.Email
+            );
 
-            return Util_GenericResponse<bool>.Response(true, true, "Your account was successfully created, we have send you an email to confirm your account.", null, System.Net.HttpStatusCode.OK);
+            return Util_GenericResponse<bool>.Response
+            (
+                true,
+                true,
+                """
+                    Your account was successfully created,
+                    we have send you an email to confirm your account.
+                 """,
+                null,
+                System.Net.HttpStatusCode.OK
+            );
         }
         catch (Exception ex)
         {
-            return await Util_LogsHelper<bool, AUTH_Register>.ReturnInternalServerError(ex, _logger, $"Somewthing went wrong in [Authentication Module] - [RegisterUser Method], user with [EMAIL] {registerDto.Email}", false, _httpContextAccessor);
+            return await Util_LogsHelper<bool, AUTH_Register>.ReturnInternalServerError
+            (
+                ex,
+                _logger,
+                $"""
+                    Somewthing went wrong in [Authentication Module] - [RegisterUser Method],   
+                    user with [EMAIL] {registerDto.Email}.
+                 """,
+                false,
+                _httpContextAccessor
+            );
         }
     }
     /// <summary>
@@ -160,39 +215,62 @@ public class AUTH_Register : Util_BaseAuthDependencies<AUTH_Register, Applicatio
             {
                 _logger.Log
                 (
-                   LogLevel.Information,
-                   $"""
+                   LogLevel.Error,
+                   """
                         [Authentication Module]-[AUTH_Register Class]-[ConfirmRegistration Method] => 
-                        [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} user with email {confirmRegistrationDto.Email} doesn't exists.
+                        [IP] {IP}, user with email {Email} doesn't exists.
                     """,
-                   @confirmRegistrationDto
+                   await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                   confirmRegistrationDto.Email
                 );
 
-                return Util_GenericResponse<bool>.Response(false, false, "User doesn't exists", null, System.Net.HttpStatusCode.NotFound);
+                return Util_GenericResponse<bool>.Response
+                (
+                    false,
+                    false,
+                    "User doesn't exists",
+                    null,
+                    System.Net.HttpStatusCode.NotFound
+                );
             }
 
             user.ModifiedAt = DateTime.UtcNow;
 
             var verifyToken = await _userManager.ConfirmEmailAsync(user, confirmRegistrationDto.Token);
 
-
             if (!verifyToken.Succeeded)
             {
                 _logger.Log
                 (
-                   LogLevel.Information,
-                   $"""
+                   LogLevel.Error,
+                   """
                         [Authentication Module]-[AUTH_Register Class]-[ConfirmRegistration Method] => 
-                        [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} user with email {confirmRegistrationDto.Email}
-                        tried to confirm the registration but the failed on the token validation. {@verifyToken.Errors.Select(x => x.Description)} 
-                    """
+                        [IP] {IP} user with email {Email}
+                        tried to confirm the registration but the failed on the token validation. {@verifyTokenErrors}. 
+                    """,
+                   await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                   confirmRegistrationDto.Email,
+                   verifyToken.Errors.Select(x => x.Description)
                 );
 
-                return Util_GenericResponse<bool>.Response(false, false, "Something went wrong, try again.", null, System.Net.HttpStatusCode.NotFound);
+                return Util_GenericResponse<bool>.Response
+                (
+                    false,
+                    false,
+                    "Something went wrong, try again.",
+                    null,
+                    System.Net.HttpStatusCode.NotFound
+                );
             }
 
-            return Util_GenericResponse<bool>.Response(true, true, "Email succsessfully validated", null, System.Net.HttpStatusCode.OK);
-
+            return Util_GenericResponse<bool>.Response
+            (
+                true,
+                true,
+                "Email succsessfully validated",
+                null,
+                System.Net.HttpStatusCode.OK
+            );
         }
         catch (Exception ex)
         {
@@ -200,8 +278,10 @@ public class AUTH_Register : Util_BaseAuthDependencies<AUTH_Register, Applicatio
             (
                 ex,
                 _logger,
-                $"Somewthing went wrong in [Authentication Module]-[AUTH_Register Class]-[ConfirmRegistration Method], " +
-                $"user with  [Email] {confirmRegistrationDto.Email} tried to verify his registration.",
+                $"""
+                    Somewthing went wrong in [Authentication Module]-[AUTH_Register Class]-[ConfirmRegistration Method], 
+                    user with  [Email] {confirmRegistrationDto.Email} tried to verify his registration.
+                 """,
                 false,
                 _httpContextAccessor
             );
@@ -227,25 +307,35 @@ public class AUTH_Register : Util_BaseAuthDependencies<AUTH_Register, Applicatio
             {
                 _logger.Log
                 (
-                  LogLevel.Information,
-                  $"""
+                  LogLevel.Error,
+                  """
                         [Authentication Module]-[AUTH_Register Class]-[ReConfirmRegistrationRequest Method] => 
-                        [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} user with email {email} doesn't exists.
-                   """
+                        [IP] {IP} user with email {email} doesn't exists.
+                   """,
+                  await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                  email
                 );
 
-                return Util_GenericResponse<bool>.Response(false, false, "User doesn't exists", null, System.Net.HttpStatusCode.NotFound);
+                return Util_GenericResponse<bool>.Response
+                (
+                    false,
+                    false,
+                    "User doesn't exists",
+                    null, System.Net.HttpStatusCode.NotFound
+                );
             }
 
             if (user.IsDeleted)
             {
                 _logger.Log
                 (
-                  LogLevel.Information,
-                  $"""
+                  LogLevel.Error,
+                  """
                         [Authentication Module]-[AUTH_Register Class]-[ReConfirmRegistrationRequest Method] => 
-                        [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} user with email {email} account is disabled.
-                   """
+                        [IP] {IP} user with email {email} account is disabled.
+                   """,
+                  await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                  email
                 );
 
                 return Util_GenericResponse<bool>.Response(false, false, "User doesn't exists", null, System.Net.HttpStatusCode.NotFound);
@@ -255,14 +345,23 @@ public class AUTH_Register : Util_BaseAuthDependencies<AUTH_Register, Applicatio
             {
                 _logger.Log
                 (
-                  LogLevel.Information,
-                  $"""
+                  LogLevel.Error,
+                  """
                         [Authentication Module]-[AUTH_Register Class]-[ReConfirmRegistrationRequest Method] => 
-                        [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} user with email {email} account already confirmed.
-                       """
+                        [IP] {IP} user with email {email} account already confirmed.
+                   """,
+                  await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                  email
                  );
 
-                return Util_GenericResponse<bool>.Response(false, false, "Account is already confirmed.", null, System.Net.HttpStatusCode.BadRequest);
+                return Util_GenericResponse<bool>.Response
+                (
+                    false,
+                    false,
+                    "Account is already confirmed.",
+                    null,
+                    System.Net.HttpStatusCode.BadRequest
+                );
             }
 
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
@@ -275,13 +374,15 @@ public class AUTH_Register : Util_BaseAuthDependencies<AUTH_Register, Applicatio
             {
                 _logger.Log
                 (
-                  LogLevel.Information,
-                  $"""
+                  LogLevel.Error,
+                  """
                         [Authentication Module]-[AUTH_Register Class]-[ReConfirmRegistrationRequest Method] => 
-                        [IP] {await Util_GetIpAddres.GetLocation(_httpContextAccessor)} a token for user with email {email} 
+                        [IP] {IP} a token for user with email {email} 
                         was succsessfully issued but the email send failed. {@emailResult}
                    """,
-                  @emailResult
+                  await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                  email,
+                  emailResult
                 );
 
                 return Util_GenericResponse<bool>.Response
@@ -293,6 +394,18 @@ public class AUTH_Register : Util_BaseAuthDependencies<AUTH_Register, Applicatio
                     System.Net.HttpStatusCode.BadRequest
                 );
             }
+
+            _logger.Log
+            (
+                LogLevel.Error,
+                """
+                    [Authentication Module]-[AUTH_Register Class]-[ReConfirmRegistrationRequest Method] => 
+                    [IP] {IP} a token for user with email {email} 
+                    was succsessfully and the email was succsessfully sent.
+                 """,
+                await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                email
+            );
 
             return Util_GenericResponse<bool>.Response
             (
@@ -310,8 +423,10 @@ public class AUTH_Register : Util_BaseAuthDependencies<AUTH_Register, Applicatio
             (
                 ex,
                 _logger,
-                $"Somewthing went wrong in [Authentication Module]-[AUTH_Register Class]-[ReConfirmRegistrationRequest Method], " +
-                $"user with  [Email] {email} tried to verify his registration.",
+                $"""
+                    Somewthing went wrong in [Authentication Module]-[AUTH_Register Class]-[ReConfirmRegistrationRequest Method], 
+                    user with [Email] {email} tried to verify his registration.
+                 """,
                 false,
                 _httpContextAccessor
             );
@@ -341,7 +456,18 @@ public class AUTH_Register : Util_BaseAuthDependencies<AUTH_Register, Applicatio
                 if (String.IsNullOrEmpty(userRole))
                 {
                     await _userManager.DeleteAsync(user);
-                    return Util_GenericResponse<bool>.Response(false, false, "Something went wrong in assigning the role to the user, user was not created!", null, System.Net.HttpStatusCode.BadRequest);
+
+                    return Util_GenericResponse<bool>.Response
+                    (
+                        false,
+                        false,
+                        """
+                            Something went wrong in assigning the role to the user,
+                            user was not created!"
+                         """,
+                        null,
+                        System.Net.HttpStatusCode.BadRequest
+                    );
                 }
 
                 var addToRole = await _userManager.AddToRoleAsync(user!, userRole);
@@ -349,11 +475,29 @@ public class AUTH_Register : Util_BaseAuthDependencies<AUTH_Register, Applicatio
                 if (addToRole is null)
                 {
                     await _userManager.DeleteAsync(user);
-                    return Util_GenericResponse<bool>.Response(false, false, "Something went wrong in assigning the role to the user, user was not created!", null, System.Net.HttpStatusCode.BadRequest);
+
+                    return Util_GenericResponse<bool>.Response
+                    (
+                        false,
+                        false,
+                        """
+                            Something went wrong in assigning the role to the user,
+                            user was not created!
+                         """,
+                        null,
+                        System.Net.HttpStatusCode.BadRequest
+                    );
                 }
             }
 
-            return Util_GenericResponse<bool>.Response(true, true, "User succsessfully assigned to user role", null, System.Net.HttpStatusCode.BadRequest);
+            return Util_GenericResponse<bool>.Response
+            (
+                true,
+                true,
+                "User succsessfully assigned to user role",
+                null,
+                System.Net.HttpStatusCode.BadRequest
+            );
         }
         catch (Exception ex)
         {
@@ -361,8 +505,10 @@ public class AUTH_Register : Util_BaseAuthDependencies<AUTH_Register, Applicatio
             (
                 ex,
                 _logger,
-                $"Somewthing went wrong in [Authentication Module] - [AssignUserToUserRole Method], " +
-                $"user with [UserName] {userName}",
+                $"""
+                    Somewthing went wrong in [Authentication Module] - [AssignUserToUserRole Method], "
+                    user with [UserName] {userName}",
+                 """,
                 false,
                 _httpContextAccessor
             );

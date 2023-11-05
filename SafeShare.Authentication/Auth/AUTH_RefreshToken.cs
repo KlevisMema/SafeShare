@@ -1,12 +1,17 @@
 ﻿using AutoMapper;
 using System.Security.Claims;
+using SafeShare.Utilities.IP;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using SafeShare.Utilities.Responses;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using SafeShare.Utilities.Dependencies;
 using SafeShare.DataAccessLayer.Models;
 using SafeShare.DataAccessLayer.Context;
+using Microsoft.Extensions.Configuration;
 using SafeShare.Authentication.Interfaces;
 using SafeShare.DataTransormObject.Security;
 using SafeShare.Security.JwtSecurity.Interfaces;
@@ -15,28 +20,8 @@ using SafeShare.Security.JwtSecurity.Implementations;
 
 namespace SafeShare.Authentication.Auth;
 
-public class AUTH_RefreshToken : IAUTH_RefreshToken
+public class AUTH_RefreshToken : Util_BaseAuthDependencies<AUTH_RefreshToken, ApplicationUser, ApplicationDbContext>, IAUTH_RefreshToken
 {
-    /// <summary>
-    /// 
-    /// </summary>
-    private readonly TokenValidationParameters _tokenValidationParameters;
-    /// <summary>
-    /// 
-    /// </summary>
-    private readonly ApplicationDbContext _db;
-    /// <summary>
-    /// 
-    /// </summary>
-    private readonly UserManager<ApplicationUser> _userManager;
-    /// <summary>
-    /// 
-    /// </summary>
-    private readonly ISecurity_JwtTokenAuth<Security_JwtTokenAuth, DTO_AuthUser, DTO_Token> _jwtTokenService;
-    /// <summary>
-    /// 
-    /// </summary>
-    private readonly IMapper _mapper;
     /// <summary>
     /// 
     /// </summary>
@@ -44,22 +29,46 @@ public class AUTH_RefreshToken : IAUTH_RefreshToken
     /// <summary>
     /// 
     /// </summary>
-    /// <param name="tokenValidationParameters"></param>
+    private readonly TokenValidationParameters _tokenValidationParameters;
+    /// <summary>
+    /// 
+    /// </summary>
+    private readonly ISecurity_JwtTokenAuth<Security_JwtTokenAuth, DTO_AuthUser, DTO_Token> _jwtTokenService;
+
+    /// <summary>
+    /// 
+    /// </summary>
     /// <param name="db"></param>
+    /// <param name="logger"></param>
+    /// <param name="mapper"></param>
     /// <param name="userManager"></param>
+    /// <param name="configuration"></param>
+    /// <param name="jwtTokenService"></param>
+    /// <param name="httpContextAccessor"></param>
+    /// <param name="securityJwtTokenHash"></param>
+    /// <param name="tokenValidationParameters"></param>
     public AUTH_RefreshToken
     (
         IMapper mapper,
         ApplicationDbContext db,
+        IConfiguration configuration,
+        ILogger<AUTH_RefreshToken> logger,
         UserManager<ApplicationUser> userManager,
+        IHttpContextAccessor httpContextAccessor,
         ISecurity_JwtTokenHash securityJwtTokenHash,
         TokenValidationParameters tokenValidationParameters,
         ISecurity_JwtTokenAuth<Security_JwtTokenAuth, DTO_AuthUser, DTO_Token> jwtTokenService
     )
+    : base
+    (
+        mapper,
+        logger,
+        httpContextAccessor,
+        userManager,
+        configuration,
+        db
+    )
     {
-        _db = db;
-        _mapper = mapper;
-        _userManager = userManager;
         _jwtTokenService = jwtTokenService;
         _securityJwtTokenHash = securityJwtTokenHash;
         _tokenValidationParameters = tokenValidationParameters;
@@ -81,7 +90,14 @@ public class AUTH_RefreshToken : IAUTH_RefreshToken
 
             if (claimsPrincipal is null)
             {
-                return Util_GenericResponse<DTO_Token>.Response(null, false, "Invalid token", null, System.Net.HttpStatusCode.Unauthorized);
+                return Util_GenericResponse<DTO_Token>.Response
+                (
+                    null,
+                    false,
+                    "Invalid token",
+                    null,
+                    System.Net.HttpStatusCode.Unauthorized
+                );
             }
 
             var expiryDateUnix = long.Parse(claimsPrincipal.Claims.SingleOrDefault(x => x.Type == JwtRegisteredClaimNames.Exp).Value);

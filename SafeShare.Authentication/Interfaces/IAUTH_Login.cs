@@ -40,7 +40,7 @@ public interface IAUTH_Login
     /// Log out a user
     /// </summary>
     /// <returns> Asyncronous Task</returns>
-    Task<bool>
+    Task
     LogOut
     (
         string userId
