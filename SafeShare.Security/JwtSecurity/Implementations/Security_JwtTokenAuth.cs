@@ -76,7 +76,7 @@ public class Security_JwtTokenAuth : ISecurity_JwtTokenAuth<Security_JwtTokenAut
     /// </summary>
     /// <param name="tokenToValidate">The token to validate</param>
     /// <returns>True or false</returns>
-    public async Task<bool>
+    public Task<bool>
     ValidateToken
     (
         string tokenToValidate,
@@ -86,9 +86,9 @@ public class Security_JwtTokenAuth : ISecurity_JwtTokenAuth<Security_JwtTokenAut
         string hashedTokenToValidate = Convert.ToBase64String(_hashAlgorithm.ComputeHash(Encoding.UTF8.GetBytes(tokenToValidate)));
 
         if (hashedTokenInDb == hashedTokenToValidate)
-            return true;
+            return Task.FromResult(true);
 
-        return false;
+        return Task.FromResult(false);
     }
     /// <summary>
     /// Add the refresh token in the database
@@ -121,7 +121,7 @@ public class Security_JwtTokenAuth : ISecurity_JwtTokenAuth<Security_JwtTokenAut
 
             await _db.SaveChangesAsync();
 
-            return new DTO_Token { RefreshToken = randomId, RefreshTokenId = refreshToken.Id };
+            return new DTO_Token { RefreshToken = randomId, RefreshTokenId = refreshToken.Id, CreatedAt = refreshToken.CreationDate };
         }
         catch (Exception ex)
         {

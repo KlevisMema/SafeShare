@@ -162,7 +162,7 @@ public class AUTH_Register : Util_BaseAuthDependencies<AUTH_Register, Applicatio
             _logger.LogInformation
             (
                 """
-                    [Authentication Module] - [RegisterUser Method] =>, 
+                    [Authentication Module]-[AUTH_Register Class]-[RegisterUser Method] =>, 
                     [IP] {IP} | user with email {Email} was succsessfully created. 
                  """,
                 await Util_GetIpAddres.GetLocation(_httpContextAccessor),
@@ -188,7 +188,7 @@ public class AUTH_Register : Util_BaseAuthDependencies<AUTH_Register, Applicatio
                 ex,
                 _logger,
                 $"""
-                    Somewthing went wrong in [Authentication Module] - [RegisterUser Method],   
+                    Somewthing went wrong in [Authentication Module]-[AUTH_Register Class]-[RegisterUser Method],   
                     user with [EMAIL] {registerDto.Email}.
                  """,
                 false,
