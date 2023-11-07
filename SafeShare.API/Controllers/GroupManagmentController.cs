@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using SafeShare.Utilities.Responses;
+using SafeShare.Security.API.ActionFilters;
 using SafeShare.DataTransormObject.GroupManagment;
 using SafeShare.MediatR.Actions.Queries.GroupManagment;
 using SafeShare.MediatR.Actions.Commands.GroupManagment;
@@ -9,6 +10,7 @@ using SafeShare.DataTransormObject.GroupManagment.GroupInvitations;
 
 namespace SafeShare.API.Controllers;
 
+[ServiceFilter(typeof(VerifyUser))]
 public class GroupManagmentController : BaseController
 {
     private readonly IMediator _mediator;
@@ -42,18 +44,18 @@ public class GroupManagmentController : BaseController
         return await _mediator.Send(new MediatR_GetGroupDetailsQuery(userId, groupId));
     }
 
-    [HttpPost("CreateGroup/{ownerId}")]
+    [HttpPost("CreateGroup/{userId}")]
     public async Task<ActionResult<Util_GenericResponse<bool>>>
     CreateGroup
     (
-        Guid ownerId,
+        Guid userId,
         [FromForm] DTO_CreateGroup createGroup
     )
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        return await _mediator.Send(new MediatR_CreateGroupCommand(ownerId, createGroup));
+        return await _mediator.Send(new MediatR_CreateGroupCommand(userId, createGroup));
     }
 
     [HttpPut("EditGroup/{userId}/{groupId}")]
@@ -71,18 +73,18 @@ public class GroupManagmentController : BaseController
         return await _mediator.Send(new MediatR_EditGroupCommand(userId, groupId, editGroup));
     }
 
-    [HttpDelete("DeleteGroup/{ownerId}/{groupId}")]
+    [HttpDelete("DeleteGroup/{userId}/{groupId}")]
     public async Task<ActionResult<Util_GenericResponse<bool>>>
     DeleteGroup
     (
-        Guid ownerId,
+        Guid userId,
         Guid groupId
     )
     {
-        return await _mediator.Send(new MediatR_DeleteGroupCommand(ownerId, groupId));
+        return await _mediator.Send(new MediatR_DeleteGroupCommand(userId, groupId));
     }
 
-    [HttpGet("GetGroupsInvitations")]
+    [HttpGet("GetGroupsInvitations/{userId}")]
     public async Task<ActionResult<Util_GenericResponse<List<DTO_RecivedInvitations>>>>
     GetGroupsInvitations
     (
@@ -92,7 +94,7 @@ public class GroupManagmentController : BaseController
         return await _mediator.Send(new MediatR_GetGetGroupsInvitationsQuery(userId));
     }
 
-    [HttpGet("GetSentGroupInvitations")]
+    [HttpGet("GetSentGroupInvitations/{userId}")]
     public async Task<ActionResult<Util_GenericResponse<List<DTO_SentInvitations>>>>
     GetSentGroupInvitations
     (
@@ -102,10 +104,11 @@ public class GroupManagmentController : BaseController
         return await _mediator.Send(new MediatR_GetSentGroupInvitationsQuery(userId));
     }
 
-    [HttpPost("SendInvitation")]
+    [HttpPost("SendInvitation/{userId}")]
     public async Task<ActionResult<Util_GenericResponse<bool>>>
     SendInvitation
     (
+        Guid userId,
         DTO_SendInvitationRequest dTO_SendInvitation
     )
     {
@@ -115,10 +118,11 @@ public class GroupManagmentController : BaseController
         return await _mediator.Send(new MediatR_SendInvitationCommand(dTO_SendInvitation));
     }
 
-    [HttpPost("AcceptInvitation")]
+    [HttpPost("AcceptInvitation/{userId}")]
     public async Task<ActionResult<Util_GenericResponse<bool>>>
     AcceptInvitation
     (
+        Guid userId,
         DTO_InvitationRequestActions acceptInvitationRequest
     )
     {
@@ -128,10 +132,11 @@ public class GroupManagmentController : BaseController
         return await _mediator.Send(new MediatR_AcceptInvitationRequestCommand(acceptInvitationRequest));
     }
 
-    [HttpPost("RejectInvitation")]
+    [HttpPost("RejectInvitation/{userId}")]
     public async Task<ActionResult<Util_GenericResponse<bool>>>
     RejectInvitation
     (
+        Guid userId,
         DTO_InvitationRequestActions rejectInvitationRequest
     )
     {
@@ -141,10 +146,11 @@ public class GroupManagmentController : BaseController
         return await _mediator.Send(new MediatR_RejectInvitationRequestCommand(rejectInvitationRequest));
     }
 
-    [HttpDelete("DeleteInvitation")]
+    [HttpDelete("DeleteInvitation/{userId}")]
     public async Task<ActionResult<Util_GenericResponse<bool>>>
     DeleteInvitation
     (
+        Guid userId,
         DTO_InvitationRequestActions deleteInvitationRequest
     )
     {

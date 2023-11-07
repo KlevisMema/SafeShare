@@ -268,6 +268,7 @@ public class AUTH_Login : Util_BaseAuthDependencies<AUTH_Login, ApplicationUser,
             );
 
             loginResult.RequireOtpDuringLogin = user.RequireOTPDuringLogin;
+            loginResult.UserId = user.Id;
 
             return Util_GenericResponse<DTO_LoginResult>.Response
             (
@@ -302,11 +303,10 @@ public class AUTH_Login : Util_BaseAuthDependencies<AUTH_Login, ApplicationUser,
     public async Task<Util_GenericResponse<DTO_LoginResult>>
     ConfirmLogin
     (
+        Guid userId,
         string otp
     )
     {
-        var userId = Util_FindUserIdFromToken.UserId(_httpContextAccessor);
-
         try
         {
             if (String.IsNullOrEmpty(otp))
@@ -333,7 +333,7 @@ public class AUTH_Login : Util_BaseAuthDependencies<AUTH_Login, ApplicationUser,
                 );
             }
 
-            var user = await _userManager.FindByIdAsync(userId);
+            var user = await _userManager.FindByIdAsync(userId.ToString());
 
             if (user == null)
             {

@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Authorization;
 using SafeShare.DataTransormObject.UserManagment;
 using SafeShare.MediatR.Actions.Queries.UserManagment;
 using SafeShare.MediatR.Actions.Commands.UserManagment;
+using SafeShare.Security.API.ActionFilters;
 
 namespace SafeShare.API.Controllers;
 
@@ -42,49 +43,52 @@ public class AccountManagmentController : BaseController
     /// <summary>
     /// Fetch a user's updated information by their ID.
     /// </summary>
-    /// <param name="id">Unique identifier of the user.</param>
+    /// <param name="userId">Unique identifier of the user.</param>
     /// <returns>Returns user's updated information.</returns>
-    [HttpGet("GetUser/{id}")]
+    [HttpGet("GetUser/{userId}")]
+    [ServiceFilter(typeof(VerifyUser))]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<DTO_UserUpdatedInfo>))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<DTO_UserUpdatedInfo>))]
     [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Util_GenericResponse<DTO_UserUpdatedInfo>))]
     public async Task<ActionResult<Util_GenericResponse<DTO_UserUpdatedInfo>>>
     GetUser
     (
-        Guid id
+        Guid userId
     )
     {
-        return await _mediator.Send(new MediatR_GetUserQuery(id));
+        return await _mediator.Send(new MediatR_GetUserQuery(userId));
     }
     /// <summary>
     /// Update a user's information.
     /// </summary>
-    /// <param name="id">Unique identifier of the user to be updated.</param>
+    /// <param name="userId">Unique identifier of the user to be updated.</param>
     /// <param name="userInfo">User's new information.</param>
     /// <returns>Returns user's updated information.</returns>
-    [HttpPut("UpdateUser/{id}")]
+    [HttpPut("UpdateUser/{userId}")]
+    [ServiceFilter(typeof(VerifyUser))]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<DTO_UserUpdatedInfo>))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<DTO_UserUpdatedInfo>))]
     [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Util_GenericResponse<DTO_UserUpdatedInfo>))]
     public async Task<ActionResult<Util_GenericResponse<DTO_UserUpdatedInfo>>>
     UpdateUser
     (
-        Guid id,
+        Guid userId,
         [FromForm] DTO_UserInfo userInfo
     )
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        return await _mediator.Send(new MediatR_UpdateUserCommand(id, userInfo));
+        return await _mediator.Send(new MediatR_UpdateUserCommand(userId, userInfo));
     }
     /// <summary>
     /// Change a user's password by their ID.
     /// </summary>
-    /// <param name="id">Unique identifier of the user.</param>
+    /// <param name="userId">Unique identifier of the user.</param>
     /// <param name="changePassword">Details for changing the user's password.</param>
     /// <returns>Returns a boolean indicating the success of the password change operation.</returns>
-    [HttpPut("ChangePassword/{id}")]
+    [HttpPut("ChangePassword/{userId}")]
+    [ServiceFilter(typeof(VerifyUser))]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<bool>))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<bool>))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(Util_GenericResponse<bool>))]
@@ -92,22 +96,23 @@ public class AccountManagmentController : BaseController
     public async Task<ActionResult<Util_GenericResponse<bool>>>
     ChangePassword
     (
-        Guid id,
+        Guid userId,
         [FromForm] DTO_UserChangePassword changePassword
     )
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        return await _mediator.Send(new MediatR_ChangeUserPasswordCommand(id, changePassword));
+        return await _mediator.Send(new MediatR_ChangeUserPasswordCommand(userId, changePassword));
     }
     /// <summary>
     /// Deactivate a user by their ID.
     /// </summary>
-    /// <param name="id">Unique identifier of the user to be deactivated</param>
+    /// <param name="userId">Unique identifier of the user to be deactivated</param>
     /// <param name="deactivateAccount"> A dto containing user's information for deactivation process </param>
     /// <returns>Returns a boolean indicating the success of the deactivation operation.</returns>
-    [HttpPost("DeactivateAccount/{id}")]
+    [ServiceFilter(typeof(VerifyUser))]
+    [HttpPost("DeactivateAccount/{userId}")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<bool>))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<bool>))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(Util_GenericResponse<bool>))]
@@ -115,16 +120,17 @@ public class AccountManagmentController : BaseController
     public async Task<ActionResult<Util_GenericResponse<bool>>>
     DeactivateAccount
     (
-        Guid id,
+        Guid userId,
         [FromForm] DTO_DeactivateAccount deactivateAccount
     )
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        return await _mediator.Send(new MediatR_DeactivateAccountCommand(id, deactivateAccount));
+        return await _mediator.Send(new MediatR_DeactivateAccountCommand(userId, deactivateAccount));
     }
 
+    [AllowAnonymous]
     [HttpPost("ActivateAccountRequest")]
     public async Task<ActionResult<Util_GenericResponse<bool>>>
     ActivateAccountRequest
@@ -135,6 +141,7 @@ public class AccountManagmentController : BaseController
         return await _mediator.Send(new MediatR_ActivateAccountRequestCommand(email));
     }
 
+    [AllowAnonymous]
     [HttpPost("ActivateAccountRequestConfirmation")]
     public async Task<ActionResult<Util_GenericResponse<bool>>>
     ActivateAccountRequestConfirmation
@@ -148,6 +155,7 @@ public class AccountManagmentController : BaseController
         return await _mediator.Send(new MediatR_ActivateAccountConfirmationRequestCommand(activateAccountConfirmationDto));
     }
 
+    [AllowAnonymous]
     [HttpPost("ForgotPassword")]
     public async Task<ActionResult<Util_GenericResponse<bool>>>
     ForgotPassword
@@ -158,11 +166,12 @@ public class AccountManagmentController : BaseController
         return await _mediator.Send(new MediatR_ForgotPasswordCommand(email));
     }
 
+    [AllowAnonymous]
     [HttpPost("ResetPassword")]
     public async Task<ActionResult<Util_GenericResponse<bool>>>
     ResetPassword
     (
-        [FromForm] DTO_ResetPassword resetPassword
+        DTO_ResetPassword resetPassword
     )
     {
         if (!ModelState.IsValid)
@@ -171,31 +180,33 @@ public class AccountManagmentController : BaseController
         return await _mediator.Send(new MediatR_ResetUserPasswordCommand(resetPassword));
     }
 
-    [HttpPost("RequestChangeEmail")]
-    [Authorize(AuthenticationSchemes = "Default")]
+    [ServiceFilter(typeof(VerifyUser))]
+    [HttpPost("RequestChangeEmail/{userId}")]
     public async Task<ActionResult<Util_GenericResponse<bool>>>
     RequestChangeEmail
     (
+        Guid userId,
         [FromForm] DTO_ChangeEmailAddressRequest emailAddress
     )
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        return await _mediator.Send(new MediatR_ChangeEmailAddressRequestCommand(emailAddress));
+        return await _mediator.Send(new MediatR_ChangeEmailAddressRequestCommand(userId, emailAddress));
     }
 
-    [Authorize(AuthenticationSchemes = "Default")]
-    [HttpPost("ConfirmChangeEmailRequest")]
+    [ServiceFilter(typeof(VerifyUser))]
+    [HttpPost("ConfirmChangeEmailRequest/{userId}")]
     public async Task<ActionResult<Util_GenericResponse<bool>>>
     ConfirmChangeEmailRequest
     (
+        Guid userId,
         DTO_ChangeEmailAddressRequestConfirm changeEmailAddressConfirmDto
     )
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        return await _mediator.Send(new MediatR_ChangeEmailAddressRequestConfirmationCommand(changeEmailAddressConfirmDto));
+        return await _mediator.Send(new MediatR_ChangeEmailAddressRequestConfirmationCommand(userId, changeEmailAddressConfirmDto));
     }
 }

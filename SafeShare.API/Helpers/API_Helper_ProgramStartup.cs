@@ -40,6 +40,7 @@ using SafeShare.DataTransormObject.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using SafeShare.Security.JwtSecurity.Implementations;
 using SafeShare.MediatR.Handlers.CommandsHandlers.Authentication;
+using SafeShare.Security.API.ActionFilters;
 
 namespace SafeShare.API.Startup;
 
@@ -133,6 +134,7 @@ public static class API_Helper_ProgramStartup
         IServiceCollection Services
     )
     {
+        Services.AddScoped<VerifyUser>();
         Services.AddScoped<IAUTH_Login, AUTH_Login>();
         Services.AddScoped<IAUTH_Register, AUTH_Register>();
         Services.AddScoped<IAccountManagment, AccountManagment>();

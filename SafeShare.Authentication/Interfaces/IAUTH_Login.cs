@@ -34,6 +34,7 @@ public interface IAUTH_Login
     Task<Util_GenericResponse<DTO_LoginResult>>
     ConfirmLogin
     (
+        Guid userId,
         string otp
     );
     /// <summary>

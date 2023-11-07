@@ -12,6 +12,8 @@
 
 using SafeShare.Security.API;
 using Microsoft.AspNetCore.Mvc;
+using SafeShare.Security.API.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SafeShare.API.Controllers;
 
@@ -19,10 +21,10 @@ namespace SafeShare.API.Controllers;
 /// Base API controller for Safe Share application.
 /// </summary>
 
-//[Authorize]
 [ApiController]
 [Route("api/[controller]")]
-//[ServiceFilter(typeof(IApiKeyAuthorizationFilter))]
+[Authorize(AuthenticationSchemes = "Default")]
+[ServiceFilter(typeof(IApiKeyAuthorizationFilter))]
 public class BaseController : ControllerBase
 {
 }

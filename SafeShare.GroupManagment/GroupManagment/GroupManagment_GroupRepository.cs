@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using SafeShare.Utilities.IP;
 using SafeShare.Utilities.Log;
+using SafeShare.Utilities.User;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using SafeShare.Utilities.Services;
@@ -44,10 +45,10 @@ public class GroupManagment_GroupRepository : Util_BaseContextDependencies<Appli
             {
                 _logger.Log
                 (
-                    LogLevel.Information,
+                    LogLevel.Error,
                     """
                         [GroupManagment Module]-[GroupManagment_GroupRepository class]-[GetGroupsTypes Method] => 
-                        [RESULT] : [IP] {IP} user with [ID] {ID} doesnt exists""
+                        [RESULT] : [IP] {IP} user with [ID] {ID} doesnt exists.
                      """,
                     await Util_GetIpAddres.GetLocation(_httpContextAccessor),
                     userId
@@ -111,7 +112,7 @@ public class GroupManagment_GroupRepository : Util_BaseContextDependencies<Appli
                     LogLevel.Error,
                     """
                         [GroupManagment Module]--[GroupManagment_GroupRepository class]--[GetGroupDetails Method] => 
-                        [RESULT] : [IP] {IP} user with [ID] {ID} doesnt exists".
+                        [RESULT] : [IP] {IP} user with [ID] {ID} doesnt exists.
                      """,
                     await Util_GetIpAddres.GetLocation(_httpContextAccessor),
                     userId
@@ -240,7 +241,7 @@ public class GroupManagment_GroupRepository : Util_BaseContextDependencies<Appli
                     LogLevel.Error,
                     """
                         [GroupManagment Module]--[GroupManagment_GroupRepository class]--[CreateGroup Method] => 
-                        [RESULT] : [IP] {IP} user with id {ID} doesnt exists
+                        [RESULT] : [IP] {IP} user with id {ID} doesnt exists.
                      """,
                     await Util_GetIpAddres.GetLocation(_httpContextAccessor),
                     ownerId
@@ -285,7 +286,7 @@ public class GroupManagment_GroupRepository : Util_BaseContextDependencies<Appli
                 """
                     [GroupManagment Module]--[GroupManagment_GroupRepository class]--[CreateGroup Method] => 
                     [RESULT] : [IP] {IP} user with id {ID} create the group with [ID] {groupId} and is a 
-                    owner and a memeber of the group with
+                    owner and a memeber of the group with.
                  """,
                 await Util_GetIpAddres.GetLocation(_httpContextAccessor),
                 ownerId,
@@ -335,7 +336,7 @@ public class GroupManagment_GroupRepository : Util_BaseContextDependencies<Appli
                     LogLevel.Error,
                     """
                         [GroupManagment Module]--[GroupManagment_GroupRepository class]--[EditGroup Method] => 
-                        [RESULT] : [IP] {IP} user with [ID] {ID} doesn't exists. DTO {@DTO}
+                        [RESULT] : [IP] {IP} user with [ID] {ID} doesn't exists. DTO {@DTO}.
                      """,
                     await Util_GetIpAddres.GetLocation(_httpContextAccessor),
                     userId,

@@ -23,7 +23,7 @@ public class MediatR_ChangeEmailAddressRequestConfirmationCommandHandler :
         CancellationToken cancellationToken
     )
     {
-        var confirmChangeEmailRequestResult = await _service.ConfirmChangeEmailAddressRequest(request.ChangeEmailAddressConfirm);
+        var confirmChangeEmailRequestResult = await _service.ConfirmChangeEmailAddressRequest(request.UserId, request.ChangeEmailAddressConfirm);
 
         return Util_GenericControllerResponse<DTO_Token>.ControllerResponse(confirmChangeEmailRequestResult);
     }

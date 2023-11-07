@@ -108,6 +108,7 @@ public interface IAccountManagment
     Task<Util_GenericResponse<bool>>
     RequestChangeEmailAddress
     (
+        Guid userId,
        DTO_ChangeEmailAddressRequest newEmailAddressDto
     );
     /// <summary>
@@ -118,6 +119,7 @@ public interface IAccountManagment
     Task<Util_GenericResponse<DTO_Token>>
     ConfirmChangeEmailAddressRequest
     (
+        Guid userId,
         DTO_ChangeEmailAddressRequestConfirm changeEmailAddressConfirmDto
     );
 }

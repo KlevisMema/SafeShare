@@ -27,7 +27,7 @@ public class MediatR_ConfirmLoginUserCommandHandler : MediatR_GenericHandler<IAU
         CancellationToken cancellationToken
     )
     {
-        var confirmLoginResult = await _service.ConfirmLogin(request.OTP);
+        var confirmLoginResult = await _service.ConfirmLogin(request.UserId, request.OTP);
 
         return Util_GenericControllerResponse<DTO_LoginResult>.ControllerResponse(confirmLoginResult);
     }

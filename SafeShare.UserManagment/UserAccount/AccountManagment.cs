@@ -1077,14 +1077,13 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
     public async Task<Util_GenericResponse<bool>>
     RequestChangeEmailAddress
     (
+        Guid userId,
         DTO_ChangeEmailAddressRequest newEmailAddressDto
     )
     {
-        var userId = Util_FindUserIdFromToken.UserId(_httpContextAccessor);
-
         try
         {
-            var user = await GetApplicationUser(Guid.Parse(userId));
+            var user = await GetApplicationUser(userId);
 
             if (user == null)
             {
@@ -1248,14 +1247,13 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
     public async Task<Util_GenericResponse<DTO_Token>>
     ConfirmChangeEmailAddressRequest
     (
+        Guid userId,
         DTO_ChangeEmailAddressRequestConfirm changeEmailAddressConfirmDto
     )
     {
-        var userId = Util_FindUserIdFromToken.UserId(_httpContextAccessor);
-
         try
         {
-            var user = await GetApplicationUser(Guid.Parse(userId));
+            var user = await GetApplicationUser(userId);
 
             if (user == null)
             {

@@ -10,15 +10,17 @@ using Microsoft.AspNetCore.Mvc;
 using SafeShare.Utilities.Responses;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authorization;
+using SafeShare.DataTransormObject.Security;
 using SafeShare.DataTransormObject.Authentication;
 using SafeShare.MediatR.Actions.Commands.Authentication;
-using SafeShare.DataTransormObject.Security;
+using SafeShare.Security.API.ActionFilters;
 
 namespace SafeShare.API.Controllers;
 
 /// <summary>
 ///     A authentication contoller providing endpoinnts for login and registering.
 /// </summary>
+/// 
 public class AuthenticationController : BaseController
 {
     /// <summary>
@@ -61,6 +63,7 @@ public class AuthenticationController : BaseController
     /// </summary>
     /// <param name="confirmRegistrationDto">The <see cref="DTO_ConfirmRegistration"/> object </param>
     /// <returns></returns>
+    [AllowAnonymous]
     [HttpPost("ConfirmRegistration")]
     public async Task<ActionResult<Util_GenericResponse<bool>>>
     ConfirmRegistration
@@ -75,6 +78,7 @@ public class AuthenticationController : BaseController
     /// </summary>
     /// <param name="loginDto">The login data.</param>
     /// <returns>A response containing the token or an error message.</returns>
+    [AllowAnonymous]
     [HttpPost("Login")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<DTO_LoginResult>))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<DTO_LoginResult>))]
@@ -95,8 +99,10 @@ public class AuthenticationController : BaseController
     /// Confirms the log in.
     /// </summary>
     /// <param name="otp">The otp </param>
+    /// <param name="userId">The id of the user</param>
     /// <returns>A response containing the token or an error message.</returns>
     [HttpPost("ConfirmLogin")]
+    [ServiceFilter(typeof(VerifyUser))]
     [Authorize(AuthenticationSchemes = "ConfirmLogin")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<DTO_LoginResult>))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<DTO_LoginResult>))]
@@ -105,19 +111,21 @@ public class AuthenticationController : BaseController
     public async Task<ActionResult<Util_GenericResponse<DTO_LoginResult>>>
     ConfirmLogin
     (
+        Guid userId,
         string otp
     )
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        return await _mediator.Send(new MediatR_ConfirmLoginUserCommand(otp));
+        return await _mediator.Send(new MediatR_ConfirmLoginUserCommand(otp, userId));
     }
     /// <summary>
     /// Re confirms the registration proccess
     /// </summary>
     /// <param name="email"></param>
     /// <returns></returns>
+    [AllowAnonymous]
     [HttpPost("ReConfirmRegistrationRequest")]
     public async Task<ActionResult<Util_GenericResponse<bool>>>
     ReConfirmRegistrationRequest
@@ -132,6 +140,7 @@ public class AuthenticationController : BaseController
     /// </summary>
     /// <returns></returns>
     [HttpPost("LogOut")]
+    [ServiceFilter(typeof(VerifyUser))]
     [Authorize(AuthenticationSchemes = "Default")]
     public async Task<ActionResult>
     LogOut
@@ -144,6 +153,7 @@ public class AuthenticationController : BaseController
         return Ok();
     }
 
+    [AllowAnonymous]
     [HttpPost("ValidateToken")]
     public async Task<ActionResult<Util_GenericResponse<DTO_Token>>>
     RefreshToken

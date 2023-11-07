@@ -28,7 +28,7 @@ public class MediatR_ChangeEmailAddressRequestCommandHandler :
         CancellationToken cancellationToken
     )
     {
-        var requestChangeEmailResult = await _service.RequestChangeEmailAddress(request.EmailAddress);
+        var requestChangeEmailResult = await _service.RequestChangeEmailAddress(request.UserId, request.EmailAddress);
 
         return Util_GenericControllerResponse<bool>.ControllerResponse(requestChangeEmailResult);
     }
