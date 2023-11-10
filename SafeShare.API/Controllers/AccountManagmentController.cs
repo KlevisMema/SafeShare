@@ -13,10 +13,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using SafeShare.Utilities.Responses;
 using Microsoft.AspNetCore.Authorization;
+using SafeShare.Security.API.ActionFilters;
 using SafeShare.DataTransormObject.UserManagment;
 using SafeShare.MediatR.Actions.Queries.UserManagment;
 using SafeShare.MediatR.Actions.Commands.UserManagment;
-using SafeShare.Security.API.ActionFilters;
 
 namespace SafeShare.API.Controllers;
 
@@ -171,7 +171,7 @@ public class AccountManagmentController : BaseController
     public async Task<ActionResult<Util_GenericResponse<bool>>>
     ResetPassword
     (
-        DTO_ResetPassword resetPassword
+        [FromForm] DTO_ResetPassword resetPassword
     )
     {
         if (!ModelState.IsValid)

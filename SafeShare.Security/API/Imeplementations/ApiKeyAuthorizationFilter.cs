@@ -4,13 +4,13 @@
 */
 
 
-using Microsoft.AspNetCore.Http;
+using SafeShare.Utilities.IP;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Mvc.Filters;
 using SafeShare.Security.API.Decryption;
 using SafeShare.Security.API.Interfaces;
-using SafeShare.Utilities.IP;
 
 namespace SafeShare.Security.API.Imeplementations;
 
@@ -26,36 +26,27 @@ public class ApiKeyAuthorizationFilter : IAuthorizationFilter, IApiKeyAuthorizat
     /// <summary>
     /// The http accessor
     /// </summary>
-    private readonly IHttpContextAccessor _httpContextAccessor = null!;
+    private readonly IHttpContextAccessor _httpContextAccessor;
     /// <summary>
     /// The logger
     /// </summary>
-    private readonly ILogger<ApiKeyAuthorizationFilter> _logger = null!;
+    private readonly ILogger<ApiKeyAuthorizationFilter> _logger;
     /// <summary>
     /// Initializes a new instance of the <see cref="ApiKeyAuthorizationFilter"/> class.
     /// </summary>
     /// <param name="apiKey">The API key used for authorization.</param>
-
-    public ApiKeyAuthorizationFilter
-    (
-        string apiKey
-    )
-    {
-        _apiKey = apiKey;
-    }
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ApiKeyAuthorizationFilter"/> class.
-    /// </summary> 
-    /// <param name="logger">The logged used for logging informations.</param>
+    ///  <param name="logger">The logged used for logging informations.</param>
     /// <param name="httpContextAccessor">
     ///     The http context accessor used to get the ip of the user making a request
     /// </param>
     public ApiKeyAuthorizationFilter
     (
+        string apiKey, 
         IHttpContextAccessor httpContextAccessor,
         ILogger<ApiKeyAuthorizationFilter> logger
     )
     {
+        _apiKey = apiKey;
         _httpContextAccessor = httpContextAccessor;
         _logger = logger;
     }

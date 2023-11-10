@@ -390,7 +390,11 @@ public class GroupManagment_GroupRepository : Util_BaseContextDependencies<Appli
                 Description = editGroup.GroupDescription
             };
 
-            _db.Groups.Update(group);
+            isInTheGroup.Group.ModifiedAt = DateTime.UtcNow;
+            isInTheGroup.Group.Name = editGroup.GroupName;
+            isInTheGroup.Group.Description = editGroup.GroupDescription;
+
+            _db.Groups.Update(isInTheGroup.Group);
             await _db.SaveChangesAsync();
 
             var _group = new DTO_GroupType

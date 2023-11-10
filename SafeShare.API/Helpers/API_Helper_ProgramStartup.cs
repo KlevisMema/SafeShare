@@ -30,17 +30,18 @@ using Microsoft.Extensions.Configuration;
 using SafeShare.Authentication.Interfaces;
 using SafeShare.GroupManagment.Interfaces;
 using SafeShare.UserManagment.UserAccount;
+using SafeShare.Security.API.ActionFilters;
 using SafeShare.DataTransormObject.Security;
 using SafeShare.GroupManagment.GroupManagment;
 using SafeShare.Security.API.Imeplementations;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.Extensions.DependencyInjection;
 using SafeShare.Security.JwtSecurity.Interfaces;
 using SafeShare.Utilities.ConfigurationSettings;
 using SafeShare.DataTransormObject.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using SafeShare.Security.JwtSecurity.Implementations;
 using SafeShare.MediatR.Handlers.CommandsHandlers.Authentication;
-using SafeShare.Security.API.ActionFilters;
 
 namespace SafeShare.API.Startup;
 
@@ -140,6 +141,16 @@ public static class API_Helper_ProgramStartup
         Services.AddScoped<IAccountManagment, AccountManagment>();
         Services.AddScoped<IAUTH_RefreshToken, AUTH_RefreshToken>();
         Services.AddScoped<ISecurity_JwtTokenHash, Security_JwtTokenAuth>();
+        // Add the custom auth filter, a filter that is used by all enpoints
+        Services.AddScoped<IApiKeyAuthorizationFilter>(provider =>
+        {
+            var httpContextAccessor = provider.GetRequiredService<IHttpContextAccessor>();
+            var logger = provider.GetRequiredService<ILogger<ApiKeyAuthorizationFilter>>();
+
+            var config = provider.GetService<IConfiguration>();
+            string apikey = Environment.GetEnvironmentVariable("SAFE_SHARE_API_KEY");
+            return new ApiKeyAuthorizationFilter(apikey, httpContextAccessor, logger);
+        });
         Services.AddScoped<IGroupManagment_GroupRepository, GroupManagment_GroupRepository>();
         Services.AddScoped<IGroupManagment_GroupInvitationsRepository, GroupManagment_GroupInvitationsRepository>();
         Services.AddScoped<ISecurity_JwtTokenAuth<Security_JwtTokenAuth, DTO_AuthUser, DTO_Token>, Security_JwtTokenAuth>();
@@ -204,14 +215,7 @@ public static class API_Helper_ProgramStartup
         // Services Settings
         var jwtSetting = Configuration.GetSection(Util_JwtSettings.SectionName);
 
-        // Add the custom auth filter, a filter that is used by all enpoints
-        Services.AddScoped<IApiKeyAuthorizationFilter>(provider =>
-        {
-            var config = provider.GetService<IConfiguration>();
-            string apikey = Environment.GetEnvironmentVariable("SAFE_SHARE_API_KEY");
-            return new ApiKeyAuthorizationFilter(apikey);
-        });
-
+       
 
         // Cofigure Authetication
 

@@ -9,19 +9,22 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using SafeShare.Utilities.Responses;
 using System.IdentityModel.Tokens.Jwt;
+using SafeShare.Security.API.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using SafeShare.Security.API.ActionFilters;
 using SafeShare.DataTransormObject.Security;
 using SafeShare.DataTransormObject.Authentication;
 using SafeShare.MediatR.Actions.Commands.Authentication;
-using SafeShare.Security.API.ActionFilters;
 
 namespace SafeShare.API.Controllers;
 
 /// <summary>
 ///     A authentication contoller providing endpoinnts for login and registering.
 /// </summary>
-/// 
-public class AuthenticationController : BaseController
+[ApiController]
+[Route("api/[controller]")]
+[ServiceFilter(typeof(IApiKeyAuthorizationFilter))]
+public class AuthenticationController : ControllerBase
 {
     /// <summary>
     /// The mediator used for command and query handling in the CQRS pattern.
@@ -62,7 +65,7 @@ public class AuthenticationController : BaseController
     /// Confirms the registration of the user 
     /// </summary>
     /// <param name="confirmRegistrationDto">The <see cref="DTO_ConfirmRegistration"/> object </param>
-    /// <returns></returns>
+    /// <returns>A response indicating the success or failure of registration confiramtion</returns>
     [AllowAnonymous]
     [HttpPost("ConfirmRegistration")]
     public async Task<ActionResult<Util_GenericResponse<bool>>>
@@ -124,7 +127,7 @@ public class AuthenticationController : BaseController
     /// Re confirms the registration proccess
     /// </summary>
     /// <param name="email"></param>
-    /// <returns></returns>
+    /// <returns> A response indicating the success or failure of the registration reconfirmation</returns>
     [AllowAnonymous]
     [HttpPost("ReConfirmRegistrationRequest")]
     public async Task<ActionResult<Util_GenericResponse<bool>>>
@@ -138,7 +141,8 @@ public class AuthenticationController : BaseController
     /// <summary>
     /// Logs out a user
     /// </summary>
-    /// <returns></returns>
+    /// <param name="userId">The id of the user</param>
+    /// <returns> A response indicating the success or failure of the registration </returns>
     [HttpPost("LogOut")]
     [ServiceFilter(typeof(VerifyUser))]
     [Authorize(AuthenticationSchemes = "Default")]
@@ -152,7 +156,11 @@ public class AuthenticationController : BaseController
 
         return Ok();
     }
-
+    /// <summary>
+    /// Refesh a expired token
+    /// </summary>
+    /// <param name="validateToken"> The <see cref="DTO_ValidateToken"/> object </param>
+    /// <returns>A response indicating the success or failure of token refreshing</returns>
     [AllowAnonymous]
     [HttpPost("ValidateToken")]
     public async Task<ActionResult<Util_GenericResponse<DTO_Token>>>

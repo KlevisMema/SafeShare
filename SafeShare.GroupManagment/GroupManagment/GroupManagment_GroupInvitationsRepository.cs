@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using SafeShare.Utilities.IP;
 using SafeShare.Utilities.Log;
 using SafeShare.Utilities.Enums;
 using Microsoft.AspNetCore.Http;
@@ -106,6 +107,20 @@ public class GroupManagment_GroupInvitationsRepository :
     {
         try
         {
+            var checkPassed = await GenerealChecks("SendInvitation", sendInvitation.GroupId, sendInvitation.InvitingUserId, sendInvitation.InvitedUserId);
+
+            if (!checkPassed)
+            {
+                return Util_GenericResponse<bool>.Response
+                (
+                   false,
+                   false,
+                   "Something went wrong, invitation was not sent",
+                   null,
+                   System.Net.HttpStatusCode.BadRequest
+                );
+            }
+
             var invitation = new GroupInvitation
             {
                 InvitingUserId = sendInvitation.InvitingUserId.ToString(),
@@ -118,6 +133,21 @@ public class GroupManagment_GroupInvitationsRepository :
 
             await _db.GroupInvitations.AddAsync(invitation);
             await _db.SaveChangesAsync();
+
+            _logger.Log
+            (
+                LogLevel.Information,
+                """
+                    [GroupManagment Module]--[GroupManagment_GroupInvitationsRepository class]--[SendInvitation Method] => 
+                    [RESULT] : [IP] {IP} user with [ID] {ID} invited user with id {InvitedUserId} the group with id {groupId}.
+                    More details : {@invitationDto}
+                 """,
+                await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                sendInvitation.InvitingUserId,
+                sendInvitation.InvitedUserId,
+                sendInvitation.GroupId,
+                sendInvitation
+            );
 
             return Util_GenericResponse<bool>.Response
             (
@@ -152,6 +182,20 @@ public class GroupManagment_GroupInvitationsRepository :
     {
         try
         {
+            var checkPassed = await GenerealChecks("AcceptInvitation", accepInvitation.GroupId, accepInvitation.InvitingUserId, accepInvitation.InvitedUserId);
+
+            if (!checkPassed)
+            {
+                return Util_GenericResponse<bool>.Response
+                (
+                   false,
+                   false,
+                   "Something went wrong, invitation was not accepted",
+                   null,
+                   System.Net.HttpStatusCode.BadRequest
+                );
+            }
+
             var invitation = await _db.GroupInvitations.FirstOrDefaultAsync(x => x.Id == accepInvitation.InvitationId);
 
             if
@@ -213,6 +257,20 @@ public class GroupManagment_GroupInvitationsRepository :
     {
         try
         {
+            var checkPassed = await GenerealChecks("RejectInvitation", rejectInvitation.GroupId, rejectInvitation.InvitingUserId, rejectInvitation.InvitedUserId);
+
+            if (!checkPassed)
+            {
+                return Util_GenericResponse<bool>.Response
+                (
+                   false,
+                   false,
+                   "Something went wrong, invitation was not rejected",
+                   null,
+                   System.Net.HttpStatusCode.BadRequest
+                );
+            }
+
             var invitation = await _db.GroupInvitations.FirstOrDefaultAsync(x => x.Id == rejectInvitation.InvitationId);
 
             if
@@ -264,6 +322,20 @@ public class GroupManagment_GroupInvitationsRepository :
     {
         try
         {
+            var checkPassed = await GenerealChecks("DeleteSentInvitation", deleteInvitation.GroupId, deleteInvitation.InvitingUserId, deleteInvitation.InvitedUserId);
+
+            if (!checkPassed)
+            {
+                return Util_GenericResponse<bool>.Response
+                (
+                   false,
+                   false,
+                   "Something went wrong, invitation was not deleted",
+                   null,
+                   System.Net.HttpStatusCode.BadRequest
+                );
+            }
+
             var invitation = await _db.GroupInvitations.FirstOrDefaultAsync(x => x.Id == deleteInvitation.InvitationId);
 
             if
@@ -305,5 +377,77 @@ public class GroupManagment_GroupInvitationsRepository :
 
             throw;
         }
+    }
+
+    private async Task<bool>
+    GenerealChecks
+    (
+        string methodName,
+        Guid groupId,
+        Guid invitingUserId,
+        Guid invitedUserId
+    )
+    {
+        var group = await _db.Groups.FirstOrDefaultAsync(x => x.Id == groupId && !x.IsDeleted);
+
+        if (group is null)
+        {
+            _logger.Log
+            (
+                LogLevel.Error,
+                """
+                        [GroupManagment Module]--[GroupManagment_GroupInvitationsRepository class]--[{methodName} Method] => 
+                        [RESULT] : [IP] {IP} user with [ID] {ID} invited user with id {InvitedUserId} to a non existing or deleted group.
+                 """,
+                methodName,
+                await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                invitingUserId,
+                invitedUserId
+            );
+
+            return false;
+        }
+
+        var invitingUser = await _db.Users.FirstOrDefaultAsync(x => x.Id == invitingUserId.ToString() && !x.IsDeleted);
+
+        if (invitingUser is null)
+        {
+            _logger.Log
+            (
+                LogLevel.Error,
+                """
+                        [GroupManagment Module]--[GroupManagment_GroupInvitationsRepository class]--[{methodName} Method] => 
+                        [RESULT] : [IP] {IP} inviting user with [ID] {ID} doesn't exists.
+                 """,
+                methodName,
+                await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                invitingUserId
+            );
+
+            return false;
+        }
+
+        var invitingedUser = await _db.Users.FirstOrDefaultAsync(x => x.Id == invitedUserId.ToString() && !x.IsDeleted);
+
+        if (invitingUser is null)
+        {
+            _logger.Log
+            (
+                LogLevel.Error,
+                """
+                        [GroupManagment Module]--[GroupManagment_GroupInvitationsRepository class]--[{methodName} Method] => 
+                        [RESULT] : [IP] {IP} inviting user with [ID] {ID} send an invitation to user with id {invitedUser},
+                        who doesn't exists or is delted.
+                 """,
+                methodName,
+                await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                invitingUserId,
+                invitedUserId
+            );
+
+            return false;
+        }
+
+        return true;
     }
 }

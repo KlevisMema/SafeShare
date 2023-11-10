@@ -819,7 +819,7 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
     {
         var user = await GetApplicationUserByEmail(email);
 
-        if (user is null || user.Email == null)
+        if (user is null || user.Email == null || user.IsDeleted)
         {
             _logger.Log
             (
@@ -951,7 +951,7 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
     {
         var user = await GetApplicationUserByEmail(resetPassword.Email);
 
-        if (user == null)
+        if (user == null || user.IsDeleted)
         {
             _logger.Log
             (
@@ -1085,7 +1085,7 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
         {
             var user = await GetApplicationUser(userId);
 
-            if (user == null)
+            if (user is null || user.IsDeleted)
             {
                 _logger.Log
                 (
@@ -1255,7 +1255,7 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
         {
             var user = await GetApplicationUser(userId);
 
-            if (user == null)
+            if (user == null || user.IsDeleted)
             {
                 _logger.Log
                 (
@@ -1438,7 +1438,6 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
     )
     {
         var user = await _userManager.FindByIdAsync(id.ToString());
-
         return user;
     }
     /// <summary>

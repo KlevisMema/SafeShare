@@ -10,7 +10,7 @@ using SafeShare.DataTransormObject.GroupManagment.GroupInvitations;
 
 namespace SafeShare.API.Controllers;
 
-[ServiceFilter(typeof(VerifyUser))]
+//[ServiceFilter(typeof(VerifyUser))]
 public class GroupManagmentController : BaseController
 {
     private readonly IMediator _mediator;

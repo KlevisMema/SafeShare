@@ -23,8 +23,8 @@ namespace SafeShare.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(AuthenticationSchemes = "Default")]
-[ServiceFilter(typeof(IApiKeyAuthorizationFilter))]
+//[Authorize(AuthenticationSchemes = "Default")]
+//[ServiceFilter(typeof(IApiKeyAuthorizationFilter))]
 public class BaseController : ControllerBase
 {
 }
