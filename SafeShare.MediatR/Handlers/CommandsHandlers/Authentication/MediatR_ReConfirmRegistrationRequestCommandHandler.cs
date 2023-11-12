@@ -1,4 +1,9 @@
-﻿using MediatR;
+﻿/* 
+ * Defines a MediatR command handler for processing requests to re-send user registration confirmation emails.
+ * This handler is responsible for invoking the appropriate authentication service to handle the reconfirmation of the registration process, typically triggered when a user did not receive or respond to the initial confirmation email.
+ */
+
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using SafeShare.Utilities.Responses;
 using SafeShare.MediatR.Dependencies;
@@ -7,10 +12,17 @@ using SafeShare.MediatR.Actions.Commands.Authentication;
 
 namespace SafeShare.MediatR.Handlers.CommandsHandlers.Authentication;
 
+/// <summary>
+/// A MediatR command handler for processing requests to re-send user registration confirmation emails.
+/// </summary>
 public class MediatR_ReConfirmRegistrationRequestCommandHandler :
     MediatR_GenericHandler<IAUTH_Register>,
     IRequestHandler<MediatR_ReConfirmRegistrationRequestCommand, ObjectResult>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MediatR_ReConfirmRegistrationRequestCommandHandler"/> class.
+    /// </summary>
+    /// <param name="service">The authentication service used for re-confirming user registration requests.</param>
     public MediatR_ReConfirmRegistrationRequestCommandHandler
     (
         IAUTH_Register service
@@ -20,7 +32,12 @@ public class MediatR_ReConfirmRegistrationRequestCommandHandler :
         service
     )
     { }
-
+    /// <summary>
+    /// Handles the reconfirmation of a user registration request.
+    /// </summary>
+    /// <param name="request">The command containing the user's email for reconfirmation.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>An ObjectResult with the outcome of the reconfirmation process.</returns>
     public async Task<ObjectResult>
     Handle
     (

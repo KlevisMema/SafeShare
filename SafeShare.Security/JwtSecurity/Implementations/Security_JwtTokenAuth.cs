@@ -1,7 +1,8 @@
-﻿/*
- * Implementation of the ISecurity_JwtTokenAuth interface responsible for JWT token generation.
- * This service provides methods to create JWT tokens for user authentication, leveraging provided JWT settings.
-*/
+﻿/* 
+ * Provides implementation for the ISecurity_JwtTokenAuth interface, responsible for JWT token generation.
+ * This class offers methods to create JWT tokens for user authentication, utilizing JWT settings provided through configuration.
+ * It also includes functionality for validating JWT tokens and adding them to the database.
+ */
 
 using System.Text;
 using Newtonsoft.Json.Linq;
@@ -21,7 +22,7 @@ using SafeShare.DataTransormObject.Authentication;
 namespace SafeShare.Security.JwtSecurity.Implementations;
 
 /// <summary>
-/// Service for creating JWT tokens for authentication.
+/// Service responsible for creating and validating JWT tokens for authentication.
 /// </summary>
 public class Security_JwtTokenAuth : ISecurity_JwtTokenAuth<Security_JwtTokenAuth, DTO_AuthUser, DTO_Token>, ISecurity_JwtTokenHash
 {
@@ -52,10 +53,10 @@ public class Security_JwtTokenAuth : ISecurity_JwtTokenAuth<Security_JwtTokenAut
         _jwtOptions = jwtOptions;
     }
     /// <summary>
-    /// Creates a JWT token for the specified user.
+    /// Creates a JWT token based on the specified input parameter.
     /// </summary>
-    /// <param name="user">The user information. <see cref="UserDto"/></param>
-    /// <returns>The generated JWT token.</returns>
+    /// <param name="user">The input parameter used for token generation. This could be user information or any other required data.</param>
+    /// <returns>A task representing the asynchronous operation. The task result is of type <see cref="DTO_Token"/>, representing the generated JWT token.</returns>
     public async Task<DTO_Token>
     CreateToken
     (
@@ -72,10 +73,11 @@ public class Security_JwtTokenAuth : ISecurity_JwtTokenAuth<Security_JwtTokenAut
         return tokenDto;
     }
     /// <summary>
-    /// Validates a jwt token
+    /// Validates a JWT token against a hashed version stored in the database.
     /// </summary>
-    /// <param name="tokenToValidate">The token to validate</param>
-    /// <returns>True or false</returns>
+    /// <param name="tokenToValidate">The JWT token to validate.</param>
+    /// <param name="hashedTokenInDb">The hashed version of the token stored in the database.</param>
+    /// <returns>A task representing the asynchronous operation. The task result is a boolean indicating the validity of the token.</returns>
     public Task<bool>
     ValidateToken
     (

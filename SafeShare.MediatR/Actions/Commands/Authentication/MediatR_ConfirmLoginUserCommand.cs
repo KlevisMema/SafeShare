@@ -1,13 +1,32 @@
-﻿using MediatR;
+﻿/* 
+ * Defines a MediatR command for confirming a user's login using OTP (One-Time Password).
+ * This command is processed by MediatR handlers to handle the login confirmation process.
+ */
+
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace SafeShare.MediatR.Actions.Commands.Authentication;
 
+/// <summary>
+/// Represents a MediatR command for confirming a user's login using a one-time password (OTP).
+/// This command encapsulates the data required for the login confirmation process.
+/// </summary>
 public class MediatR_ConfirmLoginUserCommand : IRequest<ObjectResult>
 {
+    /// <summary>
+    /// The unique identifier of the user.
+    /// </summary>
     public Guid UserId { get; set; }
+    /// <summary>
+    /// The OTP (One-Time Password) provided by the user.
+    /// </summary>
     public string OTP { get; set; }
-
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MediatR_ConfirmLoginUserCommand"/> class.
+    /// </summary>
+    /// <param name="oTP">The one-time password for login confirmation.</param>
+    /// <param name="userId">The unique identifier of the user attempting to log in.</param>    
     public MediatR_ConfirmLoginUserCommand
     (
         string oTP, 

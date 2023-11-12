@@ -1,10 +1,22 @@
-﻿using AutoMapper;
+﻿/* 
+ * Provides a base class with common dependencies for repositories utilizing a database context.
+ * This class is part of the Utilities layer and helps in reducing boilerplate code by encapsulating 
+ * common functionalities.
+ */
+
+using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using SafeShare.Utilities.Services;
 
 namespace SafeShare.Utilities.Dependencies;
 
+/// <summary>
+/// Provides a base class with common dependencies for repositories that require access to a database context.
+/// It includes necessary components like IMapper, ILogger, and IHttpContextAccessor, along with the database context.
+/// </summary>
+/// <typeparam name="TContext">The type of the database context.</typeparam>
+/// <typeparam name="TRepository">The type of the repository.</typeparam>
 public class Util_BaseContextDependencies<TContext, TRepository> : Util_BaseDependencies<TRepository>
 where TRepository : class
 where TContext : class

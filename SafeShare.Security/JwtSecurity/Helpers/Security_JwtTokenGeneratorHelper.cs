@@ -1,4 +1,9 @@
-﻿using System.Text;
+﻿/* 
+ * Provides helper methods for generating JWT (JSON Web Token) tokens.
+ * This class includes functionalities for getting signing credentials and generating tokens with specific claims.
+ */
+
+using System.Text;
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -7,12 +12,16 @@ using Microsoft.Extensions.Configuration;
 
 namespace SafeShare.Security.JwtSecurity;
 
+/// <summary>
+/// Provides utility methods for generating JSON Web Tokens (JWT).
+/// </summary>
 internal static class Security_JwtTokenGeneratorHelper
 {
     /// <summary>
-    /// Gets the signing credentials for JWT token generation.
+    /// Gets the signing credentials for JWT token generation using the provided JWT key.
     /// </summary>
-    /// <returns>The signing credentials.</returns>
+    /// <param name="jwtKey">The JWT key used for signing the token.</param>
+    /// <returns>The signing credentials based on the given JWT key.</returns>
     internal static SigningCredentials
     GetSinginCredentials
     (
@@ -24,12 +33,13 @@ internal static class Security_JwtTokenGeneratorHelper
         return new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature);
     }
     /// <summary>
-    /// Generates a JWT token with the specified signing credentials and claims.
+    /// Generates a JWT token with the specified signing credentials, claims, issuer, duration, and a flag to set default expiration behavior.
     /// </summary>
-    /// <param name="singinCredentials">The signing credentials.</param>
-    /// <param name="claims">The list of claims.</param>
-    /// <param name="duration">The time duration for token expiration</param>
-    /// <param name="hours">An indicator if the token should expire by hours or not </param>
+    /// <param name="singinCredentials">The signing credentials for the token.</param>
+    /// <param name="claims">The list of user claims to include in the token.</param>
+    /// <param name="issuer">The issuer of the token.</param>
+    /// <param name="duration">The duration in minutes until the token expires.</param>
+    /// <param name="defaultToken">A boolean flag indicating whether to use default expiration settings.</param>
     /// <returns>The generated JWT token.</returns>
     internal static JwtSecurityToken
     GenerateToken

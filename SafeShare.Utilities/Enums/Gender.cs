@@ -8,11 +8,17 @@ using System.Text.Json.Serialization;
 namespace SafeShare.Utilities.Enums;
 
 /// <summary>
-/// An enum that represents gender for the user
+/// Represents the gender of a user.
 /// </summary>
 [JsonConverter(typeof(JsonStringEnumConverter))]
 public enum Gender
 {
+    /// <summary>
+    /// Represents a male gender. Value: 1.
+    /// </summary>
     Male = 1,
+    /// <summary>
+    /// Represents a female gender. Value: 2.
+    /// </summary>
     Female = 2
 }

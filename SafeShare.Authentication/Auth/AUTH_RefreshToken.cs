@@ -371,8 +371,6 @@ public class AUTH_RefreshToken : Util_BaseAuthDependencies<AUTH_RefreshToken, Ap
             _db.RefreshTokens.Update(storedRefreshToken);
             await _db.SaveChangesAsync();
 
-            //var user = await _userManager.FindByIdAsync(claimsPrincipal.Claims!.Single(x => x.Type == ClaimTypes.NameIdentifier).Value);
-
             var roles = await _userManager.GetRolesAsync(storedRefreshToken.User);
             var userDto = _mapper.Map<DTO_AuthUser>(storedRefreshToken.User);
             userDto.Roles = roles.ToList();
@@ -449,7 +447,6 @@ public class AUTH_RefreshToken : Util_BaseAuthDependencies<AUTH_RefreshToken, Ap
             return null;
         }
     }
-
     /// <summary>
     /// Checks if the validated token by life time is 
     /// generated with the appropriate security algorithm

@@ -1,4 +1,9 @@
-﻿using MediatR;
+﻿/* 
+ * Defines a MediatR command handler for processing requests to delete groups within the application.
+ * This handler is responsible for invoking the group management service to execute the deletion of a specified group, based on the information provided in the command.
+ */
+
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using SafeShare.MediatR.Dependencies;
 using SafeShare.GroupManagment.Interfaces;
@@ -6,8 +11,18 @@ using SafeShare.MediatR.Actions.Commands.GroupManagment;
 using SafeShare.Utilities.Responses;
 
 namespace SafeShare.MediatR.Handlers.CommandsHandlers.GroupManagment;
-public class MediatR_DeleteGroupCommandHandler : MediatR_GenericHandler<IGroupManagment_GroupRepository>, IRequestHandler<MediatR_DeleteGroupCommand, ObjectResult>
+
+/// <summary>
+/// A MediatR command handler for processing requests to delete groups within the application.
+/// </summary>
+public class MediatR_DeleteGroupCommandHandler : 
+    MediatR_GenericHandler<IGroupManagment_GroupRepository>, 
+    IRequestHandler<MediatR_DeleteGroupCommand, ObjectResult>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MediatR_DeleteGroupCommandHandler"/> class.
+    /// </summary>
+    /// <param name="service">The group management service used for deleting groups.</param>
     public MediatR_DeleteGroupCommandHandler
     (
         IGroupManagment_GroupRepository service
@@ -17,7 +32,12 @@ public class MediatR_DeleteGroupCommandHandler : MediatR_GenericHandler<IGroupMa
         service
     )
     { }
-
+    /// <summary>
+    /// Handles the process of deleting a group.
+    /// </summary>
+    /// <param name="request">The command containing the details for the group deletion (owner ID and group ID).</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>An ObjectResult with the outcome of the group deletion process.</returns>
     public async Task<ObjectResult>
     Handle
     (

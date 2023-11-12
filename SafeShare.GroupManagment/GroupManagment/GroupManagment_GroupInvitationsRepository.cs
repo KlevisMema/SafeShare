@@ -1,4 +1,9 @@
-﻿using AutoMapper;
+﻿/* 
+ * Manages group invitation operations within the Group Management module. It provides functionalities 
+ * like receiving, sending, accepting, and rejecting group invitations.
+ */
+
+using AutoMapper;
 using SafeShare.Utilities.IP;
 using SafeShare.Utilities.Log;
 using SafeShare.Utilities.Enums;
@@ -12,14 +17,28 @@ using SafeShare.Utilities.Dependencies;
 using SafeShare.DataAccessLayer.Models;
 using SafeShare.DataAccessLayer.Context;
 using SafeShare.GroupManagment.Interfaces;
+using SafeShare.DataTransormObject.GroupManagment;
 using SafeShare.DataTransormObject.GroupManagment.GroupInvitations;
+using System.Text.RegularExpressions;
 
 namespace SafeShare.GroupManagment.GroupManagment;
 
+/// <summary>
+/// Represents the repository for managing group invitations in the Group Management module. 
+/// It includes functionalities for handling various aspects of group invitations such as receiving, 
+/// sending, accepting, and rejecting them.
+/// </summary>
 public class GroupManagment_GroupInvitationsRepository :
     Util_BaseContextDependencies<ApplicationDbContext, GroupManagment_GroupInvitationsRepository>,
     IGroupManagment_GroupInvitationsRepository
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GroupManagment_GroupInvitationsRepository"/> class.
+    /// </summary>
+    /// <param name="db">The database context used for data operations.</param>
+    /// <param name="mapper">The AutoMapper instance for object mapping.</param>
+    /// <param name="logger">The logger for logging information and errors.</param>
+    /// <param name="httpContextAccessor">Provides access to the current HTTP context.</param>
     public GroupManagment_GroupInvitationsRepository
     (
         ApplicationDbContext db,
@@ -35,7 +54,11 @@ public class GroupManagment_GroupInvitationsRepository :
         httpContextAccessor
     )
     { }
-
+    /// <summary>
+    /// Retrieves a list of received group invitations for a specific user.
+    /// </summary>
+    /// <param name="userId">The unique identifier of the user whose received invitations are to be fetched.</param>
+    /// <returns>A task representing the asynchronous operation. The task result contains a generic response with a list of received invitations.</returns>
     public async Task<Util_GenericResponse<List<DTO_RecivedInvitations>>>
     GetRecivedGroupsInvitations
     (
@@ -59,13 +82,26 @@ public class GroupManagment_GroupInvitationsRepository :
                 System.Net.HttpStatusCode.OK
             );
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-
-            throw;
+            return await Util_LogsHelper<List<DTO_RecivedInvitations>, GroupManagment_GroupInvitationsRepository>.ReturnInternalServerError
+            (
+                ex,
+                _logger,
+                $"""
+                Somewthing went wrong in [GroupManagment Module]-[GroupManagment_GroupInvitationsRepository class]-[GetRecivedGroupsInvitations Method],
+                user with [ID] {userId} tried to get all the recived invitations.
+                """,
+                null,
+                _httpContextAccessor
+            );
         }
     }
-
+    /// <summary>
+    /// Retrieves a list of sent group invitations for a specific user.
+    /// </summary>
+    /// <param name="userId">The unique identifier of the user whose sent invitations are to be fetched.</param>
+    /// <returns>A task representing the asynchronous operation. The task result contains a generic response with a list of sent invitations.</returns>
     public async Task<Util_GenericResponse<List<DTO_SentInvitations>>>
     GetSentGroupInvitations
     (
@@ -94,11 +130,24 @@ public class GroupManagment_GroupInvitationsRepository :
         }
         catch (Exception ex)
         {
-
-            throw;
+            return await Util_LogsHelper<List<DTO_SentInvitations>, GroupManagment_GroupInvitationsRepository>.ReturnInternalServerError
+            (
+                ex,
+                _logger,
+                $"""
+                Somewthing went wrong in [GroupManagment Module]-[GroupManagment_GroupInvitationsRepository class]-[GetSentGroupInvitations Method],
+                user with [ID] {userId} tried to get all the recived invitations.
+                """,
+                null,
+                _httpContextAccessor
+            );
         }
     }
-
+    /// <summary>
+    /// Sends a group invitation from one user to another.
+    /// </summary>
+    /// <param name="sendInvitation">The details of the invitation being sent.</param>
+    /// <returns>A task representing the asynchronous operation. The task result contains a generic response indicating the success or failure of sending the invitation.</returns>
     public async Task<Util_GenericResponse<bool>>
     SendInvitation
     (
@@ -115,9 +164,44 @@ public class GroupManagment_GroupInvitationsRepository :
                 (
                    false,
                    false,
-                   "Something went wrong, invitation was not sent",
+                   "Something went wrong!",
                    null,
                    System.Net.HttpStatusCode.BadRequest
+                );
+            }
+
+            var isAdminWhoInvited = await _db.GroupMembers.AnyAsync
+            (
+                x => x.GroupId == sendInvitation.GroupId &&
+                x.UserId == sendInvitation.InvitingUserId.ToString()
+                && x.IsOwner
+            );
+
+            if (!isAdminWhoInvited)
+            {
+                _logger.Log
+                (
+                    LogLevel.Error,
+                    """
+                        [GroupManagment Module]--[GroupManagment_GroupInvitationsRepository class]--[SendInvitation Method] => 
+                        [RESULT] : [IP] {IP} user with [ID] {ID} invited user with id {InvitedUserId} the group with id {groupId}.
+                        But he is not he admin of the group!
+                        More details : {@invitationDto}
+                     """,
+                    await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                    sendInvitation.InvitingUserId,
+                    sendInvitation.InvitedUserId,
+                    sendInvitation.GroupId,
+                    sendInvitation
+                );
+
+                return Util_GenericResponse<bool>.Response
+                (
+                   false,
+                   false,
+                   "Something went wrong!",
+                   null,
+                   System.Net.HttpStatusCode.Unauthorized
                 );
             }
 
@@ -165,15 +249,21 @@ public class GroupManagment_GroupInvitationsRepository :
             (
                 ex,
                 _logger,
-                $"Somewthing went wrong in [GroupManagment Module] - [SendInvitation Method], " +
-                $"user with [ID] {sendInvitation.InvitingUserId} tried to send an invite to user with " +
-                $"[ID] {sendInvitation.InvitedUserId} to the group with [ID] {sendInvitation.GroupId}",
+                $"""
+                    Somewthing went wrong in [GroupManagment Module] - [SendInvitation Method],
+                    user with [ID] {sendInvitation.InvitingUserId} tried to send an invite to user with
+                    [ID] {sendInvitation.InvitedUserId} to the group with [ID] {sendInvitation.GroupId}.
+                 """,
                 false,
                 _httpContextAccessor
             );
         }
     }
-
+    /// <summary>
+    /// Accepts a received group invitation.
+    /// </summary>
+    /// <param name="accepInvitation">The details of the invitation being accepted.</param>
+    /// <returns>A task representing the asynchronous operation. The task result contains a generic response indicating the success or failure of accepting the invitation.</returns>
     public async Task<Util_GenericResponse<bool>>
     AcceptInvitation
     (
@@ -190,7 +280,7 @@ public class GroupManagment_GroupInvitationsRepository :
                 (
                    false,
                    false,
-                   "Something went wrong, invitation was not accepted",
+                   "Something went wrong!",
                    null,
                    System.Net.HttpStatusCode.BadRequest
                 );
@@ -223,6 +313,24 @@ public class GroupManagment_GroupInvitationsRepository :
                 await _db.GroupMembers.AddAsync(groupMember);
                 await _db.SaveChangesAsync();
 
+                _logger.Log
+                (
+                    LogLevel.Information,
+                    """
+                        [GroupManagment Module]-[GroupManagment_GroupInvitationsRepository class]-[AcceptInvitation Method]
+                        Request with IP {IP}.
+                        User with id {invitedUserId} accepted the invitation with id {invitationId} made by 
+                        the user with id {invitingUserId} for the group with id {groupId} but the invitation with that 
+                        id doesn't exists. Dto {@DTO}
+                     """,
+                    await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                    accepInvitation.InvitedUserId,
+                    accepInvitation.InvitationId,
+                    accepInvitation.InvitingUserId,
+                    accepInvitation.GroupId,
+                    accepInvitation
+                );
+
                 return Util_GenericResponse<bool>.Response
                 (
                     true,
@@ -233,22 +341,54 @@ public class GroupManagment_GroupInvitationsRepository :
                 );
             }
 
+            _logger.Log
+            (
+                LogLevel.Error,
+                """
+                     Request with IP {IP}.
+                     Somewthing went wrong in [GroupManagment Module]-[GroupManagment_GroupInvitationsRepository class]-[AcceptInvitation Method]
+                     User with id {invitedUserId} tried to accept the invitation with id {invitationId} made by 
+                     the user with id {invitingUserId} for the group with id {groupId} but the invitation with that 
+                     id doesn't exists. Dto {@DTO}
+                 """,
+                await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                accepInvitation.InvitedUserId,
+                accepInvitation.InvitationId,
+                accepInvitation.InvitingUserId,
+                accepInvitation.GroupId,
+                accepInvitation
+            );
+
             return Util_GenericResponse<bool>.Response
             (
                 false,
                 false,
-                "Invitation doesn't exists",
+                "Something went wrong!",
                 null,
                 System.Net.HttpStatusCode.NotFound
             );
         }
         catch (Exception ex)
         {
-
-            throw;
+            return await Util_LogsHelper<bool, GroupManagment_GroupInvitationsRepository>.ReturnInternalServerError
+            (
+               ex,
+               _logger,
+               $"""
+                    Somewthing went wrong in [GroupManagment Module]-[GroupManagment_GroupInvitationsRepository class]-[AcceptInvitation Method],
+                    user with [ID] {accepInvitation.InvitedUserId} tried to accept the invitation by user with id {accepInvitation.InvitingUserId} for the 
+                    group with id {accepInvitation.GroupId} with the invitation id {accepInvitation.InvitationId}.
+                """,
+               false,
+               _httpContextAccessor
+            );
         }
     }
-
+    /// <summary>
+    /// Rejects a received group invitation.
+    /// </summary>
+    /// <param name="rejectInvitation">The details of the invitation being rejected.</param>
+    /// <returns>A task representing the asynchronous operation. The task result contains a generic response indicating the success or failure of rejecting the invitation.</returns>
     public async Task<Util_GenericResponse<bool>>
     RejectInvitation
     (
@@ -265,7 +405,7 @@ public class GroupManagment_GroupInvitationsRepository :
                 (
                    false,
                    false,
-                   "Something went wrong, invitation was not rejected",
+                   "Something went wrong!",
                    null,
                    System.Net.HttpStatusCode.BadRequest
                 );
@@ -287,6 +427,23 @@ public class GroupManagment_GroupInvitationsRepository :
                 invitation.ModifiedAt = DateTime.UtcNow;
                 await _db.SaveChangesAsync();
 
+                _logger.Log
+                (
+                    LogLevel.Information,
+                    """
+                         [GroupManagment Module]-[GroupManagment_GroupInvitationsRepository class]-[RejectInvitation Method].
+                         Request with IP {IP}.
+                         User with id {invitedUserId} rejected the invitation with id {invitationId} made by 
+                         the user with id {invitingUserId} for the group with id {groupId}. Dto {@DTO}
+                     """,
+                    await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                    rejectInvitation.InvitedUserId,
+                    rejectInvitation.InvitationId,
+                    rejectInvitation.InvitingUserId,
+                    rejectInvitation.GroupId,
+                    rejectInvitation
+                );
+
                 return Util_GenericResponse<bool>.Response
                 (
                    true,
@@ -297,11 +454,29 @@ public class GroupManagment_GroupInvitationsRepository :
                 );
             }
 
+            _logger.Log
+            (
+                LogLevel.Error,
+                """
+                     Somewthing went wrong in [GroupManagment Module]-[GroupManagment_GroupInvitationsRepository class]-[RejectInvitation Method].
+                     Request with IP {IP}.
+                     User with id {invitedUserId} tried to reject the invitation with id {invitationId} made by 
+                     the user with id {invitingUserId} for the group with id {groupId} but the invitation with that 
+                     id doesn't exists. Dto {@DTO}
+                 """,
+                await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                rejectInvitation.InvitedUserId,
+                rejectInvitation.InvitationId,
+                rejectInvitation.InvitingUserId,
+                rejectInvitation.GroupId,
+                rejectInvitation
+            );
+
             return Util_GenericResponse<bool>.Response
             (
                false,
                false,
-               "Something went wrong",
+               "Something went wrong!",
                null,
                System.Net.HttpStatusCode.NotFound
             );
@@ -309,11 +484,25 @@ public class GroupManagment_GroupInvitationsRepository :
         }
         catch (Exception ex)
         {
-
-            throw;
+            return await Util_LogsHelper<bool, GroupManagment_GroupInvitationsRepository>.ReturnInternalServerError
+            (
+                ex,
+                _logger,
+                $"""
+                    Somewthing went wrong in [GroupManagment Module]-[GroupManagment_GroupInvitationsRepository class]-[RejectInvitation Method],
+                    user with [ID] {rejectInvitation.InvitedUserId} tried to reject the invitation by user with id {rejectInvitation.InvitingUserId} for the 
+                    group with id {rejectInvitation.GroupId} with the invitation id {rejectInvitation.InvitationId}.
+                 """,
+                false,
+                _httpContextAccessor
+            );
         }
     }
-
+    /// <summary>
+    /// Deletes a previously sent group invitation.
+    /// </summary>
+    /// <param name="deleteInvitation">The details of the invitation being deleted.</param>
+    /// <returns>A task representing the asynchronous operation. The task result contains a generic response indicating the success or failure of deleting the invitation.</returns>
     public async Task<Util_GenericResponse<bool>>
     DeleteSentInvitation
     (
@@ -330,7 +519,7 @@ public class GroupManagment_GroupInvitationsRepository :
                 (
                    false,
                    false,
-                   "Something went wrong, invitation was not deleted",
+                   "Something went wrong!",
                    null,
                    System.Net.HttpStatusCode.BadRequest
                 );
@@ -352,6 +541,23 @@ public class GroupManagment_GroupInvitationsRepository :
                 invitation.DeletedAt = DateTime.UtcNow;
                 await _db.SaveChangesAsync();
 
+                _logger.Log
+                (
+                    LogLevel.Information,
+                    """
+                        [GroupManagment Module]-[GroupManagment_GroupInvitationsRepository class]-[DeleteSentInvitation Method]
+                        Request with IP {IP}.
+                        User with id {invitingUserId} deleted the invitation with id {invitationId} made to  
+                        the user with id {invitedUserId} for the group with id {groupId}. Dto {@DTO}
+                     """,
+                    await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                    deleteInvitation.InvitingUserId,
+                    deleteInvitation.InvitationId,
+                    deleteInvitation.InvitedUserId,
+                    deleteInvitation.GroupId,
+                    deleteInvitation
+                );
+
                 return Util_GenericResponse<bool>.Response
                 (
                     true,
@@ -362,23 +568,58 @@ public class GroupManagment_GroupInvitationsRepository :
                 );
             }
 
+            _logger.Log
+            (
+                LogLevel.Error,
+                """
+                    Somewthing went wrong in [GroupManagment Module]-[GroupManagment_GroupInvitationsRepository class]-[DeleteSentInvitation Method]
+                    Request with IP {IP}.
+                    User with id {invitingUserId} tried to delete the invitation with id {invitationId} made to  
+                    the user with id {invitedUserId} for the group with id {groupId} but the invitation with that 
+                    id doesn't exists. Dto {@DTO}
+                 """,
+                await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                deleteInvitation.InvitingUserId,
+                deleteInvitation.InvitationId,
+                deleteInvitation.InvitedUserId,
+                deleteInvitation.GroupId,
+                deleteInvitation
+            );
+
             return Util_GenericResponse<bool>.Response
             (
                 false,
                 false,
-                "Something went wrong",
+                "Something went wrong!",
                 null,
                 System.Net.HttpStatusCode.NotFound
             );
 
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-
-            throw;
+            return await Util_LogsHelper<bool, GroupManagment_GroupInvitationsRepository>.ReturnInternalServerError
+            (
+                ex,
+                _logger,
+                $"""
+                    Somewthing went wrong in [GroupManagment Module]-[GroupManagment_GroupInvitationsRepository class]-[DeleteSentInvitation Method],
+                    user with [ID] {deleteInvitation.InvitingUserId} tried to delete the invitation to the user with id {deleteInvitation.InvitedUserId} for the 
+                    group with id {deleteInvitation.GroupId} with the invitation id {deleteInvitation.InvitationId}.
+                 """,
+                false,
+                _httpContextAccessor
+            );
         }
     }
-
+    /// <summary>
+    /// Performs general checks for various invitation operations.
+    /// </summary>
+    /// <param name="methodName">The name of the method calling this function.</param>
+    /// <param name="groupId">The unique identifier of the group involved in the operation.</param>
+    /// <param name="invitingUserId">The unique identifier of the inviting user.</param>
+    /// <param name="invitedUserId">The unique identifier of the invited user.</param>
+    /// <returns>A task representing the asynchronous operation. The task result is a boolean indicating whether the checks passed or failed.</returns>
     private async Task<bool>
     GenerealChecks
     (
@@ -396,8 +637,8 @@ public class GroupManagment_GroupInvitationsRepository :
             (
                 LogLevel.Error,
                 """
-                        [GroupManagment Module]--[GroupManagment_GroupInvitationsRepository class]--[{methodName} Method] => 
-                        [RESULT] : [IP] {IP} user with [ID] {ID} invited user with id {InvitedUserId} to a non existing or deleted group.
+                    [GroupManagment Module]--[GroupManagment_GroupInvitationsRepository class]--[{methodName} Method] => 
+                    [RESULT] : [IP] {IP} user with [ID] {ID} invited user with id {InvitedUserId} to a non existing or deleted group.
                  """,
                 methodName,
                 await Util_GetIpAddres.GetLocation(_httpContextAccessor),
@@ -416,8 +657,8 @@ public class GroupManagment_GroupInvitationsRepository :
             (
                 LogLevel.Error,
                 """
-                        [GroupManagment Module]--[GroupManagment_GroupInvitationsRepository class]--[{methodName} Method] => 
-                        [RESULT] : [IP] {IP} inviting user with [ID] {ID} doesn't exists.
+                    [GroupManagment Module]--[GroupManagment_GroupInvitationsRepository class]--[{methodName} Method] => 
+                    [RESULT] : [IP] {IP}. Inviting user with [ID] {ID} doesn't exists.
                  """,
                 methodName,
                 await Util_GetIpAddres.GetLocation(_httpContextAccessor),
@@ -427,17 +668,17 @@ public class GroupManagment_GroupInvitationsRepository :
             return false;
         }
 
-        var invitingedUser = await _db.Users.FirstOrDefaultAsync(x => x.Id == invitedUserId.ToString() && !x.IsDeleted);
+        var invitedUser = await _db.Users.FirstOrDefaultAsync(x => x.Id == invitedUserId.ToString() && !x.IsDeleted);
 
-        if (invitingUser is null)
+        if (invitedUser is null)
         {
             _logger.Log
             (
                 LogLevel.Error,
                 """
-                        [GroupManagment Module]--[GroupManagment_GroupInvitationsRepository class]--[{methodName} Method] => 
-                        [RESULT] : [IP] {IP} inviting user with [ID] {ID} send an invitation to user with id {invitedUser},
-                        who doesn't exists or is delted.
+                    [GroupManagment Module]--[GroupManagment_GroupInvitationsRepository class]--[{methodName} Method] => 
+                    [RESULT] : [IP] {IP} inviting user with [ID] {ID} send an invitation to user with id {invitedUser},
+                    who doesn't exists or is deleted.
                  """,
                 methodName,
                 await Util_GetIpAddres.GetLocation(_httpContextAccessor),

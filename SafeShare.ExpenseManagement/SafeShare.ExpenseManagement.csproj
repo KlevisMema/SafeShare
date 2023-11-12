@@ -6,4 +6,10 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\SafeShare.DataAccess\SafeShare.DataAccess.csproj" />
+      <ProjectReference Include="..\SafeShare.DataTransormObject\SafeShare.DataTransormObject.csproj" />
+      <ProjectReference Include="..\SafeShare.Utilities\SafeShare.Utilities.csproj" />
+    </ItemGroup>
+
 </Project>

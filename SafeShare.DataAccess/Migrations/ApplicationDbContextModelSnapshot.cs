@@ -303,7 +303,7 @@ namespace SafeShare.DataAccessLayer.Migrations
 
                     b.HasIndex("GroupId");
 
-                    b.ToTable("Expenses");
+                    b.ToTable("Expenses", (string)null);
                 });
 
             modelBuilder.Entity("SafeShare.DataAccessLayer.Models.ExpenseMember", b =>
@@ -336,7 +336,7 @@ namespace SafeShare.DataAccessLayer.Migrations
 
                     b.HasIndex("ExpenseId");
 
-                    b.ToTable("ExpenseMembers");
+                    b.ToTable("ExpenseMembers", (string)null);
                 });
 
             modelBuilder.Entity("SafeShare.DataAccessLayer.Models.Group", b =>
@@ -369,7 +369,7 @@ namespace SafeShare.DataAccessLayer.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Groups");
+                    b.ToTable("Groups", (string)null);
                 });
 
             modelBuilder.Entity("SafeShare.DataAccessLayer.Models.GroupInvitation", b =>
@@ -417,7 +417,7 @@ namespace SafeShare.DataAccessLayer.Migrations
 
                     b.HasIndex("InvitingUserId");
 
-                    b.ToTable("GroupInvitations");
+                    b.ToTable("GroupInvitations", (string)null);
                 });
 
             modelBuilder.Entity("SafeShare.DataAccessLayer.Models.GroupMember", b =>
@@ -450,7 +450,7 @@ namespace SafeShare.DataAccessLayer.Migrations
 
                     b.HasIndex("GroupId");
 
-                    b.ToTable("GroupMembers");
+                    b.ToTable("GroupMembers", (string)null);
                 });
 
             modelBuilder.Entity("SafeShare.DataAccessLayer.Models.LogEntry", b =>
@@ -473,7 +473,7 @@ namespace SafeShare.DataAccessLayer.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("LogEntries");
+                    b.ToTable("LogEntries", (string)null);
                 });
 
             modelBuilder.Entity("SafeShare.DataAccessLayer.Models.RefreshToken", b =>
@@ -511,7 +511,7 @@ namespace SafeShare.DataAccessLayer.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("RefreshTokens");
+                    b.ToTable("RefreshTokens", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

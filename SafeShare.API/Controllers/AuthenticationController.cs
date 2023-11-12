@@ -1,13 +1,15 @@
 ﻿/*
  * Defines the authentication controller for the SafeShare API.
- * This controller provides endpoints for user authentication processes including registration and login.
+ * This controller provides endpoints for user authentication processes including registration, login, and token management.
 */
 
 using MediatR;
 using System.Net;
 using System.Security.Claims;
+using SafeShare.Common.Routes;
 using Microsoft.AspNetCore.Mvc;
 using SafeShare.Utilities.Responses;
+using SafeShare.ClientServer.Routes;
 using System.IdentityModel.Tokens.Jwt;
 using SafeShare.Security.API.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -19,11 +21,13 @@ using SafeShare.MediatR.Actions.Commands.Authentication;
 namespace SafeShare.API.Controllers;
 
 /// <summary>
-///     A authentication contoller providing endpoinnts for login and registering.
+/// Controller for handling authentication processes in the SafeShare application.
+/// Provides endpoints for user registration, login, confirmation, and token management functionalities.
+/// Uses MediatR for command and query handling, facilitating a CQRS pattern.
 /// </summary>
 [ApiController]
-[Route("api/[controller]")]
-[ServiceFilter(typeof(IApiKeyAuthorizationFilter))]
+[Route(BaseRoute.Route)]
+//[ServiceFilter(typeof(IApiKeyAuthorizationFilter))]
 public class AuthenticationController : ControllerBase
 {
     /// <summary>
@@ -42,16 +46,18 @@ public class AuthenticationController : ControllerBase
         _mediator = mediator;
     }
     /// <summary>
-    /// Registers a new user.
+    /// Endpoint to register a new user in the SafeShare system.
+    /// Accepts user registration data and initiates the registration process.
     /// </summary>
-    /// <param name="register">The registration data.</param>
-    /// <returns>A response indicating the success or failure of the registration.</returns>
+    /// <param name="register">The registration data including user details.</param>
+    /// <returns>A response indicating the success or failure of the registration process.</returns>
     [AllowAnonymous]
-    [HttpPost("Register")]
+    [HttpPost(AuthenticationRoute.Register)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<bool>))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(Util_GenericResponse<bool>))]
     [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Util_GenericResponse<bool>))]
-    public async Task<ActionResult<Util_GenericResponse<bool>>> Register
+    public async Task<ActionResult<Util_GenericResponse<bool>>> 
+    Register
     (
         [FromForm] DTO_Register register
     )
@@ -62,12 +68,13 @@ public class AuthenticationController : ControllerBase
         return await _mediator.Send(new MediatR_RegisterUserCommand(register));
     }
     /// <summary>
-    /// Confirms the registration of the user 
+    /// Endpoint to confirm the registration of a new user.
+    /// This typically involves verifying a token or a code sent to the user's email or phone.
     /// </summary>
-    /// <param name="confirmRegistrationDto">The <see cref="DTO_ConfirmRegistration"/> object </param>
-    /// <returns>A response indicating the success or failure of registration confiramtion</returns>
+    /// <param name="confirmRegistrationDto">The data required to confirm a user's registration.</param>
+    /// <returns>A response indicating the success or failure of the registration confirmation process.</returns>
     [AllowAnonymous]
-    [HttpPost("ConfirmRegistration")]
+    [HttpPost(AuthenticationRoute.ConfirmRegistration)]
     public async Task<ActionResult<Util_GenericResponse<bool>>>
     ConfirmRegistration
     (
@@ -77,12 +84,13 @@ public class AuthenticationController : ControllerBase
         return await _mediator.Send(new MediatR_ConfirmUserRegistrationCommand(confirmRegistrationDto));
     }
     /// <summary>
-    /// Logs a user in.
+    /// Endpoint for user login.
+    /// Validates user credentials and generates an authentication token upon successful login.
     /// </summary>
-    /// <param name="loginDto">The login data.</param>
-    /// <returns>A response containing the token or an error message.</returns>
+    /// <param name="loginDto">The user's login credentials.</param>
+    /// <returns>A response containing the authentication token or an error message.</returns>
     [AllowAnonymous]
-    [HttpPost("Login")]
+    [HttpPost(AuthenticationRoute.Login)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<DTO_LoginResult>))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<DTO_LoginResult>))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(Util_GenericResponse<DTO_LoginResult>))]
@@ -99,13 +107,14 @@ public class AuthenticationController : ControllerBase
         return await _mediator.Send(new MediatR_LoginUserCommand(loginDto));
     }
     /// <summary>
-    /// Confirms the log in.
+    /// Endpoint to confirm a user's login, typically used in two-factor authentication processes.
+    /// Validates the OTP (One-Time Password) sent to the user after the initial login attempt.
     /// </summary>
-    /// <param name="otp">The otp </param>
-    /// <param name="userId">The id of the user</param>
-    /// <returns>A response containing the token or an error message.</returns>
-    [HttpPost("ConfirmLogin")]
+    /// <param name="userId">The identifier of the user attempting to confirm login.</param>
+    /// <param name="otp">The one-time password for login confirmation.</param>
+    /// <returns>A response containing the authentication token or an error message.</returns>
     [ServiceFilter(typeof(VerifyUser))]
+    [HttpPost(AuthenticationRoute.ConfirmLogin)]
     [Authorize(AuthenticationSchemes = "ConfirmLogin")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<DTO_LoginResult>))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<DTO_LoginResult>))]
@@ -124,12 +133,13 @@ public class AuthenticationController : ControllerBase
         return await _mediator.Send(new MediatR_ConfirmLoginUserCommand(otp, userId));
     }
     /// <summary>
-    /// Re confirms the registration proccess
+    /// Endpoint for requesting reconfirmation of the registration process.
+    /// This can be used if the initial confirmation (like email verification) was not completed or needs to be resent.
     /// </summary>
-    /// <param name="email"></param>
-    /// <returns> A response indicating the success or failure of the registration reconfirmation</returns>
+    /// <param name="email">The email address of the user requesting reconfirmation.</param>
+    /// <returns>A response indicating the success or failure of the registration reconfirmation request.</returns>
     [AllowAnonymous]
-    [HttpPost("ReConfirmRegistrationRequest")]
+    [HttpPost(AuthenticationRoute.ReConfirmRegistrationRequest)]
     public async Task<ActionResult<Util_GenericResponse<bool>>>
     ReConfirmRegistrationRequest
     (
@@ -139,12 +149,13 @@ public class AuthenticationController : ControllerBase
         return await _mediator.Send(new MediatR_ReConfirmRegistrationRequestCommand(email));
     }
     /// <summary>
-    /// Logs out a user
+    /// Endpoint for logging out a user.
+    /// Performs actions like invalidating the user's token to ensure proper logout.
     /// </summary>
-    /// <param name="userId">The id of the user</param>
-    /// <returns> A response indicating the success or failure of the registration </returns>
-    [HttpPost("LogOut")]
+    /// <param name="userId">The identifier of the user who is logging out.</param>
+    /// <returns>A response indicating the success or failure of the logout process.</returns>
     [ServiceFilter(typeof(VerifyUser))]
+    [HttpPost(AuthenticationRoute.LogOut)]
     [Authorize(AuthenticationSchemes = "Default")]
     public async Task<ActionResult>
     LogOut
@@ -157,12 +168,13 @@ public class AuthenticationController : ControllerBase
         return Ok();
     }
     /// <summary>
-    /// Refesh a expired token
+    /// Endpoint for refreshing an expired authentication token.
+    /// Validates the old token and issues a new one if the user is still authenticated.
     /// </summary>
-    /// <param name="validateToken"> The <see cref="DTO_ValidateToken"/> object </param>
-    /// <returns>A response indicating the success or failure of token refreshing</returns>
+    /// <param name="validateToken">The data required to validate and refresh the token.</param>
+    /// <returns>A response indicating the success or failure of the token refresh process and includes the new token if successful.</returns>
     [AllowAnonymous]
-    [HttpPost("ValidateToken")]
+    [HttpPost(AuthenticationRoute.RefreshToken)]
     public async Task<ActionResult<Util_GenericResponse<DTO_Token>>>
     RefreshToken
     (

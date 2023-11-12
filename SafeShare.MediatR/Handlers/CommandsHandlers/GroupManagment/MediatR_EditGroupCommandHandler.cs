@@ -1,4 +1,9 @@
-﻿using MediatR;
+﻿/* 
+ * Defines a MediatR command handler for processing requests to edit group information.
+ * This handler is responsible for invoking the group management service to execute updates to a group's details, based on the provided command data.
+ */
+
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using SafeShare.Utilities.Responses;
 using SafeShare.MediatR.Dependencies;
@@ -8,8 +13,17 @@ using SafeShare.MediatR.Actions.Commands.GroupManagment;
 
 namespace SafeShare.MediatR.Handlers.CommandsHandlers.GroupManagment;
 
-public class MediatR_EditGroupCommandHandler : MediatR_GenericHandler<IGroupManagment_GroupRepository>, IRequestHandler<MediatR_EditGroupCommand, ObjectResult>
+/// <summary>
+/// A MediatR command handler for processing requests to edit group information.
+/// </summary>
+public class MediatR_EditGroupCommandHandler : 
+    MediatR_GenericHandler<IGroupManagment_GroupRepository>, 
+    IRequestHandler<MediatR_EditGroupCommand, ObjectResult>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MediatR_EditGroupCommandHandler"/> class.
+    /// </summary>
+    /// <param name="service">The group management service used for editing group information.</param>
     public MediatR_EditGroupCommandHandler
     (
         IGroupManagment_GroupRepository service
@@ -19,7 +33,12 @@ public class MediatR_EditGroupCommandHandler : MediatR_GenericHandler<IGroupMana
         service
     )
     { }
-
+    /// <summary>
+    /// Handles the process of editing group information.
+    /// </summary>
+    /// <param name="request">The command containing the details for the group edit (user ID, group ID, and new group details).</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>An ObjectResult with the outcome of the group editing process.</returns>
     public async Task<ObjectResult>
     Handle
     (

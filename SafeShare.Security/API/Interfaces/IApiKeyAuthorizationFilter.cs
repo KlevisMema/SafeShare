@@ -1,20 +1,23 @@
-﻿/*
-  This file contains the interface IApiKeyAuthorizationFilter, which defines the contract for an API key authorization filter for application authorization.
-*/
+﻿/* 
+ * Defines the interface IApiKeyAuthorizationFilter, outlining the contract for implementing an API key authorization filter.
+ * This interface is intended to provide a method for handling authorization based on API keys, ensuring secure access to application resources.
+ */
 
 using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace SafeShare.Security.API.Interfaces;
 
 /// <summary>
-/// Interface for an API key authorization filter.
+/// Interface defining the contract for an API key authorization filter.
+/// This filter is responsible for authorizing requests based on API keys.
 /// </summary>
 public interface IApiKeyAuthorizationFilter
 {
     /// <summary>
-    /// Called when the authorization is being performed.
+    /// Method called during the authorization process of a request.
+    /// Implement this method to add custom logic for authorizing requests based on API keys.
     /// </summary>
-    /// <param name="context">The authorization filter context.</param>
+    /// <param name="context">The context for the authorization filter, providing access to request details.</param>
     void
     OnAuthorization
     (

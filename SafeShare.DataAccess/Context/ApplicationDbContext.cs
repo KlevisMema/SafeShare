@@ -14,44 +14,53 @@ namespace SafeShare.DataAccessLayer.Context;
 /// </summary>
 public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 {
-
     /// <summary>
     /// Initializes a new instance of the <see cref="ApplicationDbContext"/> class.
     /// </summary>
     /// <param name="options">The options for configuring the database context.</param>
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
+    public ApplicationDbContext
+    (
+        DbContextOptions<ApplicationDbContext> options
+    )
+    : base
+    (
+        options
+    )
     { }
-
     /// <summary>
     /// Gets or sets the database table for labels.
     /// </summary>
     public DbSet<Group> Groups { get; set; }
-
     /// <summary>
     /// Gets or sets the database table for Expenses.
     /// </summary>
     public DbSet<Expense> Expenses { get; set; }
-
     /// <summary>
     /// Gets or sets the database table for Log Entries.
     /// </summary>
     public DbSet<LogEntry> LogEntries { get; set; }
-
     /// <summary>
     /// Gets or sets the database table for Group Members.
     /// </summary>
     public DbSet<GroupMember> GroupMembers { get; set; }
-
     /// <summary>
     /// Gets or sets the database table for Expense Members.
     /// </summary>
     public DbSet<ExpenseMember> ExpenseMembers { get; set; }
-
+    /// <summary>
+    /// Gets or sets the database table for group invitations.
+    /// </summary>
     public DbSet<GroupInvitation> GroupInvitations { get; set; }
+    /// <summary>
+    /// Gets or sets the database table for refresh tokens.
+    /// </summary>
     public DbSet<RefreshToken> RefreshTokens { get; set; }
 
-
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    protected override void
+    OnModelCreating
+    (
+        ModelBuilder modelBuilder
+    )
     {
         modelBuilder.Entity<GroupMember>().HasKey(pk => new { pk.UserId, pk.GroupId });
 

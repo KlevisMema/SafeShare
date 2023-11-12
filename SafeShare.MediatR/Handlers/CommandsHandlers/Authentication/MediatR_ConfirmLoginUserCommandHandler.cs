@@ -1,4 +1,9 @@
-﻿using MediatR;
+﻿/* 
+ * Defines a MediatR command handler for confirming a user's login.
+ * This handler processes the confirmation of user logins using an OTP (One-Time Password), utilizing the appropriate authentication service.
+ */
+
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using SafeShare.Utilities.Responses;
 using SafeShare.MediatR.Dependencies;
@@ -8,8 +13,17 @@ using SafeShare.MediatR.Actions.Commands.Authentication;
 
 namespace SafeShare.MediatR.Handlers.CommandsHandlers.Authentication;
 
-public class MediatR_ConfirmLoginUserCommandHandler : MediatR_GenericHandler<IAUTH_Login>, IRequestHandler<MediatR_ConfirmLoginUserCommand, ObjectResult>
+/// <summary>
+/// A MediatR command handler for confirming a user's login using OTP (One-Time Password).
+/// </summary>
+public class MediatR_ConfirmLoginUserCommandHandler : 
+    MediatR_GenericHandler<IAUTH_Login>, 
+    IRequestHandler<MediatR_ConfirmLoginUserCommand, ObjectResult>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MediatR_ConfirmLoginUserCommandHandler"/> class.
+    /// </summary>
+    /// <param name="service">The authentication service used for login confirmation.</param>
     public MediatR_ConfirmLoginUserCommandHandler
     (
         IAUTH_Login service
@@ -19,7 +33,12 @@ public class MediatR_ConfirmLoginUserCommandHandler : MediatR_GenericHandler<IAU
         service
     )
     { }
-
+    /// <summary>
+    /// Handles the confirmation of a user login via OTP.
+    /// </summary>
+    /// <param name="request">The command containing user ID and OTP for confirmation.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>An ObjectResult with the outcome of the login confirmation process.</returns>
     public async Task<ObjectResult>
     Handle
     (

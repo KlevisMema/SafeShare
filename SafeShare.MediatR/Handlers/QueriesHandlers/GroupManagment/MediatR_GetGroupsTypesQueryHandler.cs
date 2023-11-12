@@ -1,4 +1,9 @@
-﻿using MediatR;
+﻿/* 
+ * Defines a MediatR query handler for retrieving types of groups associated with a specific user.
+ * This handler is responsible for querying the group management service to obtain a list of groups that the user has joined or created.
+ */
+
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using SafeShare.Utilities.Responses;
 using SafeShare.MediatR.Dependencies;
@@ -8,8 +13,17 @@ using SafeShare.MediatR.Actions.Queries.GroupManagment;
 
 namespace SafeShare.MediatR.Handlers.QueriesHandlers.GroupManagment;
 
-public class MediatR_GetGroupsTypesQueryHandler : MediatR_GenericHandler<IGroupManagment_GroupRepository>, IRequestHandler<MediatR_GetGroupsTypesQuery, ObjectResult>
+/// <summary>
+/// A MediatR query handler for retrieving types of groups associated with a specific user.
+/// </summary>
+public class MediatR_GetGroupsTypesQueryHandler : 
+    MediatR_GenericHandler<IGroupManagment_GroupRepository>, 
+    IRequestHandler<MediatR_GetGroupsTypesQuery, ObjectResult>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MediatR_GetGroupsTypesQueryHandler"/> class.
+    /// </summary>
+    /// <param name="service">The group management service used for retrieving types of groups associated with a user.</param>
     public MediatR_GetGroupsTypesQueryHandler
     (
         IGroupManagment_GroupRepository service
@@ -19,7 +33,12 @@ public class MediatR_GetGroupsTypesQueryHandler : MediatR_GenericHandler<IGroupM
         service
     )
     { }
-
+    /// <summary>
+    /// Handles the process of retrieving types of groups associated with a specific user.
+    /// </summary>
+    /// <param name="request">The query containing the user ID for whom the group types are to be retrieved.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>An ObjectResult with the types of groups associated with the specified user.</returns>
     public async Task<ObjectResult>
     Handle
     (

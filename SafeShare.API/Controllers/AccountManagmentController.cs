@@ -11,6 +11,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
+using SafeShare.ClientServer.Routes;
 using SafeShare.Utilities.Responses;
 using Microsoft.AspNetCore.Authorization;
 using SafeShare.Security.API.ActionFilters;
@@ -45,7 +46,7 @@ public class AccountManagmentController : BaseController
     /// </summary>
     /// <param name="userId">Unique identifier of the user.</param>
     /// <returns>Returns user's updated information.</returns>
-    [HttpGet("GetUser/{userId}")]
+    [HttpGet(AccountManagmentRoute.GetUser)]
     [ServiceFilter(typeof(VerifyUser))]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<DTO_UserUpdatedInfo>))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<DTO_UserUpdatedInfo>))]
@@ -64,7 +65,7 @@ public class AccountManagmentController : BaseController
     /// <param name="userId">Unique identifier of the user to be updated.</param>
     /// <param name="userInfo">User's new information.</param>
     /// <returns>Returns user's updated information.</returns>
-    [HttpPut("UpdateUser/{userId}")]
+    [HttpPut(AccountManagmentRoute.UpdateUser)]
     [ServiceFilter(typeof(VerifyUser))]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<DTO_UserUpdatedInfo>))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<DTO_UserUpdatedInfo>))]
@@ -87,7 +88,7 @@ public class AccountManagmentController : BaseController
     /// <param name="userId">Unique identifier of the user.</param>
     /// <param name="changePassword">Details for changing the user's password.</param>
     /// <returns>Returns a boolean indicating the success of the password change operation.</returns>
-    [HttpPut("ChangePassword/{userId}")]
+    [HttpPut(AccountManagmentRoute.ChangePassword)]
     [ServiceFilter(typeof(VerifyUser))]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<bool>))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<bool>))]
@@ -112,7 +113,7 @@ public class AccountManagmentController : BaseController
     /// <param name="deactivateAccount"> A dto containing user's information for deactivation process </param>
     /// <returns>Returns a boolean indicating the success of the deactivation operation.</returns>
     [ServiceFilter(typeof(VerifyUser))]
-    [HttpPost("DeactivateAccount/{userId}")]
+    [HttpPost(AccountManagmentRoute.DeactivateAccount)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<bool>))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<bool>))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(Util_GenericResponse<bool>))]
@@ -129,9 +130,13 @@ public class AccountManagmentController : BaseController
 
         return await _mediator.Send(new MediatR_DeactivateAccountCommand(userId, deactivateAccount));
     }
-
+    /// <summary>
+    /// Sends a request to activate an account based on the provided email address.
+    /// </summary>
+    /// <param name="email">The email address associated with the account to be activated.</param>
+    /// <returns>A response indicating the success or failure of the account activation request.</returns>
     [AllowAnonymous]
-    [HttpPost("ActivateAccountRequest")]
+    [HttpPost(AccountManagmentRoute.ActivateAccountRequest)]
     public async Task<ActionResult<Util_GenericResponse<bool>>>
     ActivateAccountRequest
     (
@@ -140,9 +145,13 @@ public class AccountManagmentController : BaseController
     {
         return await _mediator.Send(new MediatR_ActivateAccountRequestCommand(email));
     }
-
+    /// <summary>
+    /// Confirms the account activation request using a specific confirmation token or code.
+    /// </summary>
+    /// <param name="activateAccountConfirmationDto">The DTO containing the confirmation details for account activation.</param>
+    /// <returns>A response indicating the success or failure of the account activation confirmation.</returns>
     [AllowAnonymous]
-    [HttpPost("ActivateAccountRequestConfirmation")]
+    [HttpPost(AccountManagmentRoute.ActivateAccountRequestConfirmation)]
     public async Task<ActionResult<Util_GenericResponse<bool>>>
     ActivateAccountRequestConfirmation
     (
@@ -154,9 +163,13 @@ public class AccountManagmentController : BaseController
 
         return await _mediator.Send(new MediatR_ActivateAccountConfirmationRequestCommand(activateAccountConfirmationDto));
     }
-
+    /// <summary>
+    /// Initiates the password reset process for a user based on their email address.
+    /// </summary>
+    /// <param name="email">The email address of the user who forgot their password.</param>
+    /// <returns>A response indicating the success or failure of the forgot password request.</returns>
     [AllowAnonymous]
-    [HttpPost("ForgotPassword")]
+    [HttpPost(AccountManagmentRoute.ForgotPassword)]
     public async Task<ActionResult<Util_GenericResponse<bool>>>
     ForgotPassword
     (
@@ -165,9 +178,13 @@ public class AccountManagmentController : BaseController
     {
         return await _mediator.Send(new MediatR_ForgotPasswordCommand(email));
     }
-
+    /// <summary>
+    /// Allows a user to reset their password using a password reset token.
+    /// </summary>
+    /// <param name="resetPassword">The DTO containing the new password and reset token information.</param>
+    /// <returns>A response indicating the success or failure of the password reset operation.</returns>
     [AllowAnonymous]
-    [HttpPost("ResetPassword")]
+    [HttpPost(AccountManagmentRoute.ResetPassword)]
     public async Task<ActionResult<Util_GenericResponse<bool>>>
     ResetPassword
     (
@@ -179,9 +196,14 @@ public class AccountManagmentController : BaseController
 
         return await _mediator.Send(new MediatR_ResetUserPasswordCommand(resetPassword));
     }
-
+    /// <summary>
+    /// Sends a request to change the email address associated with a user's account.
+    /// </summary>
+    /// <param name="userId">The unique identifier of the user requesting the email change.</param>
+    /// <param name="emailAddress">The DTO containing the new email address information.</param>
+    /// <returns>A response indicating the success or failure of the email change request.</returns>
     [ServiceFilter(typeof(VerifyUser))]
-    [HttpPost("RequestChangeEmail/{userId}")]
+    [HttpPost(AccountManagmentRoute.RequestChangeEmail)]
     public async Task<ActionResult<Util_GenericResponse<bool>>>
     RequestChangeEmail
     (
@@ -194,9 +216,14 @@ public class AccountManagmentController : BaseController
 
         return await _mediator.Send(new MediatR_ChangeEmailAddressRequestCommand(userId, emailAddress));
     }
-
+    /// <summary>
+    /// Confirms the email change request for a user's account.
+    /// </summary>
+    /// <param name="userId">The unique identifier of the user confirming the email change.</param>
+    /// <param name="changeEmailAddressConfirmDto">The DTO containing confirmation details for the email change.</param>
+    /// <returns>A response indicating the success or failure of the email change confirmation.</returns>
     [ServiceFilter(typeof(VerifyUser))]
-    [HttpPost("ConfirmChangeEmailRequest/{userId}")]
+    [HttpPost(AccountManagmentRoute.ConfirmChangeEmailRequest)]
     public async Task<ActionResult<Util_GenericResponse<bool>>>
     ConfirmChangeEmailRequest
     (

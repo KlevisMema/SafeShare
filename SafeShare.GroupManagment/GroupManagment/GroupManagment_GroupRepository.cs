@@ -1,4 +1,9 @@
-﻿using AutoMapper;
+﻿/* 
+ * Manages group-related operations within the Group Management module. This class provides functionality 
+ * for managing groups, including creating, editing, deleting, and retrieving group details and types.
+ */
+
+using AutoMapper;
 using SafeShare.Utilities.IP;
 using SafeShare.Utilities.Log;
 using SafeShare.Utilities.User;
@@ -15,8 +20,21 @@ using SafeShare.DataTransormObject.GroupManagment;
 
 namespace SafeShare.GroupManagment.GroupManagment;
 
-public class GroupManagment_GroupRepository : Util_BaseContextDependencies<ApplicationDbContext, GroupManagment_GroupRepository>, IGroupManagment_GroupRepository
+/// <summary>
+/// Manages group operations in the Group Management module, handling tasks like creating, 
+/// editing, deleting groups, and retrieving group details and types.
+/// </summary>
+public class GroupManagment_GroupRepository : 
+    Util_BaseContextDependencies<ApplicationDbContext, GroupManagment_GroupRepository>, 
+    IGroupManagment_GroupRepository
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GroupManagment_GroupRepository"/> class.
+    /// </summary>
+    /// <param name="db">The application database context.</param>
+    /// <param name="mapper">The AutoMapper instance for object mapping.</param>
+    /// <param name="logger">The logger instance for logging activities.</param>
+    /// <param name="httpContextAccessor">The HTTP context accessor for accessing current HTTP context.</param>
     public GroupManagment_GroupRepository
     (
         ApplicationDbContext db,
@@ -32,7 +50,11 @@ public class GroupManagment_GroupRepository : Util_BaseContextDependencies<Appli
         httpContextAccessor
     )
     { }
-
+    /// <summary>
+    /// Retrieves the types of groups associated with a specific user.
+    /// </summary>
+    /// <param name="userId">The unique identifier of the user.</param>
+    /// <returns>A task representing the asynchronous operation. The task result contains a generic response with the group types associated with the user.</returns>
     public async Task<Util_GenericResponse<DTO_GroupsTypes>>
     GetGroupsTypes
     (
@@ -95,7 +117,12 @@ public class GroupManagment_GroupRepository : Util_BaseContextDependencies<Appli
             );
         }
     }
-
+    /// <summary>
+    /// Retrieves detailed information about a specific group.
+    /// </summary>
+    /// <param name="userId">The unique identifier of the user requesting the group details.</param>
+    /// <param name="groupId">The unique identifier of the group.</param>
+    /// <returns>A task representing the asynchronous operation. The task result contains a generic response with the details of the group.</returns>
     public async Task<Util_GenericResponse<DTO_GroupDetails>>
     GetGroupDetails
     (
@@ -224,7 +251,12 @@ public class GroupManagment_GroupRepository : Util_BaseContextDependencies<Appli
             );
         }
     }
-
+    /// <summary>
+    /// Creates a new group based on provided details.
+    /// </summary>
+    /// <param name="ownerId">The unique identifier of the user creating the group.</param>
+    /// <param name="createGroup">The details required to create a new group.</param>
+    /// <returns>A task representing the asynchronous operation. The task result contains a generic response indicating the success of the group creation.</returns>
     public async Task<Util_GenericResponse<DTO_GroupType>>
     CreateGroup
     (
@@ -318,7 +350,13 @@ public class GroupManagment_GroupRepository : Util_BaseContextDependencies<Appli
             );
         }
     }
-
+    /// <summary>
+    /// Edits the details of an existing group.
+    /// </summary>
+    /// <param name="userId">The unique identifier of the user editing the group.</param>
+    /// <param name="groupId">The unique identifier of the group being edited.</param>
+    /// <param name="editGroup">The new details for the group.</param>
+    /// <returns>A task representing the asynchronous operation. The task result contains a generic response indicating the success of the group edit.</returns>
     public async Task<Util_GenericResponse<DTO_GroupType>>
     EditGroup
     (
@@ -382,14 +420,6 @@ public class GroupManagment_GroupRepository : Util_BaseContextDependencies<Appli
                 );
             }
 
-            var group = new Group
-            {
-                Id = groupId,
-                ModifiedAt = DateTime.Now,
-                Name = editGroup.GroupName,
-                Description = editGroup.GroupDescription
-            };
-
             isInTheGroup.Group.ModifiedAt = DateTime.UtcNow;
             isInTheGroup.Group.Name = editGroup.GroupName;
             isInTheGroup.Group.Description = editGroup.GroupDescription;
@@ -415,8 +445,8 @@ public class GroupManagment_GroupRepository : Util_BaseContextDependencies<Appli
                 await Util_GetIpAddres.GetLocation(_httpContextAccessor),
                 groupId,
                 userId,
-                editGroup,
-                group.ModifiedAt
+                isInTheGroup.Group.ModifiedAt,
+                editGroup
             );
 
             return Util_GenericResponse<DTO_GroupType>.Response
@@ -445,7 +475,12 @@ public class GroupManagment_GroupRepository : Util_BaseContextDependencies<Appli
             );
         }
     }
-
+    /// <summary>
+    /// Deletes a group.
+    /// </summary>
+    /// <param name="ownerId">The unique identifier of the group's owner.</param>
+    /// <param name="groupId">The unique identifier of the group being deleted.</param>
+    /// <returns>A task representing the asynchronous operation. The task result contains a generic response indicating the success of the group deletion.</returns>
     public async Task<Util_GenericResponse<bool>>
     DeleteGroup
     (
@@ -580,7 +615,11 @@ public class GroupManagment_GroupRepository : Util_BaseContextDependencies<Appli
             );
         }
     }
-
+    /// <summary>
+    /// Checks if a user exists in the database.
+    /// </summary>
+    /// <param name="userId">The unique identifier of the user to check.</param>
+    /// <returns>A task representing the asynchronous operation. The task result is a boolean indicating whether the user exists.</returns>
     private async Task<bool>
     UserExists
     (
@@ -589,7 +628,12 @@ public class GroupManagment_GroupRepository : Util_BaseContextDependencies<Appli
     {
         return await _db.Users.AnyAsync(x => x.Id == userId.ToString() && !x.IsDeleted);
     }
-
+    /// <summary>
+    /// Checks if a user is a member of a specified group.
+    /// </summary>
+    /// <param name="userId">The unique identifier of the user.</param>
+    /// <param name="groupId">The unique identifier of the group.</param>
+    /// <returns>A task representing the asynchronous operation. The task result is a GroupMember object if the user is in the group; otherwise, null.</returns>
     private async Task<GroupMember?>
     IsUserInTheGroup
     (

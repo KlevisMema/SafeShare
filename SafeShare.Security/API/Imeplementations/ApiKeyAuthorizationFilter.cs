@@ -15,7 +15,8 @@ using SafeShare.Security.API.Interfaces;
 namespace SafeShare.Security.API.Imeplementations;
 
 /// <summary>
-/// Represents an API key authorization filter for application authorization.
+/// Represents an API key authorization filter for enforcing application security.
+/// This filter validates incoming requests using a specified API key.
 /// </summary>
 public class ApiKeyAuthorizationFilter : IAuthorizationFilter, IApiKeyAuthorizationFilter
 {
@@ -24,21 +25,19 @@ public class ApiKeyAuthorizationFilter : IAuthorizationFilter, IApiKeyAuthorizat
     /// </summary>
     private readonly string _apiKey = null!;
     /// <summary>
-    /// The http accessor
+    /// The HTTP context accessor used to get the IP of the user making a request.
     /// </summary>
     private readonly IHttpContextAccessor _httpContextAccessor;
     /// <summary>
-    /// The logger
+    /// The logger used for logging information.
     /// </summary>
     private readonly ILogger<ApiKeyAuthorizationFilter> _logger;
     /// <summary>
     /// Initializes a new instance of the <see cref="ApiKeyAuthorizationFilter"/> class.
     /// </summary>
     /// <param name="apiKey">The API key used for authorization.</param>
-    ///  <param name="logger">The logged used for logging informations.</param>
-    /// <param name="httpContextAccessor">
-    ///     The http context accessor used to get the ip of the user making a request
-    /// </param>
+    /// <param name="httpContextAccessor">The HTTP context accessor.</param>
+    /// <param name="logger">The logger used for logging information.</param>
     public ApiKeyAuthorizationFilter
     (
         string apiKey, 
@@ -51,7 +50,8 @@ public class ApiKeyAuthorizationFilter : IAuthorizationFilter, IApiKeyAuthorizat
         _logger = logger;
     }
     /// <summary>
-    /// Called when the authorization is being performed.
+    /// Called when authorization is being performed on a request.
+    /// Checks if the request includes a valid API key for access authorization.
     /// </summary>
     /// <param name="context">The authorization filter context.</param>
     public async void

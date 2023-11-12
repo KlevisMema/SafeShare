@@ -1,7 +1,6 @@
 /*
  * Defines the Expense class that represents expenses created by group members.
  * This file contains definitions for the Expense's properties, their annotations, and relationships.
- 
  */
 
 using SafeShare.DataAccessLayer.BaseModels;

@@ -1,11 +1,26 @@
-﻿using SendGrid;
+﻿/* 
+ * Provides utilities for sending email notifications. This class includes methods for sending 
+ * different types of emails, such as OTP and password reset emails, using the SendGrid service.
+ */
+
+using SendGrid;
 using System.Net.Mail;
 using SendGrid.Helpers.Mail;
 
 namespace SafeShare.Utilities.Email;
 
+/// <summary>
+/// Provides utilities for email operations, particularly for sending emails via SendGrid.
+/// </summary>
 public static class Util_Email
 {
+    /// <summary>
+    /// Sends a One Time Password (OTP) email to a specified recipient.
+    /// </summary>
+    /// <param name="toEmail">The recipient's email address.</param>
+    /// <param name="userFullName">The full name of the recipient.</param>
+    /// <param name="OTP">The One Time Password to be sent.</param>
+    /// <returns>A task representing the asynchronous operation of sending an email.</returns>
     public static async Task<Response>
     SendOTP_Email
     (
@@ -183,7 +198,13 @@ public static class Util_Email
 
         return await client.SendEmailAsync(msg);
     }
-
+    /// <summary>
+    /// Sends an email to a user with a link to reset their password.
+    /// </summary>
+    /// <param name="toEmail">The recipient's email address.</param>
+    /// <param name="userFullName">The full name of the recipient.</param>
+    /// <param name="route">The URL route to the password reset page.</param>
+    /// <returns>A task representing the asynchronous operation of sending an email.</returns>
     public static async Task<Response>
     SendForgotPassordTokenEmail
     (
@@ -386,7 +407,13 @@ public static class Util_Email
 
         return await client.SendEmailAsync(msg);
     }
-
+    /// <summary>
+    /// Sends an email to activate a user account.
+    /// </summary>
+    /// <param name="toEmail">The recipient's email address.</param>
+    /// <param name="userFullName">The full name of the recipient.</param>
+    /// <param name="route">The URL route to the account activation page.</param>
+    /// <returns>A task representing the asynchronous operation of sending an email.</returns>
     public static async Task<Response>
     SendActivateAccountEmail
     (
@@ -590,7 +617,13 @@ public static class Util_Email
 
         return await client.SendEmailAsync(msg);
     }
-
+    /// <summary>
+    /// Sends an email to confirm a user's email address.
+    /// </summary>
+    /// <param name="toEmail">The recipient's email address.</param>
+    /// <param name="route">The URL route to the email confirmation page.</param>
+    /// <param name="userFullName">The full name of the recipient.</param>
+    /// <returns>A task representing the asynchronous operation of sending an email.</returns>
     public static async Task<Response>
     SendEmailForEmailConfirmation
     (
@@ -793,7 +826,13 @@ public static class Util_Email
 
         return await client.SendEmailAsync(msg);
     }
-
+    /// <summary>
+    /// Sends an email to confirm a user's registration.
+    /// </summary>
+    /// <param name="toEmail">The recipient's email address.</param>
+    /// <param name="route">The URL route to the registration confirmation page.</param>
+    /// <param name="userFullName">The full name of the recipient.</param>
+    /// <returns>A task representing the asynchronous operation of sending an email.</returns>
     public static async Task<Response>
     SendEmailForRegistrationConfirmation
     (
