@@ -28,10 +28,7 @@ namespace SafeShare.API.Controllers;
 //[ServiceFilter(typeof(VerifyUser))]
 public class GroupManagmentController : BaseController
 {
-    /// <summary>
-    /// The mediator instance for sending commands and queries.
-    /// </summary>
-    private readonly IMediator _mediator;
+    
     /// <summary>
     /// Initializes a new instance of <see cref="GroupManagmentController"/>
     /// </summary>
@@ -40,15 +37,17 @@ public class GroupManagmentController : BaseController
     (
         IMediator mediator
     )
-    {
-        _mediator = mediator;
-    }
+    : base
+    (
+        mediator
+    )
+    { }
     /// <summary>
     /// Get group types of a user
     /// </summary>
     /// <param name="userId">The id of the user whose group types are to be retrieved</param>
     /// <returns>A task that represents the asynchronous operation, containing user's groups that he created and joined</returns>
-    [HttpGet(GroupManagmentRoutes.GroupTypes)]
+    [HttpGet(Route_GroupManagmentRoutes.GroupTypes)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<DTO_GroupsTypes>))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<DTO_GroupsTypes>))]
@@ -67,7 +66,7 @@ public class GroupManagmentController : BaseController
     /// <param name="userId">The identifier of the user requesting group details.</param>
     /// <param name="groupId">The identifier of the group whose details are being requested.</param>
     /// <returns>Detailed information about the specified group.</returns>
-    [HttpGet(GroupManagmentRoutes.GetGroupDetails)]
+    [HttpGet(Route_GroupManagmentRoutes.GetGroupDetails)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<DTO_GroupDetails>))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<DTO_GroupDetails>))]
@@ -87,7 +86,7 @@ public class GroupManagmentController : BaseController
     /// <param name="userId">The identifier of the user creating the group.</param>
     /// <param name="createGroup">The details of the group to be created.</param>
     /// <returns>A boolean value indicating whether the group was successfully created.</returns>
-    [HttpPost(GroupManagmentRoutes.CreateGroup)]
+    [HttpPost(Route_GroupManagmentRoutes.CreateGroup)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<bool>))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<bool>))]
@@ -111,7 +110,7 @@ public class GroupManagmentController : BaseController
     /// <param name="groupId">The identifier of the group to be edited.</param>
     /// <param name="editGroup">The new details to update the group with.</param>
     /// <returns>A boolean value indicating whether the group was successfully edited.</returns>
-    [HttpPut(GroupManagmentRoutes.EditGroup)]
+    [HttpPut(Route_GroupManagmentRoutes.EditGroup)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<DTO_GroupType>))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<DTO_GroupType>))]
@@ -135,7 +134,7 @@ public class GroupManagmentController : BaseController
     /// <param name="userId">The identifier of the user deleting the group.</param>
     /// <param name="groupId">The identifier of the group to be deleted.</param>
     /// <returns>A boolean value indicating whether the group was successfully deleted.</returns>
-    [HttpDelete(GroupManagmentRoutes.DeleteGroup)]
+    [HttpDelete(Route_GroupManagmentRoutes.DeleteGroup)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<bool>))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<bool>))]
@@ -155,7 +154,7 @@ public class GroupManagmentController : BaseController
     /// </summary>
     /// <param name="userId">The identifier of the user whose invitations are to be retrieved.</param>
     /// <returns>A list of received group invitations.</returns>
-    [HttpGet(GroupManagmentRoutes.GetGroupsInvitations)]
+    [HttpGet(Route_GroupManagmentRoutes.GetGroupsInvitations)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<List<DTO_RecivedInvitations>>))]
     [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Util_GenericResponse<List<DTO_RecivedInvitations>>))]
@@ -175,7 +174,7 @@ public class GroupManagmentController : BaseController
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<List<DTO_SentInvitations>>))]
     [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Util_GenericResponse<List<DTO_SentInvitations>>))]
-    [HttpGet(GroupManagmentRoutes.GetSentGroupInvitations)]
+    [HttpGet(Route_GroupManagmentRoutes.GetSentGroupInvitations)]
     public async Task<ActionResult<Util_GenericResponse<List<DTO_SentInvitations>>>>
     GetSentGroupInvitations
     (
@@ -190,7 +189,7 @@ public class GroupManagmentController : BaseController
     /// <param name="userId">The identifier of the user sending the invitation.</param>
     /// <param name="dTO_SendInvitation">The details of the invitation to be sent.</param>
     /// <returns>A boolean value indicating whether the invitation was successfully sent.</returns>
-    [HttpPost(GroupManagmentRoutes.SendInvitation)]
+    [HttpPost(Route_GroupManagmentRoutes.SendInvitation)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<bool>))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<bool>))]
@@ -214,7 +213,7 @@ public class GroupManagmentController : BaseController
     /// <param name="userId">The identifier of the user accepting the invitation.</param>
     /// <param name="acceptInvitationRequest">The details of the invitation to be accepted.</param>
     /// <returns>A boolean value indicating whether the invitation was successfully accepted.</returns>
-    [HttpPost(GroupManagmentRoutes.AcceptInvitation)]
+    [HttpPost(Route_GroupManagmentRoutes.AcceptInvitation)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<bool>))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<bool>))]
@@ -238,7 +237,7 @@ public class GroupManagmentController : BaseController
     /// <param name="userId">The identifier of the user rejecting the invitation.</param>
     /// <param name="rejectInvitationRequest">The details of the invitation to be rejected.</param>
     /// <returns>A boolean value indicating whether the invitation was successfully rejected.</returns>
-    [HttpPost(GroupManagmentRoutes.RejectInvitation)]
+    [HttpPost(Route_GroupManagmentRoutes.RejectInvitation)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<bool>))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<bool>))]
@@ -262,7 +261,7 @@ public class GroupManagmentController : BaseController
     /// <param name="userId">The identifier of the user deleting the invitation.</param>
     /// <param name="deleteInvitationRequest">The details of the invitation to be deleted.</param>
     /// <returns>A boolean value indicating whether the invitation was successfully deleted.</returns>
-    [HttpDelete(GroupManagmentRoutes.DeleteInvitation)]
+    [HttpDelete(Route_GroupManagmentRoutes.DeleteInvitation)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<bool>))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<bool>))]

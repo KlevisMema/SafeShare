@@ -1,5 +1,5 @@
 ﻿namespace SafeShare.ClientServer.Routes;
-public static class AuthenticationRoute
+public static class Route_AuthenticationRoute
 {
     public const string Login = "Login";
     public const string LogOut = "LogOut";

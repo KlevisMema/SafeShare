@@ -1,6 +1,6 @@
 ﻿namespace SafeShare.ClientServer.Routes;
 
-public static class GroupManagmentRoutes
+public static class Route_GroupManagmentRoutes
 {
     public const string GroupTypes = "GroupTypes/{userId}";
     public const string CreateGroup = "CreateGroup/{userId}";

@@ -1,6 +1,6 @@
 ﻿namespace SafeShare.ClientServer.Routes;
 
-public static class AccountManagmentRoute
+public static class Route_AccountManagmentRoute
 {
     public const string GetUser = "GetUser/{userId}";
     public const string ResetPassword = "ResetPassword";

@@ -52,8 +52,9 @@ public class AuthenticationController : ControllerBase
     /// <param name="register">The registration data including user details.</param>
     /// <returns>A response indicating the success or failure of the registration process.</returns>
     [AllowAnonymous]
-    [HttpPost(AuthenticationRoute.Register)]
+    [HttpPost(Route_AuthenticationRoute.Register)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<bool>))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(Util_GenericResponse<bool>))]
     [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Util_GenericResponse<bool>))]
     public async Task<ActionResult<Util_GenericResponse<bool>>> 
@@ -74,7 +75,8 @@ public class AuthenticationController : ControllerBase
     /// <param name="confirmRegistrationDto">The data required to confirm a user's registration.</param>
     /// <returns>A response indicating the success or failure of the registration confirmation process.</returns>
     [AllowAnonymous]
-    [HttpPost(AuthenticationRoute.ConfirmRegistration)]
+    [HttpPost(Route_AuthenticationRoute.ConfirmRegistration)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
     public async Task<ActionResult<Util_GenericResponse<bool>>>
     ConfirmRegistration
     (
@@ -90,7 +92,8 @@ public class AuthenticationController : ControllerBase
     /// <param name="loginDto">The user's login credentials.</param>
     /// <returns>A response containing the authentication token or an error message.</returns>
     [AllowAnonymous]
-    [HttpPost(AuthenticationRoute.Login)]
+    [HttpPost(Route_AuthenticationRoute.Login)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<DTO_LoginResult>))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<DTO_LoginResult>))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(Util_GenericResponse<DTO_LoginResult>))]
@@ -114,8 +117,9 @@ public class AuthenticationController : ControllerBase
     /// <param name="otp">The one-time password for login confirmation.</param>
     /// <returns>A response containing the authentication token or an error message.</returns>
     [ServiceFilter(typeof(VerifyUser))]
-    [HttpPost(AuthenticationRoute.ConfirmLogin)]
+    [HttpPost(Route_AuthenticationRoute.ConfirmLogin)]
     [Authorize(AuthenticationSchemes = "ConfirmLogin")]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<DTO_LoginResult>))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<DTO_LoginResult>))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(Util_GenericResponse<DTO_LoginResult>))]
@@ -139,7 +143,8 @@ public class AuthenticationController : ControllerBase
     /// <param name="email">The email address of the user requesting reconfirmation.</param>
     /// <returns>A response indicating the success or failure of the registration reconfirmation request.</returns>
     [AllowAnonymous]
-    [HttpPost(AuthenticationRoute.ReConfirmRegistrationRequest)]
+    [HttpPost(Route_AuthenticationRoute.ReConfirmRegistrationRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
     public async Task<ActionResult<Util_GenericResponse<bool>>>
     ReConfirmRegistrationRequest
     (
@@ -155,8 +160,9 @@ public class AuthenticationController : ControllerBase
     /// <param name="userId">The identifier of the user who is logging out.</param>
     /// <returns>A response indicating the success or failure of the logout process.</returns>
     [ServiceFilter(typeof(VerifyUser))]
-    [HttpPost(AuthenticationRoute.LogOut)]
+    [HttpPost(Route_AuthenticationRoute.LogOut)]
     [Authorize(AuthenticationSchemes = "Default")]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
     public async Task<ActionResult>
     LogOut
     (
@@ -174,7 +180,8 @@ public class AuthenticationController : ControllerBase
     /// <param name="validateToken">The data required to validate and refresh the token.</param>
     /// <returns>A response indicating the success or failure of the token refresh process and includes the new token if successful.</returns>
     [AllowAnonymous]
-    [HttpPost(AuthenticationRoute.RefreshToken)]
+    [HttpPost(Route_AuthenticationRoute.RefreshToken)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
     public async Task<ActionResult<Util_GenericResponse<DTO_Token>>>
     RefreshToken
     (

@@ -32,6 +32,7 @@
       <ProjectReference Include="..\SafeShare.Authentication\SafeShare.Authentication.csproj" />
       <ProjectReference Include="..\SafeShare.ClientServer\SafeShare.Common.csproj" />
       <ProjectReference Include="..\SafeShare.DataAccess\SafeShare.DataAccess.csproj" />
+      <ProjectReference Include="..\SafeShare.ExpenseManagement\SafeShare.ExpenseManagement.csproj" />
       <ProjectReference Include="..\SafeShare.Mappings\SafeShare.Mappings.csproj" />
       <ProjectReference Include="..\SafeShare.MediatR\SafeShare.MediatR.csproj" />
       <ProjectReference Include="..\SafeShare.Security\SafeShare.Security.csproj" />

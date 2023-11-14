@@ -27,10 +27,6 @@ namespace SafeShare.API.Controllers;
 public class AccountManagmentController : BaseController
 {
     /// <summary>
-    /// Mediator pattern handler for dispatching requests.
-    /// </summary>
-    private readonly IMediator _mediator;
-    /// <summary>
     /// Initializes a new instance of the <see cref="AccountManagmentController"/> class.
     /// </summary>
     /// <param name="mediator">Mediator pattern handler.</param>
@@ -38,16 +34,19 @@ public class AccountManagmentController : BaseController
     (
         IMediator mediator
     )
-    {
-        _mediator = mediator;
-    }
+    : base
+    (
+        mediator
+    )
+    { }
     /// <summary>
     /// Fetch a user's updated information by their ID.
     /// </summary>
     /// <param name="userId">Unique identifier of the user.</param>
     /// <returns>Returns user's updated information.</returns>
-    [HttpGet(AccountManagmentRoute.GetUser)]
+    [HttpGet(Route_AccountManagmentRoute.GetUser)]
     [ServiceFilter(typeof(VerifyUser))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<DTO_UserUpdatedInfo>))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<DTO_UserUpdatedInfo>))]
     [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Util_GenericResponse<DTO_UserUpdatedInfo>))]
@@ -65,8 +64,9 @@ public class AccountManagmentController : BaseController
     /// <param name="userId">Unique identifier of the user to be updated.</param>
     /// <param name="userInfo">User's new information.</param>
     /// <returns>Returns user's updated information.</returns>
-    [HttpPut(AccountManagmentRoute.UpdateUser)]
+    [HttpPut(Route_AccountManagmentRoute.UpdateUser)]
     [ServiceFilter(typeof(VerifyUser))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<DTO_UserUpdatedInfo>))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<DTO_UserUpdatedInfo>))]
     [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Util_GenericResponse<DTO_UserUpdatedInfo>))]
@@ -88,8 +88,9 @@ public class AccountManagmentController : BaseController
     /// <param name="userId">Unique identifier of the user.</param>
     /// <param name="changePassword">Details for changing the user's password.</param>
     /// <returns>Returns a boolean indicating the success of the password change operation.</returns>
-    [HttpPut(AccountManagmentRoute.ChangePassword)]
     [ServiceFilter(typeof(VerifyUser))]
+    [HttpPut(Route_AccountManagmentRoute.ChangePassword)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<bool>))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<bool>))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(Util_GenericResponse<bool>))]
@@ -113,7 +114,8 @@ public class AccountManagmentController : BaseController
     /// <param name="deactivateAccount"> A dto containing user's information for deactivation process </param>
     /// <returns>Returns a boolean indicating the success of the deactivation operation.</returns>
     [ServiceFilter(typeof(VerifyUser))]
-    [HttpPost(AccountManagmentRoute.DeactivateAccount)]
+    [HttpPost(Route_AccountManagmentRoute.DeactivateAccount)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<bool>))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<bool>))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(Util_GenericResponse<bool>))]
@@ -136,7 +138,7 @@ public class AccountManagmentController : BaseController
     /// <param name="email">The email address associated with the account to be activated.</param>
     /// <returns>A response indicating the success or failure of the account activation request.</returns>
     [AllowAnonymous]
-    [HttpPost(AccountManagmentRoute.ActivateAccountRequest)]
+    [HttpPost(Route_AccountManagmentRoute.ActivateAccountRequest)]
     public async Task<ActionResult<Util_GenericResponse<bool>>>
     ActivateAccountRequest
     (
@@ -151,7 +153,7 @@ public class AccountManagmentController : BaseController
     /// <param name="activateAccountConfirmationDto">The DTO containing the confirmation details for account activation.</param>
     /// <returns>A response indicating the success or failure of the account activation confirmation.</returns>
     [AllowAnonymous]
-    [HttpPost(AccountManagmentRoute.ActivateAccountRequestConfirmation)]
+    [HttpPost(Route_AccountManagmentRoute.ActivateAccountRequestConfirmation)]
     public async Task<ActionResult<Util_GenericResponse<bool>>>
     ActivateAccountRequestConfirmation
     (
@@ -169,7 +171,7 @@ public class AccountManagmentController : BaseController
     /// <param name="email">The email address of the user who forgot their password.</param>
     /// <returns>A response indicating the success or failure of the forgot password request.</returns>
     [AllowAnonymous]
-    [HttpPost(AccountManagmentRoute.ForgotPassword)]
+    [HttpPost(Route_AccountManagmentRoute.ForgotPassword)]
     public async Task<ActionResult<Util_GenericResponse<bool>>>
     ForgotPassword
     (
@@ -184,7 +186,7 @@ public class AccountManagmentController : BaseController
     /// <param name="resetPassword">The DTO containing the new password and reset token information.</param>
     /// <returns>A response indicating the success or failure of the password reset operation.</returns>
     [AllowAnonymous]
-    [HttpPost(AccountManagmentRoute.ResetPassword)]
+    [HttpPost(Route_AccountManagmentRoute.ResetPassword)]
     public async Task<ActionResult<Util_GenericResponse<bool>>>
     ResetPassword
     (
@@ -203,7 +205,7 @@ public class AccountManagmentController : BaseController
     /// <param name="emailAddress">The DTO containing the new email address information.</param>
     /// <returns>A response indicating the success or failure of the email change request.</returns>
     [ServiceFilter(typeof(VerifyUser))]
-    [HttpPost(AccountManagmentRoute.RequestChangeEmail)]
+    [HttpPost(Route_AccountManagmentRoute.RequestChangeEmail)]
     public async Task<ActionResult<Util_GenericResponse<bool>>>
     RequestChangeEmail
     (
@@ -223,7 +225,7 @@ public class AccountManagmentController : BaseController
     /// <param name="changeEmailAddressConfirmDto">The DTO containing confirmation details for the email change.</param>
     /// <returns>A response indicating the success or failure of the email change confirmation.</returns>
     [ServiceFilter(typeof(VerifyUser))]
-    [HttpPost(AccountManagmentRoute.ConfirmChangeEmailRequest)]
+    [HttpPost(Route_AccountManagmentRoute.ConfirmChangeEmailRequest)]
     public async Task<ActionResult<Util_GenericResponse<bool>>>
     ConfirmChangeEmailRequest
     (

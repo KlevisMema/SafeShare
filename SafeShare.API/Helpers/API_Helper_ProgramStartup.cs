@@ -30,14 +30,17 @@ using Microsoft.Extensions.Configuration;
 using SafeShare.Authentication.Interfaces;
 using SafeShare.GroupManagment.Interfaces;
 using SafeShare.UserManagment.UserAccount;
+using SafeShare.Mappings.ExpenseManagment;
 using SafeShare.Security.API.ActionFilters;
 using SafeShare.DataTransormObject.Security;
+using SafeShare.ExpenseManagement.Interfaces;
 using SafeShare.GroupManagment.GroupManagment;
 using SafeShare.Security.API.Imeplementations;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
 using SafeShare.Security.JwtSecurity.Interfaces;
 using SafeShare.Utilities.ConfigurationSettings;
+using SafeShare.ExpenseManagement.Implementations;
 using SafeShare.DataTransormObject.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using SafeShare.Security.JwtSecurity.Implementations;
@@ -152,6 +155,7 @@ public static class API_Helper_ProgramStartup
             return new ApiKeyAuthorizationFilter(apikey, httpContextAccessor, logger);
         });
         Services.AddScoped<IGroupManagment_GroupRepository, GroupManagment_GroupRepository>();
+        Services.AddScoped<IExpenseManagment_ExpenseRepository, ExpenseManagment_ExpenseRepository>();
         Services.AddScoped<IGroupManagment_GroupInvitationsRepository, GroupManagment_GroupInvitationsRepository>();
         Services.AddScoped<ISecurity_JwtTokenAuth<Security_JwtTokenAuth, DTO_AuthUser, DTO_Token>, Security_JwtTokenAuth>();
         Services.AddScoped<ISecurity_JwtTokenAuth<Security_JwtShortLivedToken, string, string>, Security_JwtShortLivedToken>();
@@ -199,6 +203,7 @@ public static class API_Helper_ProgramStartup
         Services.AddAutoMapper(typeof(Mapper_GroupManagment));
         Services.AddAutoMapper(typeof(Mapping_Authentication));
         Services.AddAutoMapper(typeof(Mapper_AccountManagment));
+        Services.AddAutoMapper(typeof(Mapper_ExpenseManagment));
     }
     /// <summary>
     ///     Add swagger configured with security in the container
@@ -215,10 +220,7 @@ public static class API_Helper_ProgramStartup
         // Services Settings
         var jwtSetting = Configuration.GetSection(Util_JwtSettings.SectionName);
 
-       
-
         // Cofigure Authetication
-
         var defaultTokanValidationParameters = new TokenValidationParameters
         {
             ValidateAudience = true,

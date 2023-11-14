@@ -10,6 +10,7 @@
     All controllers that inherit from BaseController will have the common behavior and route prefix.
 */
 
+using MediatR;
 using SafeShare.Security.API;
 using SafeShare.Common.Routes;
 using Microsoft.AspNetCore.Mvc;
@@ -28,4 +29,19 @@ namespace SafeShare.API.Controllers;
 //[ServiceFilter(typeof(IApiKeyAuthorizationFilter))]
 public class BaseController : ControllerBase
 {
+    /// <summary>
+    /// Mediator pattern handler for dispatching requests.
+    /// </summary>
+    protected readonly IMediator _mediator;
+    /// <summary>
+    /// Initializes a new instance of the <see cref="BaseController"/> class.
+    /// </summary>
+    /// <param name="mediator">Mediator pattern handler.</param>
+    public BaseController
+    (
+        IMediator mediator
+    )
+    {
+        _mediator = mediator;
+    }
 }
