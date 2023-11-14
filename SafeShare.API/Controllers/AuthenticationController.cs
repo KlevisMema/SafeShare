@@ -6,13 +6,12 @@
 using MediatR;
 using System.Net;
 using System.Security.Claims;
-using SafeShare.Common.Routes;
 using Microsoft.AspNetCore.Mvc;
 using SafeShare.Utilities.Responses;
-using SafeShare.ClientServer.Routes;
 using System.IdentityModel.Tokens.Jwt;
 using SafeShare.Security.API.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using SafeShare.ClientServerShared.Routes;
 using SafeShare.Security.API.ActionFilters;
 using SafeShare.DataTransormObject.Security;
 using SafeShare.DataTransormObject.Authentication;

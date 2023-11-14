@@ -11,9 +11,9 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
-using SafeShare.ClientServer.Routes;
 using SafeShare.Utilities.Responses;
 using Microsoft.AspNetCore.Authorization;
+using SafeShare.ClientServerShared.Routes;
 using SafeShare.Security.API.ActionFilters;
 using SafeShare.DataTransormObject.UserManagment;
 using SafeShare.MediatR.Actions.Queries.UserManagment;

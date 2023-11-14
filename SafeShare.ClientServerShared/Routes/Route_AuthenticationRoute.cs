@@ -1,4 +1,4 @@
-﻿namespace SafeShare.ClientServer.Routes;
+﻿namespace SafeShare.ClientServerShared.Routes;
 public static class Route_AuthenticationRoute
 {
     public const string Login = "Login";

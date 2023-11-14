@@ -12,10 +12,10 @@
 
 using MediatR;
 using SafeShare.Security.API;
-using SafeShare.Common.Routes;
 using Microsoft.AspNetCore.Mvc;
 using SafeShare.Security.API.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using SafeShare.ClientServerShared.Routes;
 
 namespace SafeShare.API.Controllers;
 

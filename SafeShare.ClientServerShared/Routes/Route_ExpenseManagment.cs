@@ -1,4 +1,4 @@
-﻿namespace SafeShare.Common.Routes;
+﻿namespace SafeShare.ClientServerShared.Routes;
 
 public static class Route_ExpenseManagment
 {

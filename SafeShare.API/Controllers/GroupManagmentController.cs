@@ -9,7 +9,7 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using SafeShare.Utilities.Responses;
-using SafeShare.ClientServer.Routes;
+using SafeShare.ClientServerShared.Routes;
 using SafeShare.Security.API.ActionFilters;
 using SafeShare.DataTransormObject.UserManagment;
 using SafeShare.DataTransormObject.GroupManagment;
@@ -28,7 +28,7 @@ namespace SafeShare.API.Controllers;
 //[ServiceFilter(typeof(VerifyUser))]
 public class GroupManagmentController : BaseController
 {
-    
+
     /// <summary>
     /// Initializes a new instance of <see cref="GroupManagmentController"/>
     /// </summary>
