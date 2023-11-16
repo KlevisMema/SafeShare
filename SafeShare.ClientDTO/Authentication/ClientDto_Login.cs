@@ -5,7 +5,7 @@ namespace SafeShare.ClientDTO.Authentication;
 
 public class ClientDto_Login
 {
-    [Required, EmailAddress]
+    [Required, EmailAddress] 
     public string Email { get; set; } = string.Empty;
 
     [Required, DataType(DataType.Password)]
