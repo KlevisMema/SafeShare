@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="ExpenseManagment\" />
+    <Folder Include="GroupManagment\" />
+    <Folder Include="Authentication\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SafeShare.ClientDTO\SafeShare.ClientDTO.csproj" />
+    <ProjectReference Include="..\SafeShare.ClientServerShared\SafeShare.ClientServerShared.csproj" />
+    <ProjectReference Include="..\SafeShare.ClientUtilities\SafeShare.ClientUtilities.csproj" />
+  </ItemGroup>
+
+</Project>

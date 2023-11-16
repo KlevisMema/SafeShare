@@ -113,7 +113,7 @@ public class AccountManagmentController : BaseController
     /// <param name="userId">Unique identifier of the user to be deactivated</param>
     /// <param name="deactivateAccount"> A dto containing user's information for deactivation process </param>
     /// <returns>Returns a boolean indicating the success of the deactivation operation.</returns>
-    [ServiceFilter(typeof(VerifyUser))]
+    //[ServiceFilter(typeof(VerifyUser))]
     [HttpPost(Route_AccountManagmentRoute.DeactivateAccount)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<bool>))]

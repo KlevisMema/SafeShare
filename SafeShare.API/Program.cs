@@ -1,6 +1,7 @@
 using Serilog;
 using SafeShare.API.Helpers;
 using SafeShare.API.Startup;
+using Microsoft.Extensions.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,8 +16,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
 app.UseHttpsRedirection();
+
+app.UseCors(builder.Configuration.GetSection("Cors:Policy:Name").Value!);
 
 app.UseAuthentication();
 

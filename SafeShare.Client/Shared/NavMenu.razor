@@ -1,6 +1,5 @@
 ﻿@using SafeShare.Client.Shared.Forms;
-@inject ISnackbar Snackbar
-@inject IDialogService DialogService
+@using System.Text;
 
 <MudPaper Width="350px" Class="d-inline-flex py-3" Elevation="0">
 
@@ -13,7 +12,11 @@
             <MudNavLink Icon="@Icons.Material.Filled.Edit" IconColor="Color.Inherit">Update Data</MudNavLink>
             <MudNavLink Icon="@Icons.Material.Filled.Password" IconColor="Color.Inherit">Change Email</MudNavLink>
             <MudNavLink Icon="@Icons.Material.Filled.Email" IconColor="Color.Inherit">Change Password</MudNavLink>
-            <MudNavLink Icon="@Icons.Material.Filled.Delete" IconColor="Color.Inherit">Deactivate Account</MudNavLink>
+
+            <MudNavLink Icon="@Icons.Material.Filled.Delete" IconColor="Color.Inherit" OnClick="OnButtonClicked">
+                Deactivate Account
+            </MudNavLink>
+
         </MudNavGroup>
 
         <MudDivider Class="my-2" />
@@ -42,18 +45,18 @@
 
 </MudPaper>
 
-@code {
-    protected override Task OnInitializedAsync()
-    {
-        Snackbar.Add("Reactor meltdown is imminent", Severity.Error);
 
-        return base.OnInitializedAsync();
-    }
+<MudMessageBox @ref="mbox" Title="Delete?" CancelText="No">
 
-    private void OpenDialog()
-    {
-        DialogOptions closeOnEscapeKey = new DialogOptions() { CloseOnEscapeKey = false };
+    <MessageContent>
+        Are you sure you want to deactivate your account?
+    </MessageContent>
 
-        DialogService.Show<Test1>("Simple Dialog", closeOnEscapeKey);
-    }
-}
+
+    <YesButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.DeleteForever" OnClick="CallTheApi">Delete!</MudButton>
+    </YesButton>
+
+
+
+</MudMessageBox>

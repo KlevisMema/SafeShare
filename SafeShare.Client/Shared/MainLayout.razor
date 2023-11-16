@@ -7,25 +7,26 @@
 <MudLayout>
 
     <MudAppBar Elevation="3">
-        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
-        <MudSpacer />
-        <MudDivider DividerType="DividerType.Inset" />
 
-        <MudTooltip Text="Notifications" Color="Color.Primary" Placement="Placement.Bottom">
-            <MudBadge Content="3" Overlap="true" Dot="true" Color="Color.Secondary">
-                <MudIconButton Icon="@Icons.Material.Outlined.Notifications" Color="Color.Inherit" Edge="Edge.End" Title="Notifications" />
-            </MudBadge>
-        </MudTooltip>
+            <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+            <MudSpacer />
+            <MudDivider DividerType="DividerType.Inset" />
 
-        <MudTooltip Text="Verified" Color="Color.Primary" Placement="Placement.Top">
-            <MudIconButton Icon="@Icons.Material.Filled.VerifiedUser" Color="Color.Inherit" Edge="Edge.End" />
-        </MudTooltip>
+            <MudTooltip Text="Notifications" Color="Color.Primary" Placement="Placement.Bottom">
+                <MudBadge Content="3" Overlap="true" Dot="true" Color="Color.Secondary">
+                    <MudIconButton Icon="@Icons.Material.Outlined.Notifications" Color="Color.Inherit" Edge="Edge.End" Title="Notifications" />
+                </MudBadge>
+            </MudTooltip>
 
-        <MudTooltip Text="Log Out" Color="Color.Primary" Placement="Placement.Top">
-            <MudIconButton Icon="@Icons.Material.Filled.Logout" Color="Color.Inherit" Edge="Edge.End" />
-        </MudTooltip>
+            <MudTooltip Text="Verified" Color="Color.Primary" Placement="Placement.Top">
+                <MudIconButton Icon="@Icons.Material.Filled.VerifiedUser" Color="Color.Inherit" Edge="Edge.End" />
+            </MudTooltip>
 
-    </MudAppBar>
+            <MudTooltip Text="Log Out" Color="Color.Primary" Placement="Placement.Top">
+                <MudIconButton Icon="@Icons.Material.Filled.Logout" Color="Color.Inherit" Edge="Edge.End" />
+            </MudTooltip>
+
+        </MudAppBar>
 
     <MudDrawer @bind-Open="_drawerOpen" Elevation="3" Width="350px">
 
