@@ -122,4 +122,16 @@ public interface IAccountManagment
         Guid userId,
         DTO_ChangeEmailAddressRequestConfirm changeEmailAddressConfirmDto
     );
+    /// <summary>
+    /// Search usesr by their username
+    /// </summary>
+    /// <param name="userName">The username of the user</param>
+    /// <param name="userId">The id of the user</param>
+    /// <returns></returns>
+    Task<Util_GenericResponse<List<DTO_UserSearched>>>
+    SearchUserByUserName
+    (
+        string userName,
+        string userId
+    );
 }

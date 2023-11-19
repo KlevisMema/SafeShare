@@ -13,13 +13,13 @@ using SafeShare.Utilities.Services;
 using Microsoft.EntityFrameworkCore;
 using SafeShare.Utilities.Responses;
 using Microsoft.AspNetCore.Identity;
+using System.Text.RegularExpressions;
 using SafeShare.Utilities.Dependencies;
 using SafeShare.DataAccessLayer.Models;
 using SafeShare.DataAccessLayer.Context;
 using SafeShare.GroupManagment.Interfaces;
 using SafeShare.DataTransormObject.GroupManagment;
 using SafeShare.DataTransormObject.GroupManagment.GroupInvitations;
-using System.Text.RegularExpressions;
 
 namespace SafeShare.GroupManagment.GroupManagment;
 
@@ -28,32 +28,26 @@ namespace SafeShare.GroupManagment.GroupManagment;
 /// It includes functionalities for handling various aspects of group invitations such as receiving, 
 /// sending, accepting, and rejecting them.
 /// </summary>
-public class GroupManagment_GroupInvitationsRepository :
-    Util_BaseContextDependencies<ApplicationDbContext, GroupManagment_GroupInvitationsRepository>,
-    IGroupManagment_GroupInvitationsRepository
+/// <remarks>
+/// Initializes a new instance of the <see cref="GroupManagment_GroupInvitationsRepository"/> class.
+/// </remarks>
+/// <param name="db">The database context used for data operations.</param>
+/// <param name="mapper">The AutoMapper instance for object mapping.</param>
+/// <param name="logger">The logger for logging information and errors.</param>
+/// <param name="httpContextAccessor">Provides access to the current HTTP context.</param>
+public class GroupManagment_GroupInvitationsRepository
+(
+    ApplicationDbContext db,
+    IMapper mapper,
+    ILogger<GroupManagment_GroupInvitationsRepository> logger,
+    IHttpContextAccessor httpContextAccessor
+) : Util_BaseContextDependencies<ApplicationDbContext, GroupManagment_GroupInvitationsRepository>(
+    db,
+    mapper,
+    logger,
+    httpContextAccessor
+), IGroupManagment_GroupInvitationsRepository
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="GroupManagment_GroupInvitationsRepository"/> class.
-    /// </summary>
-    /// <param name="db">The database context used for data operations.</param>
-    /// <param name="mapper">The AutoMapper instance for object mapping.</param>
-    /// <param name="logger">The logger for logging information and errors.</param>
-    /// <param name="httpContextAccessor">Provides access to the current HTTP context.</param>
-    public GroupManagment_GroupInvitationsRepository
-    (
-        ApplicationDbContext db,
-        IMapper mapper,
-        ILogger<GroupManagment_GroupInvitationsRepository> logger,
-        IHttpContextAccessor httpContextAccessor
-    )
-    : base
-    (
-        db,
-        mapper,
-        logger,
-        httpContextAccessor
-    )
-    { }
     /// <summary>
     /// Retrieves a list of received group invitations for a specific user.
     /// </summary>

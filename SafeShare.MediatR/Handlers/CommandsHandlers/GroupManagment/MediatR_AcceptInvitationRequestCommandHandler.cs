@@ -15,23 +15,16 @@ namespace SafeShare.MediatR.Handlers.CommandsHandlers.GroupManagment;
 /// <summary>
 /// A MediatR command handler for processing group invitation acceptance requests.
 /// </summary>
-public class MediatR_AcceptInvitationRequestCommandHandler :
-    MediatR_GenericHandler<IGroupManagment_GroupInvitationsRepository>,
+/// <remarks>
+/// Initializes a new instance of the <see cref="MediatR_AcceptInvitationRequestCommandHandler"/> class.
+/// </remarks>
+/// <param name="service">The group management service used for processing group invitation acceptance.</param>
+public class MediatR_AcceptInvitationRequestCommandHandler
+(
+    IGroupManagment_GroupInvitationsRepository service
+) : MediatR_GenericHandler<IGroupManagment_GroupInvitationsRepository>(service),
     IRequestHandler<MediatR_AcceptInvitationRequestCommand, ObjectResult>
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MediatR_AcceptInvitationRequestCommandHandler"/> class.
-    /// </summary>
-    /// <param name="service">The group management service used for processing group invitation acceptance.</param>
-    public MediatR_AcceptInvitationRequestCommandHandler
-    (
-        IGroupManagment_GroupInvitationsRepository service
-    )
-    : base
-    (
-        service
-    )
-    { }
     /// <summary>
     /// Handles the process of accepting a group invitation.
     /// </summary>

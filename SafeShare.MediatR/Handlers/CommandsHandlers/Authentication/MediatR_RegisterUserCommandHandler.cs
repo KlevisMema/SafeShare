@@ -14,23 +14,15 @@ namespace SafeShare.MediatR.Handlers.CommandsHandlers.Authentication;
 /// <summary>
 /// Handles the MediatR_RegisterUserCommand.
 /// </summary>
-public class MediatR_RegisterUserCommandHandler : IRequestHandler<MediatR_RegisterUserCommand, ObjectResult>
+/// <remarks>
+/// Initializes a new instance of the <see cref="MediatR_RegisterUserCommandHandler"/> class.
+/// </remarks>
+/// <param name="registerUser">The IAUTH_Register service used to register users.</param>
+public class MediatR_RegisterUserCommandHandler
+(
+    IAUTH_Register registerUser
+) : IRequestHandler<MediatR_RegisterUserCommand, ObjectResult>
 {
-    /// <summary>
-    /// Gets the IAUTH_Register service used to register users.
-    /// </summary>
-    private readonly IAUTH_Register _register;
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MediatR_RegisterUserCommandHandler"/> class.
-    /// </summary>
-    /// <param name="registerUser">The IAUTH_Register service used to register users.</param>
-    public MediatR_RegisterUserCommandHandler
-    (
-        IAUTH_Register registerUser
-    )
-    {
-        _register = registerUser;
-    }
     /// <summary>
     /// Handles the registration request and returns an appropriate ObjectResult.
     /// </summary>
@@ -44,7 +36,7 @@ public class MediatR_RegisterUserCommandHandler : IRequestHandler<MediatR_Regist
         CancellationToken cancellationToken
     )
     {
-        var registerResult = await _register.RegisterUser(request.Register);
+        var registerResult = await registerUser.RegisterUser(request.Register);
 
         return Util_GenericControllerResponse<bool>.ControllerResponse(registerResult);
     }

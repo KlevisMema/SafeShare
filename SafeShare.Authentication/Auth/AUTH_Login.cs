@@ -32,58 +32,38 @@ namespace SafeShare.Authentication.Auth;
 /// <summary>
 ///     Provides functionality to authenticate and log in users within the Authentication module.
 /// </summary>
-public class AUTH_Login : Util_BaseAuthDependencies<AUTH_Login, ApplicationUser, ApplicationDbContext>, IAUTH_Login
+/// <remarks>
+///     Initializes a new instance of the <see cref="AUTH_Login"/> class.
+/// </remarks>
+/// <param name="mapper">The mapper.</param>
+/// <param name="logger">The logger.</param>
+/// <param name="userManager">The user manager.</param>
+/// <param name="configuration">The configurations </param>
+/// <param name="signInManager">The sign-in manager.</param>
+/// <param name="jwtTokenService">The JWT token service.</param>
+/// <param name="jwtShortTokenService">The JWT token service.</param>
+/// <param name="httpContextAccessor">The HTTP context accessor.</param>
+/// <param name="db">The application db context for db operations</param>
+public class AUTH_Login
+(
+    IMapper mapper,
+    ApplicationDbContext db,
+    ILogger<AUTH_Login> logger,
+    IConfiguration configuration,
+    IHttpContextAccessor httpContextAccessor,
+    UserManager<ApplicationUser> userManager,
+    SignInManager<ApplicationUser> signInManager,
+    ISecurity_JwtTokenAuth<Security_JwtTokenAuth, DTO_AuthUser, DTO_Token> jwtTokenService,
+    ISecurity_JwtTokenAuth<Security_JwtShortLivedToken, string, string> jwtShortTokenService
+) : Util_BaseAuthDependencies<AUTH_Login, ApplicationUser, ApplicationDbContext>(
+    mapper,
+    logger,
+    httpContextAccessor,
+    userManager,
+    configuration,
+    db
+), IAUTH_Login
 {
-    /// <summary>
-    ///     Manager to handle user sign-in operations.
-    /// </summary>
-    private readonly SignInManager<ApplicationUser> _signInManager;
-    /// <summary>
-    ///     Service to handle JWT token operations.
-    /// </summary>
-    private readonly ISecurity_JwtTokenAuth<Security_JwtTokenAuth, DTO_AuthUser, DTO_Token> _jwtTokenService;
-    /// <summary>
-    ///     Service to handle JWT token operations.
-    /// </summary>
-    private readonly ISecurity_JwtTokenAuth<Security_JwtShortLivedToken, string, string> _jwtShortTokenService;
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="AUTH_Login"/> class.
-    /// </summary>
-    /// <param name="mapper">The mapper.</param>
-    /// <param name="logger">The logger.</param>
-    /// <param name="userManager">The user manager.</param>
-    /// <param name="configuration">The configurations </param>
-    /// <param name="signInManager">The sign-in manager.</param>
-    /// <param name="jwtTokenService">The JWT token service.</param>
-    /// <param name="jwtShortTokenService">The JWT token service.</param>
-    /// <param name="httpContextAccessor">The HTTP context accessor.</param>
-    /// <param name="db">The application db context for db operations</param>
-    public AUTH_Login
-    (
-        IMapper mapper,
-        ApplicationDbContext db,
-        ILogger<AUTH_Login> logger,
-        IConfiguration configuration,
-        IHttpContextAccessor httpContextAccessor,
-        UserManager<ApplicationUser> userManager,
-        SignInManager<ApplicationUser> signInManager,
-        ISecurity_JwtTokenAuth<Security_JwtTokenAuth, DTO_AuthUser, DTO_Token> jwtTokenService,
-        ISecurity_JwtTokenAuth<Security_JwtShortLivedToken, string, string> jwtShortTokenService
-    )
-    : base
-    (
-        mapper,
-        logger,
-        httpContextAccessor,
-        userManager,
-        configuration,
-        db
-    )
-    {
-        _signInManager = signInManager;
-        _jwtTokenService = jwtTokenService;
-        _jwtShortTokenService = jwtShortTokenService;
-    }
     /// <summary>
     ///     Authenticates and logs in a user based on the provided login data transfer object.
     /// </summary>
@@ -150,7 +130,7 @@ public class AUTH_Login : Util_BaseAuthDependencies<AUTH_Login, ApplicationUser,
                 );
             }
 
-            var signInUser = await _signInManager.PasswordSignInAsync(user, loginDto.Password, true, lockoutOnFailure: true);
+            var signInUser = await signInManager.PasswordSignInAsync(user, loginDto.Password, true, lockoutOnFailure: true);
 
             if (signInUser.IsLockedOut)
             {
@@ -655,7 +635,7 @@ public class AUTH_Login : Util_BaseAuthDependencies<AUTH_Login, ApplicationUser,
         var roles = await _userManager.GetRolesAsync(user);
         var userDto = _mapper.Map<DTO_AuthUser>(user);
         userDto.Roles = roles.ToList();
-        var token = await _jwtTokenService.CreateToken(userDto);
+        var token = await jwtTokenService.CreateToken(userDto);
 
         return token;
     }
@@ -670,6 +650,6 @@ public class AUTH_Login : Util_BaseAuthDependencies<AUTH_Login, ApplicationUser,
         string userId
     )
     {
-        return await _jwtShortTokenService.CreateToken(userId);
+        return await jwtShortTokenService.CreateToken(userId);
     }
 }

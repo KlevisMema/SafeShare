@@ -15,23 +15,15 @@ namespace SafeShare.MediatR.Handlers.CommandsHandlers.Authentication;
 /// <summary>
 /// Handles the MediatR_LoginUserCommand.
 /// </summary>
-public class MediatR_LoginUserCommandHandler : IRequestHandler<MediatR_LoginUserCommand, ObjectResult>
+/// <remarks>
+/// Initializes a new instance of the <see cref="MediatR_LoginUserCommandHandler"/> class.
+/// </remarks>
+/// <param name="loginUser">The IAUTH_Login service used to authenticate users.</param>
+public class MediatR_LoginUserCommandHandler
+(
+    IAUTH_Login loginUser
+) : IRequestHandler<MediatR_LoginUserCommand, ObjectResult>
 {
-    /// <summary>
-    /// Gets the IAUTH_Login service used to authenticate users.
-    /// </summary>
-    private readonly IAUTH_Login _login;
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MediatR_LoginUserCommandHandler"/> class.
-    /// </summary>
-    /// <param name="loginUser">The IAUTH_Login service used to authenticate users.</param>
-    public MediatR_LoginUserCommandHandler
-    (
-        IAUTH_Login loginUser
-    )
-    {
-        _login = loginUser;
-    }
     /// <summary>
     /// Handles the login request and returns an appropriate ObjectResult.
     /// </summary>
@@ -45,7 +37,7 @@ public class MediatR_LoginUserCommandHandler : IRequestHandler<MediatR_LoginUser
         CancellationToken cancellationToken
     )
     {
-        var loginResult = await _login.LoginUser(request.Login);
+        var loginResult = await loginUser.LoginUser(request.Login);
 
         return Util_GenericControllerResponse<DTO_LoginResult>.ControllerResponse(loginResult);
     }

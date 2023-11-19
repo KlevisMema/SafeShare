@@ -7,9 +7,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="ExpenseManagment\" />
-    <Folder Include="GroupManagment\" />
-    <Folder Include="Authentication\" />
+    <Compile Remove="Authentication\**" />
+    <Compile Remove="ExpenseManagment\**" />
+    <Compile Remove="GroupManagment\**" />
+    <EmbeddedResource Remove="Authentication\**" />
+    <EmbeddedResource Remove="ExpenseManagment\**" />
+    <EmbeddedResource Remove="GroupManagment\**" />
+    <None Remove="Authentication\**" />
+    <None Remove="ExpenseManagment\**" />
+    <None Remove="GroupManagment\**" />
   </ItemGroup>
 
   <ItemGroup>

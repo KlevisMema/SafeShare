@@ -15,23 +15,16 @@ namespace SafeShare.MediatR.Handlers.CommandsHandlers.Authentication;
 /// <summary>
 /// A MediatR command handler for processing user logout requests.
 /// </summary>
-public class MediatR_LogOutCommandHandler :
-    MediatR_GenericHandler<IAUTH_Login>,
+/// <remarks>
+/// Initializes a new instance of the <see cref="MediatR_LogOutCommandHandler"/> class.
+/// </remarks>
+/// <param name="service">The authentication service used for logging out users.</param>
+public class MediatR_LogOutCommandHandler
+(
+    IAUTH_Login service
+) : MediatR_GenericHandler<IAUTH_Login>(service),
     IRequestHandler<MediatR_LogOutCommand>
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MediatR_LogOutCommandHandler"/> class.
-    /// </summary>
-    /// <param name="service">The authentication service used for logging out users.</param>
-    public MediatR_LogOutCommandHandler
-    (
-        IAUTH_Login service
-    )
-    : base
-    (
-        service
-    )
-    { }
     /// <summary>
     /// Handles the user logout process.
     /// </summary>

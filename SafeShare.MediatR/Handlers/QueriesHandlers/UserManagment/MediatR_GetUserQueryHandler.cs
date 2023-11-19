@@ -15,21 +15,16 @@ namespace SafeShare.MediatR.Handlers.QueriesHandlers.UserManagment;
 /// <summary>
 /// Represents a MediatR handler that processes queries to get user details.
 /// </summary>
-public class MediatR_GetUserQueryHandler : MediatR_GenericHandler<IAccountManagment>, IRequestHandler<MediatR_GetUserQuery, ObjectResult>
+/// <remarks>
+/// Initializes a new instance of the <see cref="MediatR_GetUserQueryHandler"/> class with the specified account management service.
+/// </remarks>
+/// <param name="accountManagment">The account management service.</param>
+public class MediatR_GetUserQueryHandler
+(
+    IAccountManagment accountManagment
+) : MediatR_GenericHandler<IAccountManagment>(accountManagment),
+    IRequestHandler<MediatR_GetUserQuery, ObjectResult>
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MediatR_GetUserQueryHandler"/> class with the specified account management service.
-    /// </summary>
-    /// <param name="accountManagment">The account management service.</param>
-    public MediatR_GetUserQueryHandler
-    (
-        IAccountManagment accountManagment
-    )
-    : base
-    (
-        accountManagment
-    )
-    { }
 
     /// <summary>
     /// Processes the provided query to retrieve user details.

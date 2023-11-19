@@ -15,23 +15,16 @@ namespace SafeShare.MediatR.Handlers.CommandsHandlers.Authentication;
 /// <summary>
 /// A MediatR command handler for confirming user registration.
 /// </summary>
-public class MediatR_ConfirmUserRegistrationCommandHandler :
-    MediatR_GenericHandler<IAUTH_Register>,
+/// <remarks>
+/// Initializes a new instance of the <see cref="MediatR_ConfirmUserRegistrationCommandHandler"/> class.
+/// </remarks>
+/// <param name="service">The authentication service used for user registration confirmation.</param>
+public class MediatR_ConfirmUserRegistrationCommandHandler
+(
+    IAUTH_Register service
+) : MediatR_GenericHandler<IAUTH_Register>(service),
     IRequestHandler<MediatR_ConfirmUserRegistrationCommand, ObjectResult>
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MediatR_ConfirmUserRegistrationCommandHandler"/> class.
-    /// </summary>
-    /// <param name="service">The authentication service used for user registration confirmation.</param>
-    public MediatR_ConfirmUserRegistrationCommandHandler
-    (
-        IAUTH_Register service
-    )
-    : base
-    (
-        service
-    )
-    { }
     /// <summary>
     /// Handles the confirmation of a user registration.
     /// </summary>

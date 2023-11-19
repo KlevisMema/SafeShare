@@ -18,23 +18,16 @@ namespace SafeShare.MediatR.Handlers.CommandsHandlers.ExpenseManagment;
 /// <summary>
 /// MediatR command handler responsible for processing expense edit requests.
 /// </summary>
-public class MediatR_EditExpenseCommandHandler :
-    MediatR_GenericHandler<IExpenseManagment_ExpenseRepository>,
+/// <remarks>
+/// Initializes a new instance of the <see cref="MediatR_EditExpenseCommandHandler"/> with a service capable of handling expense management operations.
+/// </remarks>
+/// <param name="service">The expense management service to be used within this handler.</param>
+public class MediatR_EditExpenseCommandHandler
+(
+    IExpenseManagment_ExpenseRepository service
+) : MediatR_GenericHandler<IExpenseManagment_ExpenseRepository>(service),
     IRequestHandler<MediatR_EditExpenseCommand, ObjectResult>
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MediatR_EditExpenseCommandHandler"/> with a service capable of handling expense management operations.
-    /// </summary>
-    /// <param name="service">The expense management service to be used within this handler.</param>
-    public MediatR_EditExpenseCommandHandler
-    (
-        IExpenseManagment_ExpenseRepository service
-    )
-    : base
-    (
-        service
-    )
-    { }
 
     /// <summary>
     /// Asynchronously handles the editing of an expense upon receiving the edit command.

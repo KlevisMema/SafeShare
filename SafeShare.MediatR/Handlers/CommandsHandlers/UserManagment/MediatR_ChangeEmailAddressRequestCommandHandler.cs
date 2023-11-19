@@ -15,23 +15,16 @@ namespace SafeShare.MediatR.Handlers.CommandsHandlers.UserManagment;
 /// <summary>
 /// A MediatR command handler for processing requests to initiate a change in a user's email address.
 /// </summary>
-public class MediatR_ChangeEmailAddressRequestCommandHandler :
-    MediatR_GenericHandler<IAccountManagment>,
+/// <remarks>
+/// Initializes a new instance of the <see cref="MediatR_ChangeEmailAddressRequestCommandHandler"/> class.
+/// </remarks>
+/// <param name="service">The account management service used for initiating email address changes.</param>
+public class MediatR_ChangeEmailAddressRequestCommandHandler
+(
+    IAccountManagment service
+) : MediatR_GenericHandler<IAccountManagment>(service),
     IRequestHandler<MediatR_ChangeEmailAddressRequestCommand, ObjectResult>
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MediatR_ChangeEmailAddressRequestCommandHandler"/> class.
-    /// </summary>
-    /// <param name="service">The account management service used for initiating email address changes.</param>
-    public MediatR_ChangeEmailAddressRequestCommandHandler
-    (
-        IAccountManagment service
-    )
-    : base
-    (
-        service
-    )
-    { }
     /// <summary>
     /// Handles the process of initiating a change in a user's email address.
     /// </summary>

@@ -21,59 +21,52 @@ using SafeShare.Security.JwtSecurity.Implementations;
 
 namespace SafeShare.Authentication.Auth;
 
-public class AUTH_RefreshToken : Util_BaseAuthDependencies<AUTH_RefreshToken, ApplicationUser, ApplicationDbContext>, IAUTH_RefreshToken
+/// <summary>
+/// IInitializes a new instance of the <see cref="AUTH_RefreshToken"/> class.
+/// </summary>
+/// <param name="logger">The logger used for logging</param>
+/// <param name="db">The instance of <see cref="ApplicationDbContext"/></param>
+/// <param name="mapper">The automapper instance <see cref="IMapper"/> used for mappings</param>
+/// <param name="userManager">The user manager instance <see cref="UserManager{TUser}"/></param>
+/// <param name="configuration">The configurations settings instance <see cref="IConfiguration"/></param>
+/// <param name="tokenValidationParameters">An instance of <see cref="TokenValidationParameters"/></param>
+/// <param name="securityJwtTokenHash">The jwt hash token instance <see cref="ISecurity_JwtTokenHash"/></param>
+/// <param name="httpContextAccessor"> The http context accessor instance <see cref="IHttpContextAccessor"/> used to get user ip address</param>
+/// <param name="jwtTokenService">The jwt token instace service <see cref="ISecurity_JwtTokenAuth{TService, TFuncInputParamType, TReturnType}"/></param>
+public class AUTH_RefreshToken
+(
+    IMapper mapper,
+    ApplicationDbContext db,
+    IConfiguration configuration,
+    ILogger<AUTH_RefreshToken> logger,
+    UserManager<ApplicationUser> userManager,
+    IHttpContextAccessor httpContextAccessor,
+    ISecurity_JwtTokenHash securityJwtTokenHash,
+    TokenValidationParameters tokenValidationParameters,
+    ISecurity_JwtTokenAuth<Security_JwtTokenAuth, DTO_AuthUser, DTO_Token> jwtTokenService
+) : Util_BaseAuthDependencies<AUTH_RefreshToken, ApplicationUser, ApplicationDbContext>(
+    mapper,
+    logger,
+    httpContextAccessor,
+    userManager,
+    configuration,
+    db
+), IAUTH_RefreshToken
 {
     /// <summary>
     /// The <see cref="ISecurity_JwtTokenHash"/> used to validate a token
     /// </summary>
-    private readonly ISecurity_JwtTokenHash _securityJwtTokenHash;
+    private readonly ISecurity_JwtTokenHash _securityJwtTokenHash = securityJwtTokenHash;
     /// <summary>
     /// The <see cref="TokenValidationParameters"/>
     /// </summary>
-    private readonly TokenValidationParameters _tokenValidationParameters;
+    private readonly TokenValidationParameters _tokenValidationParameters = tokenValidationParameters;
     /// <summary>
     /// The <see cref="ISecurity_JwtTokenAuth{TService, TFuncInputParamType, TReturnType}"/>
     /// used for jwt token operations such as generating a new token.
     /// </summary>
-    private readonly ISecurity_JwtTokenAuth<Security_JwtTokenAuth, DTO_AuthUser, DTO_Token> _jwtTokenService;
-    /// <summary>
-    /// IInitializes a new instance of the <see cref="AUTH_RefreshToken"/> class.
-    /// </summary>
-    /// <param name="logger">The logger used for logging</param>
-    /// <param name="db">The instance of <see cref="ApplicationDbContext"/></param>
-    /// <param name="mapper">The automapper instance <see cref="IMapper"/> used for mappings</param>
-    /// <param name="userManager">The user manager instance <see cref="UserManager{TUser}"/></param>
-    /// <param name="configuration">The configurations settings instance <see cref="IConfiguration"/></param>
-    /// <param name="tokenValidationParameters">An instance of <see cref="TokenValidationParameters"/></param>
-    /// <param name="securityJwtTokenHash">The jwt hash token instance <see cref="ISecurity_JwtTokenHash"/></param>
-    /// <param name="httpContextAccessor"> The http context accessor instance <see cref="IHttpContextAccessor"/> used to get user ip address</param>
-    /// <param name="jwtTokenService">The jwt token instace service <see cref="ISecurity_JwtTokenAuth{TService, TFuncInputParamType, TReturnType}"/></param>
-    public AUTH_RefreshToken
-    (
-        IMapper mapper,
-        ApplicationDbContext db,
-        IConfiguration configuration,
-        ILogger<AUTH_RefreshToken> logger,
-        UserManager<ApplicationUser> userManager,
-        IHttpContextAccessor httpContextAccessor,
-        ISecurity_JwtTokenHash securityJwtTokenHash,
-        TokenValidationParameters tokenValidationParameters,
-        ISecurity_JwtTokenAuth<Security_JwtTokenAuth, DTO_AuthUser, DTO_Token> jwtTokenService
-    )
-    : base
-    (
-        mapper,
-        logger,
-        httpContextAccessor,
-        userManager,
-        configuration,
-        db
-    )
-    {
-        _jwtTokenService = jwtTokenService;
-        _securityJwtTokenHash = securityJwtTokenHash;
-        _tokenValidationParameters = tokenValidationParameters;
-    }
+    private readonly ISecurity_JwtTokenAuth<Security_JwtTokenAuth, DTO_AuthUser, DTO_Token> _jwtTokenService = jwtTokenService;
+
     /// <summary>
     /// Refreshes a token of a expired jwt token
     /// </summary>

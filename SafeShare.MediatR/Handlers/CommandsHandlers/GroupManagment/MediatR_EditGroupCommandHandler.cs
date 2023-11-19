@@ -16,23 +16,16 @@ namespace SafeShare.MediatR.Handlers.CommandsHandlers.GroupManagment;
 /// <summary>
 /// A MediatR command handler for processing requests to edit group information.
 /// </summary>
-public class MediatR_EditGroupCommandHandler : 
-    MediatR_GenericHandler<IGroupManagment_GroupRepository>, 
+/// <remarks>
+/// Initializes a new instance of the <see cref="MediatR_EditGroupCommandHandler"/> class.
+/// </remarks>
+/// <param name="service">The group management service used for editing group information.</param>
+public class MediatR_EditGroupCommandHandler
+(
+    IGroupManagment_GroupRepository service
+) : MediatR_GenericHandler<IGroupManagment_GroupRepository>(service),
     IRequestHandler<MediatR_EditGroupCommand, ObjectResult>
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MediatR_EditGroupCommandHandler"/> class.
-    /// </summary>
-    /// <param name="service">The group management service used for editing group information.</param>
-    public MediatR_EditGroupCommandHandler
-    (
-        IGroupManagment_GroupRepository service
-    )
-    : base
-    (
-        service
-    )
-    { }
     /// <summary>
     /// Handles the process of editing group information.
     /// </summary>

@@ -25,23 +25,13 @@ namespace SafeShare.API.Controllers;
 /// and retrieval of group details and invitations.
 /// It communicates with the business logic layer using MediatR for a clean, decoupled architecture.
 /// </summary>
+/// <remarks>
+/// Initializes a new instance of <see cref="GroupManagmentController"/>
+/// </remarks>
+/// <param name="mediator">The instance of mediator used to send commands and queries</param>
 //[ServiceFilter(typeof(VerifyUser))]
-public class GroupManagmentController : BaseController
+public class GroupManagmentController(IMediator mediator) : BaseController(mediator)
 {
-
-    /// <summary>
-    /// Initializes a new instance of <see cref="GroupManagmentController"/>
-    /// </summary>
-    /// <param name="mediator">The instance of mediator used to send commands and queries</param>
-    public GroupManagmentController
-    (
-        IMediator mediator
-    )
-    : base
-    (
-        mediator
-    )
-    { }
     /// <summary>
     /// Get group types of a user
     /// </summary>

@@ -16,23 +16,16 @@ namespace SafeShare.MediatR.Handlers.CommandsHandlers.Authentication;
 /// <summary>
 /// A MediatR command handler for processing refresh token requests.
 /// </summary>
-public class MediatR_RefreshTokenCommandHandler :
-    MediatR_GenericHandler<IAUTH_RefreshToken>,
+/// <remarks>
+/// Initializes a new instance of the <see cref="MediatR_RefreshTokenCommandHandler"/> class.
+/// </remarks>
+/// <param name="service">The authentication service used for refreshing JWT tokens.</param>
+public class MediatR_RefreshTokenCommandHandler
+(
+    IAUTH_RefreshToken service
+) : MediatR_GenericHandler<IAUTH_RefreshToken>(service),
     IRequestHandler<MediatR_RefreshTokenCommand, ObjectResult>
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MediatR_RefreshTokenCommandHandler"/> class.
-    /// </summary>
-    /// <param name="service">The authentication service used for refreshing JWT tokens.</param>
-    public MediatR_RefreshTokenCommandHandler
-    (
-        IAUTH_RefreshToken service
-    )
-    : base
-    (
-        service
-    )
-    { }
     /// <summary>
     /// Handles the refresh token process.
     /// </summary>

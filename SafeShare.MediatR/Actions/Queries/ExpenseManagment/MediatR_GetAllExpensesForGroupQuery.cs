@@ -13,28 +13,23 @@ namespace SafeShare.MediatR.Actions.Queries.ExpenseManagment;
 /// <summary>
 /// MediatR query object that requests retrieval of all expenses associated with a specific group.
 /// </summary>
-public class MediatR_GetAllExpensesForGroupQuery : IRequest<ObjectResult>
+/// <remarks>
+/// Initializes a new instance of the <see cref="MediatR_GetAllExpensesForGroupQuery"/> class.
+/// </remarks>
+/// <param name="userId">The ID of the user performing the query.</param>
+/// <param name="groupId">The ID of the group whose expenses are to be retrieved.</param>
+public class MediatR_GetAllExpensesForGroupQuery
+(
+    Guid userId,
+    Guid groupId
+) : IRequest<ObjectResult>
 {
     /// <summary>
     /// Gets or sets the ID of the group for which expenses are being queried.
     /// </summary>
-    public Guid GroupId { get; set; }
+    public Guid GroupId { get; set; } = groupId;
     /// <summary>
     /// Gets or sets the ID of the user making the query.
     /// </summary>
-    public Guid UserId { get; set; }
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MediatR_GetAllExpensesForGroupQuery"/> class.
-    /// </summary>
-    /// <param name="userId">The ID of the user performing the query.</param>
-    /// <param name="groupId">The ID of the group whose expenses are to be retrieved.</param>
-    public MediatR_GetAllExpensesForGroupQuery
-    (
-        Guid userId,
-        Guid groupId
-    )
-    {
-        UserId = userId;
-        GroupId = groupId;
-    }
+    public Guid UserId { get; set; } = userId;
 }

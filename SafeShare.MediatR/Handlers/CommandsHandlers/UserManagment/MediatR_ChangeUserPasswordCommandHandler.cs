@@ -14,21 +14,16 @@ namespace SafeShare.MediatR.Handlers.CommandsHandlers.UserManagment;
 /// <summary>
 /// Represents a MediatR handler that processes commands to change user passwords.
 /// </summary>
-public class MediatR_ChangeUserPasswordCommandHandler : MediatR_GenericHandler<IAccountManagment>, IRequestHandler<MediatR_ChangeUserPasswordCommand, ObjectResult>
+/// <remarks>
+/// Initializes a new instance of the <see cref="MediatR_ChangeUserPasswordCommandHandler"/> class with the specified account management service.
+/// </remarks>
+/// <param name="service">The account management service.</param>
+public class MediatR_ChangeUserPasswordCommandHandler
+(
+    IAccountManagment service
+) : MediatR_GenericHandler<IAccountManagment>(service),
+    IRequestHandler<MediatR_ChangeUserPasswordCommand, ObjectResult>
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MediatR_ChangeUserPasswordCommandHandler"/> class with the specified account management service.
-    /// </summary>
-    /// <param name="service">The account management service.</param>
-    public MediatR_ChangeUserPasswordCommandHandler
-    (
-        IAccountManagment service
-    )
-    : base
-    (
-        service
-    )
-    { }
 
     /// <summary>
     /// Processes the provided command to change user passwords.

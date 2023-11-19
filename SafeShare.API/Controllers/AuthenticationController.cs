@@ -24,26 +24,15 @@ namespace SafeShare.API.Controllers;
 /// Provides endpoints for user registration, login, confirmation, and token management functionalities.
 /// Uses MediatR for command and query handling, facilitating a CQRS pattern.
 /// </summary>
+/// <remarks>
+/// Initializes a new instance of the <see cref="AuthenticationController"/> class with the specified mediator.
+/// </remarks>
+/// <param name="mediator">The mediator used for command and query handling.</param>
 [ApiController]
 [Route(BaseRoute.Route)]
 //[ServiceFilter(typeof(IApiKeyAuthorizationFilter))]
-public class AuthenticationController : ControllerBase
+public class AuthenticationController(IMediator mediator) : ControllerBase
 {
-    /// <summary>
-    /// The mediator used for command and query handling in the CQRS pattern.
-    /// </summary>
-    private readonly IMediator _mediator;
-    /// <summary>
-    /// Initializes a new instance of the <see cref="AuthenticationController"/> class with the specified mediator.
-    /// </summary>
-    /// <param name="mediator">The mediator used for command and query handling.</param>
-    public AuthenticationController
-    (
-        IMediator mediator
-    )
-    {
-        _mediator = mediator;
-    }
     /// <summary>
     /// Endpoint to register a new user in the SafeShare system.
     /// Accepts user registration data and initiates the registration process.
@@ -56,7 +45,7 @@ public class AuthenticationController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(Util_GenericResponse<bool>))]
     [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Util_GenericResponse<bool>))]
-    public async Task<ActionResult<Util_GenericResponse<bool>>> 
+    public async Task<ActionResult<Util_GenericResponse<bool>>>
     Register
     (
         [FromForm] DTO_Register register
@@ -65,7 +54,7 @@ public class AuthenticationController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        return await _mediator.Send(new MediatR_RegisterUserCommand(register));
+        return await mediator.Send(new MediatR_RegisterUserCommand(register));
     }
     /// <summary>
     /// Endpoint to confirm the registration of a new user.
@@ -82,7 +71,7 @@ public class AuthenticationController : ControllerBase
         DTO_ConfirmRegistration confirmRegistrationDto
     )
     {
-        return await _mediator.Send(new MediatR_ConfirmUserRegistrationCommand(confirmRegistrationDto));
+        return await mediator.Send(new MediatR_ConfirmUserRegistrationCommand(confirmRegistrationDto));
     }
     /// <summary>
     /// Endpoint for user login.
@@ -106,7 +95,7 @@ public class AuthenticationController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        return await _mediator.Send(new MediatR_LoginUserCommand(loginDto));
+        return await mediator.Send(new MediatR_LoginUserCommand(loginDto));
     }
     /// <summary>
     /// Endpoint to confirm a user's login, typically used in two-factor authentication processes.
@@ -133,7 +122,7 @@ public class AuthenticationController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        return await _mediator.Send(new MediatR_ConfirmLoginUserCommand(otp, userId));
+        return await mediator.Send(new MediatR_ConfirmLoginUserCommand(otp, userId));
     }
     /// <summary>
     /// Endpoint for requesting reconfirmation of the registration process.
@@ -150,7 +139,7 @@ public class AuthenticationController : ControllerBase
         string email
     )
     {
-        return await _mediator.Send(new MediatR_ReConfirmRegistrationRequestCommand(email));
+        return await mediator.Send(new MediatR_ReConfirmRegistrationRequestCommand(email));
     }
     /// <summary>
     /// Endpoint for logging out a user.
@@ -168,7 +157,7 @@ public class AuthenticationController : ControllerBase
         Guid userId
     )
     {
-        await _mediator.Send(new MediatR_LogOutCommand(userId.ToString()));
+        await mediator.Send(new MediatR_LogOutCommand(userId.ToString()));
 
         return Ok();
     }
@@ -187,6 +176,6 @@ public class AuthenticationController : ControllerBase
         DTO_ValidateToken validateToken
     )
     {
-        return await _mediator.Send(new MediatR_RefreshTokenCommand(validateToken));
+        return await mediator.Send(new MediatR_RefreshTokenCommand(validateToken));
     }
 }

@@ -31,32 +31,26 @@ namespace SafeShare.ExpenseManagement.Implementations;
 /// Provides methods for managing expenses within the application's groups, 
 /// including creating, retrieving, updating, and deleting expenses.
 /// </summary>
-public class ExpenseManagment_ExpenseRepository :
-    Util_BaseContextDependencies<ApplicationDbContext, ExpenseManagment_ExpenseRepository>,
-    IExpenseManagment_ExpenseRepository
+/// <remarks>
+/// Initializes a new instance of the ExpenseManagment_ExpenseRepository class with injected dependencies.
+/// </remarks>
+/// <param name="db">Database context for accessing the application's data.</param>
+/// <param name="mapper">Automapper instance for mapping between entities and DTOs.</param>
+/// <param name="logger">Logger instance for logging messages.</param>
+/// <param name="httpContextAccessor">HTTP context accessor for accessing the current HTTP context.</param>
+public class ExpenseManagment_ExpenseRepository
+(
+    ApplicationDbContext db,
+    IMapper mapper,
+    ILogger<ExpenseManagment_ExpenseRepository> logger,
+    IHttpContextAccessor httpContextAccessor
+) : Util_BaseContextDependencies<ApplicationDbContext, ExpenseManagment_ExpenseRepository>(
+    db,
+    mapper,
+    logger,
+    httpContextAccessor
+), IExpenseManagment_ExpenseRepository
 {
-    /// <summary>
-    /// Initializes a new instance of the ExpenseManagment_ExpenseRepository class with injected dependencies.
-    /// </summary>
-    /// <param name="db">Database context for accessing the application's data.</param>
-    /// <param name="mapper">Automapper instance for mapping between entities and DTOs.</param>
-    /// <param name="logger">Logger instance for logging messages.</param>
-    /// <param name="httpContextAccessor">HTTP context accessor for accessing the current HTTP context.</param>
-    public ExpenseManagment_ExpenseRepository
-    (
-        ApplicationDbContext db,
-        IMapper mapper,
-        ILogger<ExpenseManagment_ExpenseRepository> logger,
-        IHttpContextAccessor httpContextAccessor
-    )
-    : base
-    (
-        db,
-        mapper,
-        logger,
-        httpContextAccessor
-    )
-    { }
     /// <summary>
     /// Retrieves all expenses for a specified group that the user is a member of.
     /// </summary>

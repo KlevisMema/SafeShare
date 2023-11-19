@@ -13,28 +13,23 @@ namespace SafeShare.MediatR.Actions.Commands.GroupManagment;
 /// Represents a MediatR command for creating a new group.
 /// This command includes the owner's identifier and the necessary data for group creation.
 /// </summary>
-public class MediatR_CreateGroupCommand : IRequest<ObjectResult>
+/// <remarks>
+/// Initializes a new instance of the <see cref="MediatR_CreateGroupCommand"/> class.
+/// </remarks>
+/// <param name="ownerId">The unique identifier of the group's owner.</param>
+/// <param name="createGroup">The DTO containing data for the group creation.</param>
+public class MediatR_CreateGroupCommand
+(
+    Guid ownerId,
+    DTO_CreateGroup createGroup
+) : IRequest<ObjectResult>
 {
     /// <summary>
     /// The unique identifier of the group's owner.
     /// </summary>
-    public Guid OwnerId { get; set; }
+    public Guid OwnerId { get; set; } = ownerId;
     /// <summary>
     /// Data transfer object containing information required for creating a new group.
     /// </summary>
-    public DTO_CreateGroup CreateGroup { get; set; }
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MediatR_CreateGroupCommand"/> class.
-    /// </summary>
-    /// <param name="ownerId">The unique identifier of the group's owner.</param>
-    /// <param name="createGroup">The DTO containing data for the group creation.</param>
-    public MediatR_CreateGroupCommand
-    (
-        Guid ownerId,
-        DTO_CreateGroup createGroup
-    )
-    {
-        OwnerId = ownerId;
-        CreateGroup = createGroup;
-    }
+    public DTO_CreateGroup CreateGroup { get; set; } = createGroup;
 }

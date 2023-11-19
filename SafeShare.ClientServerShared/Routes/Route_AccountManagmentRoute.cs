@@ -10,6 +10,7 @@ public static class Route_AccountManagmentRoute
     public const string DeactivateAccount = "DeactivateAccount/{userId}";
     public const string ActivateAccountRequest = "ActivateAccountRequest";
     public const string RequestChangeEmail = "RequestChangeEmail/{userId}";
+    public const string SearchUserByUserName = "SearchUserByUserName/{userId}";
     public const string ConfirmChangeEmailRequest = "ConfirmChangeEmailRequest/{userId}";
     public const string ActivateAccountRequestConfirmation = "ActivateAccountRequestConfirmation";
 }

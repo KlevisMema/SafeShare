@@ -14,18 +14,17 @@ namespace SafeShare.MediatR.Actions.Commands.ExpenseManagment;
 /// <summary>
 /// Represents a command for MediatR to delete an existing expense entry.
 /// </summary>
-public class MediatR_DeleteExpenseCommand : IRequest<ObjectResult>
+/// <remarks>
+/// Initializes a new instance of the <see cref="MediatR_DeleteExpenseCommand"/> class with specified expense deletion details.
+/// </remarks>
+/// <param name="expenseDelete">The data transfer object containing the expense deletion information.</param>
+public class MediatR_DeleteExpenseCommand
+(
+    DTO_ExpenseDelete expenseDelete
+) : IRequest<ObjectResult>
 {
     /// <summary>
     /// Gets or sets the details of the expense to be deleted, encapsulated in a DTO.
     /// </summary>
-    public DTO_ExpenseDelete ExpenseDelete { get; set; }
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MediatR_DeleteExpenseCommand"/> class with specified expense deletion details.
-    /// </summary>
-    /// <param name="expenseDelete">The data transfer object containing the expense deletion information.</param>
-    public MediatR_DeleteExpenseCommand(DTO_ExpenseDelete expenseDelete)
-    {
-        ExpenseDelete = expenseDelete;
-    }
+    public DTO_ExpenseDelete ExpenseDelete { get; set; } = expenseDelete;
 }

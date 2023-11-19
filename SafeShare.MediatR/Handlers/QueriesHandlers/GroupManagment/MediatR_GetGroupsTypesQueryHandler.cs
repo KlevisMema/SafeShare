@@ -16,23 +16,16 @@ namespace SafeShare.MediatR.Handlers.QueriesHandlers.GroupManagment;
 /// <summary>
 /// A MediatR query handler for retrieving types of groups associated with a specific user.
 /// </summary>
-public class MediatR_GetGroupsTypesQueryHandler : 
-    MediatR_GenericHandler<IGroupManagment_GroupRepository>, 
+/// <remarks>
+/// Initializes a new instance of the <see cref="MediatR_GetGroupsTypesQueryHandler"/> class.
+/// </remarks>
+/// <param name="service">The group management service used for retrieving types of groups associated with a user.</param>
+public class MediatR_GetGroupsTypesQueryHandler
+(
+    IGroupManagment_GroupRepository service
+) : MediatR_GenericHandler<IGroupManagment_GroupRepository>(service),
     IRequestHandler<MediatR_GetGroupsTypesQuery, ObjectResult>
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MediatR_GetGroupsTypesQueryHandler"/> class.
-    /// </summary>
-    /// <param name="service">The group management service used for retrieving types of groups associated with a user.</param>
-    public MediatR_GetGroupsTypesQueryHandler
-    (
-        IGroupManagment_GroupRepository service
-    )
-    : base
-    (
-        service
-    )
-    { }
     /// <summary>
     /// Handles the process of retrieving types of groups associated with a specific user.
     /// </summary>

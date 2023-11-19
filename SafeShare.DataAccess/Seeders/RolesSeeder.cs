@@ -22,11 +22,11 @@ public class RolesSeeder
     /// <param name="applicationBuilder">The application builder.</param>
     /// <param name="configuration">The application configuration.</param>
     public static async Task
-        SeedRolesAsync
-        (
-           IApplicationBuilder applicationBuilder,
-           IConfiguration configuration
-        )
+    SeedRolesAsync
+    (
+        IApplicationBuilder applicationBuilder,
+        IConfiguration configuration
+    )
     {
         using var serviceScope = applicationBuilder.ApplicationServices.CreateScope();
 

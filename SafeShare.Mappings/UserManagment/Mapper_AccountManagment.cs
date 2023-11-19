@@ -32,5 +32,9 @@ public class Mapper_AccountManagment : Profile
         CreateMap<ApplicationUser, DTO_UserUpdatedInfo>()
            .ForMember(dest => dest.UserID, opt => opt.MapFrom(src => src.Id))
            .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber));
+
+        CreateMap<ApplicationUser, DTO_UserSearched>()
+            .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.UserName))
+            .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id));
     }
 }

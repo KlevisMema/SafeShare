@@ -30,44 +30,34 @@ namespace SafeShare.Authentication.Auth;
 /// <summary>
 /// Handles user registration within the authentication module.
 /// </summary>
-public class AUTH_Register : Util_BaseAuthDependencies<AUTH_Register, ApplicationUser, ApplicationDbContext>, IAUTH_Register
+/// <remarks>
+/// Initializes a new instance of the <see cref="AUTH_Register"/> class.
+/// </remarks>
+/// <param name="logger">The logger instance.</param>
+/// <param name="mapper">The AutoMapper instance.</param>
+/// <param name="configuration"> The configurations </param>
+/// <param name="db">The application's database context.</param>
+/// <param name="userManager">The user manager instance.</param>
+/// <param name="httpContextAccessor">The HttpContext accessor instance.</param>
+/// <param name="confirmRegistrationSettings">The confirm registration settings</param>
+public class AUTH_Register
+(
+    IMapper mapper,
+    ApplicationDbContext db,
+    ILogger<AUTH_Register> logger,
+    IConfiguration configuration,
+    IHttpContextAccessor httpContextAccessor,
+    UserManager<ApplicationUser> userManager,
+    IOptions<Util_ConfirmRegistrationSettings> confirmRegistrationSettings
+) : Util_BaseAuthDependencies<AUTH_Register, ApplicationUser, ApplicationDbContext>(
+    mapper,
+    logger,
+    httpContextAccessor,
+    userManager,
+    configuration,
+    db
+), IAUTH_Register
 {
-    /// <summary>
-    /// The confirm registration settings
-    /// </summary>
-    private readonly IOptions<Util_ConfirmRegistrationSettings> _confirmRegistrationSettings;
-    /// <summary>
-    /// Initializes a new instance of the <see cref="AUTH_Register"/> class.
-    /// </summary>
-    /// <param name="logger">The logger instance.</param>
-    /// <param name="mapper">The AutoMapper instance.</param>
-    /// <param name="configuration"> The configurations </param>
-    /// <param name="db">The application's database context.</param>
-    /// <param name="userManager">The user manager instance.</param>
-    /// <param name="httpContextAccessor">The HttpContext accessor instance.</param>
-    /// <param name="confirmRegistrationSettings">The confirm registration settings</param>
-    public AUTH_Register
-    (
-        IMapper mapper,
-        ApplicationDbContext db,
-        ILogger<AUTH_Register> logger,
-        IConfiguration configuration,
-        IHttpContextAccessor httpContextAccessor,
-        UserManager<ApplicationUser> userManager,
-        IOptions<Util_ConfirmRegistrationSettings> confirmRegistrationSettings
-    )
-    : base
-    (
-        mapper,
-        logger,
-        httpContextAccessor,
-        userManager,
-        configuration,
-        db
-    )
-    {
-        _confirmRegistrationSettings = confirmRegistrationSettings;
-    }
     /// <summary>
     /// Registers a new user to the application.
     /// </summary>
@@ -130,7 +120,7 @@ public class AUTH_Register : Util_BaseAuthDependencies<AUTH_Register, Applicatio
 
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(mappedUser);
 
-            var route = _confirmRegistrationSettings.Value.Route.Replace("{token}", token).Replace("{email}", mappedUser.Email);
+            var route = confirmRegistrationSettings.Value.Route.Replace("{token}", token).Replace("{email}", mappedUser.Email);
 
             var emailResult = await Util_Email.SendEmailForRegistrationConfirmation(mappedUser.Email!, route, mappedUser.FullName);
 
@@ -366,7 +356,7 @@ public class AUTH_Register : Util_BaseAuthDependencies<AUTH_Register, Applicatio
 
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
 
-            var route = _confirmRegistrationSettings.Value.Route.Replace("{token}", token).Replace("{email}", user.Email);
+            var route = confirmRegistrationSettings.Value.Route.Replace("{token}", token).Replace("{email}", user.Email);
 
             var emailResult = await Util_Email.SendEmailForRegistrationConfirmation(user.Email!, route, user.FullName);
 

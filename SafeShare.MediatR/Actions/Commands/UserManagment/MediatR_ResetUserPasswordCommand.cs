@@ -13,21 +13,17 @@ namespace SafeShare.MediatR.Actions.Commands.UserManagment;
 /// Represents a MediatR command for resetting a user's password.
 /// This command includes the necessary data for processing a password reset request.
 /// </summary>
-public class MediatR_ResetUserPasswordCommand : IRequest<ObjectResult>
+/// <remarks>
+/// Initializes a new instance of the <see cref="MediatR_ResetUserPasswordCommand"/> class.
+/// </remarks>
+/// <param name="resetPassword">The DTO containing data for the password reset request.</param>
+public class MediatR_ResetUserPasswordCommand
+(
+    DTO_ResetPassword resetPassword
+) : IRequest<ObjectResult>
 {
     /// <summary>
     /// Data transfer object containing the information required for resetting a user's password.
     /// </summary>  
-    public DTO_ResetPassword ResetPassword { get; set; }
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MediatR_ResetUserPasswordCommand"/> class.
-    /// </summary>
-    /// <param name="resetPassword">The DTO containing data for the password reset request.</param>
-    public MediatR_ResetUserPasswordCommand
-    (
-        DTO_ResetPassword resetPassword
-    )
-    {
-        ResetPassword = resetPassword;
-    }
+    public DTO_ResetPassword ResetPassword { get; set; } = resetPassword;
 }

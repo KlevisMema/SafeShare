@@ -13,21 +13,17 @@ namespace SafeShare.MediatR.Actions.Commands.GroupManagment;
 /// Represents a MediatR command for deleting a sent group invitation.
 /// This command carries the necessary data for processing the deletion of an invitation.
 /// </summary>
-public class MediatR_DeleteSentInvitationCommand : IRequest<ObjectResult>
+/// <remarks>
+/// Initializes a new instance of the <see cref="MediatR_DeleteSentInvitationCommand"/> class.
+/// </remarks>
+/// <param name="deleteInvitationRequest">The DTO containing data for the invitation deletion request.</param>
+public class MediatR_DeleteSentInvitationCommand
+(
+    DTO_InvitationRequestActions deleteInvitationRequest
+) : IRequest<ObjectResult>
 {
     /// <summary>
     /// Data transfer object containing the information required for deleting a sent group invitation.
     /// </summary>
-    public DTO_InvitationRequestActions DeleteInvitationRequest { get; set; }
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MediatR_DeleteSentInvitationCommand"/> class.
-    /// </summary>
-    /// <param name="deleteInvitationRequest">The DTO containing data for the invitation deletion request.</param>
-    public MediatR_DeleteSentInvitationCommand
-    (
-        DTO_InvitationRequestActions deleteInvitationRequest
-    )
-    {
-        DeleteInvitationRequest = deleteInvitationRequest;
-    }
+    public DTO_InvitationRequestActions DeleteInvitationRequest { get; set; } = deleteInvitationRequest;
 }

@@ -12,28 +12,23 @@ namespace SafeShare.MediatR.Actions.Commands.GroupManagment;
 /// Represents a MediatR command for deleting a group.
 /// This command includes the identifiers for the group and its owner, essential for processing the deletion request.
 /// </summary>
-public class MediatR_DeleteGroupCommand : IRequest<ObjectResult>
+/// <remarks>
+/// Initializes a new instance of the <see cref="MediatR_DeleteGroupCommand"/> class.
+/// </remarks>
+/// <param name="ownerId">The unique identifier of the group's owner.</param>
+/// <param name="groupId">The unique identifier of the group to be deleted.</param>
+public class MediatR_DeleteGroupCommand
+(
+    Guid ownerId,
+    Guid groupId
+) : IRequest<ObjectResult>
 {
     /// <summary>
     /// The unique identifier of the group's owner.
     /// </summary>
-    public Guid OwnerId { get; set; }
+    public Guid OwnerId { get; set; } = ownerId;
     /// <summary>
     /// The unique identifier of the group to be deleted.
     /// </summary>
-    public Guid GroupId { get; set; }
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MediatR_DeleteGroupCommand"/> class.
-    /// </summary>
-    /// <param name="ownerId">The unique identifier of the group's owner.</param>
-    /// <param name="groupId">The unique identifier of the group to be deleted.</param>
-    public MediatR_DeleteGroupCommand
-    (
-        Guid ownerId,
-        Guid groupId
-    )
-    {
-        OwnerId = ownerId;
-        GroupId = groupId;
-    }
+    public Guid GroupId { get; set; } = groupId;
 }

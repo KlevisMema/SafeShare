@@ -24,32 +24,26 @@ namespace SafeShare.GroupManagment.GroupManagment;
 /// Manages group operations in the Group Management module, handling tasks like creating, 
 /// editing, deleting groups, and retrieving group details and types.
 /// </summary>
-public class GroupManagment_GroupRepository : 
-    Util_BaseContextDependencies<ApplicationDbContext, GroupManagment_GroupRepository>, 
-    IGroupManagment_GroupRepository
+/// <remarks>
+/// Initializes a new instance of the <see cref="GroupManagment_GroupRepository"/> class.
+/// </remarks>
+/// <param name="db">The application database context.</param>
+/// <param name="mapper">The AutoMapper instance for object mapping.</param>
+/// <param name="logger">The logger instance for logging activities.</param>
+/// <param name="httpContextAccessor">The HTTP context accessor for accessing current HTTP context.</param>
+public class GroupManagment_GroupRepository
+(
+    ApplicationDbContext db,
+    IMapper mapper,
+    ILogger<GroupManagment_GroupRepository> logger,
+    IHttpContextAccessor httpContextAccessor
+) : Util_BaseContextDependencies<ApplicationDbContext, GroupManagment_GroupRepository>(
+    db,
+    mapper,
+    logger,
+    httpContextAccessor
+), IGroupManagment_GroupRepository
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="GroupManagment_GroupRepository"/> class.
-    /// </summary>
-    /// <param name="db">The application database context.</param>
-    /// <param name="mapper">The AutoMapper instance for object mapping.</param>
-    /// <param name="logger">The logger instance for logging activities.</param>
-    /// <param name="httpContextAccessor">The HTTP context accessor for accessing current HTTP context.</param>
-    public GroupManagment_GroupRepository
-    (
-        ApplicationDbContext db,
-        IMapper mapper,
-        ILogger<GroupManagment_GroupRepository> logger,
-        IHttpContextAccessor httpContextAccessor
-    )
-    : base
-    (
-        db,
-        mapper,
-        logger,
-        httpContextAccessor
-    )
-    { }
     /// <summary>
     /// Retrieves the types of groups associated with a specific user.
     /// </summary>

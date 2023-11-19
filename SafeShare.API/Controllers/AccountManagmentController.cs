@@ -24,21 +24,12 @@ namespace SafeShare.API.Controllers;
 /// <summary>
 /// Controller responsible for managing users, including fetching, updating, deleting, and changing passwords.
 /// </summary>
-public class AccountManagmentController : BaseController
+/// <remarks>
+/// Initializes a new instance of the <see cref="AccountManagmentController"/> class.
+/// </remarks>
+/// <param name="mediator">Mediator pattern handler.</param>
+public class AccountManagmentController(IMediator mediator) : BaseController(mediator)
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="AccountManagmentController"/> class.
-    /// </summary>
-    /// <param name="mediator">Mediator pattern handler.</param>
-    public AccountManagmentController
-    (
-        IMediator mediator
-    )
-    : base
-    (
-        mediator
-    )
-    { }
     /// <summary>
     /// Fetch a user's updated information by their ID.
     /// </summary>
@@ -139,6 +130,11 @@ public class AccountManagmentController : BaseController
     /// <returns>A response indicating the success or failure of the account activation request.</returns>
     [AllowAnonymous]
     [HttpPost(Route_AccountManagmentRoute.ActivateAccountRequest)]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<bool>))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<bool>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(Util_GenericResponse<bool>))]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Util_GenericResponse<bool>))]
     public async Task<ActionResult<Util_GenericResponse<bool>>>
     ActivateAccountRequest
     (
@@ -154,6 +150,11 @@ public class AccountManagmentController : BaseController
     /// <returns>A response indicating the success or failure of the account activation confirmation.</returns>
     [AllowAnonymous]
     [HttpPost(Route_AccountManagmentRoute.ActivateAccountRequestConfirmation)]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<bool>))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<bool>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(Util_GenericResponse<bool>))]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Util_GenericResponse<bool>))]
     public async Task<ActionResult<Util_GenericResponse<bool>>>
     ActivateAccountRequestConfirmation
     (
@@ -172,6 +173,11 @@ public class AccountManagmentController : BaseController
     /// <returns>A response indicating the success or failure of the forgot password request.</returns>
     [AllowAnonymous]
     [HttpPost(Route_AccountManagmentRoute.ForgotPassword)]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<bool>))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<bool>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(Util_GenericResponse<bool>))]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Util_GenericResponse<bool>))]
     public async Task<ActionResult<Util_GenericResponse<bool>>>
     ForgotPassword
     (
@@ -187,6 +193,11 @@ public class AccountManagmentController : BaseController
     /// <returns>A response indicating the success or failure of the password reset operation.</returns>
     [AllowAnonymous]
     [HttpPost(Route_AccountManagmentRoute.ResetPassword)]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<bool>))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<bool>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(Util_GenericResponse<bool>))]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Util_GenericResponse<bool>))]
     public async Task<ActionResult<Util_GenericResponse<bool>>>
     ResetPassword
     (
@@ -204,8 +215,13 @@ public class AccountManagmentController : BaseController
     /// <param name="userId">The unique identifier of the user requesting the email change.</param>
     /// <param name="emailAddress">The DTO containing the new email address information.</param>
     /// <returns>A response indicating the success or failure of the email change request.</returns>
-    [ServiceFilter(typeof(VerifyUser))]
+    //[ServiceFilter(typeof(VerifyUser))]
     [HttpPost(Route_AccountManagmentRoute.RequestChangeEmail)]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<bool>))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<bool>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(Util_GenericResponse<bool>))]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Util_GenericResponse<bool>))]
     public async Task<ActionResult<Util_GenericResponse<bool>>>
     RequestChangeEmail
     (
@@ -224,10 +240,15 @@ public class AccountManagmentController : BaseController
     /// <param name="userId">The unique identifier of the user confirming the email change.</param>
     /// <param name="changeEmailAddressConfirmDto">The DTO containing confirmation details for the email change.</param>
     /// <returns>A response indicating the success or failure of the email change confirmation.</returns>
-    [ServiceFilter(typeof(VerifyUser))]
+    //[ServiceFilter(typeof(VerifyUser))]
     [HttpPost(Route_AccountManagmentRoute.ConfirmChangeEmailRequest)]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<bool>))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<bool>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(Util_GenericResponse<bool>))]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Util_GenericResponse<bool>))]
     public async Task<ActionResult<Util_GenericResponse<bool>>>
-    ConfirmChangeEmailRequest
+    ConfirmChangeEmailAddressRequest
     (
         Guid userId,
         DTO_ChangeEmailAddressRequestConfirm changeEmailAddressConfirmDto
@@ -237,5 +258,25 @@ public class AccountManagmentController : BaseController
             return BadRequest(ModelState);
 
         return await _mediator.Send(new MediatR_ChangeEmailAddressRequestConfirmationCommand(userId, changeEmailAddressConfirmDto));
+    }
+    /// <summary>
+    /// Search users by their usernames
+    /// </summary>
+    /// <param name="userName">The username</param>
+    /// <param name="userId">The id of the user making the request</param>
+    /// <returns>The response containing the list of the users</returns>
+    //[ServiceFilter(typeof(VerifyUser))]
+    [HttpGet(Route_AccountManagmentRoute.SearchUserByUserName)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<List<DTO_UserSearched>>))]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Util_GenericResponse<List<DTO_UserSearched>>))]
+    public async Task<ActionResult<Util_GenericResponse<List<DTO_UserSearched>>>>
+    SearchUserByUserName
+    (
+        string userName,
+        Guid userId
+    )
+    {
+        return await _mediator.Send(new MediatR_SearchUsersQuery(userId, userName));
     }
 }

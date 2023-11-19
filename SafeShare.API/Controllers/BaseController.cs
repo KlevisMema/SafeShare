@@ -22,26 +22,19 @@ namespace SafeShare.API.Controllers;
 /// <summary>
 /// Base API controller for Safe Share application.
 /// </summary>
+/// <remarks>
+/// Initializes a new instance of the <see cref="BaseController"/> class.
+/// </remarks>
+/// <param name="mediator">Mediator pattern handler.</param>
 
 [ApiController]
 [Route(BaseRoute.Route)]
 //[Authorize(AuthenticationSchemes = "Default")]
 //[ServiceFilter(typeof(IApiKeyAuthorizationFilter))]
-public class BaseController : ControllerBase
+public class BaseController(IMediator mediator) : ControllerBase
 {
     /// <summary>
     /// Mediator pattern handler for dispatching requests.
     /// </summary>
-    protected readonly IMediator _mediator;
-    /// <summary>
-    /// Initializes a new instance of the <see cref="BaseController"/> class.
-    /// </summary>
-    /// <param name="mediator">Mediator pattern handler.</param>
-    public BaseController
-    (
-        IMediator mediator
-    )
-    {
-        _mediator = mediator;
-    }
+    protected readonly IMediator _mediator = mediator;
 }

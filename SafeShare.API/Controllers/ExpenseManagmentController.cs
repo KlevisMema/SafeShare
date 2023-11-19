@@ -21,21 +21,12 @@ namespace SafeShare.API.Controllers;
 /// <summary>
 /// Controller responsible for providing endpoints related to expense management.
 /// </summary>
-public class ExpenseManagmentController : BaseController
+/// <remarks>
+/// Initializes a new instance of the <see cref="ExpenseManagmentController"/> with the MediatR mediator.
+/// </remarks>
+/// <param name="mediator">The MediatR mediator for sending commands and queries.</param>
+public class ExpenseManagmentController(IMediator mediator) : BaseController(mediator)
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ExpenseManagmentController"/> with the MediatR mediator.
-    /// </summary>
-    /// <param name="mediator">The MediatR mediator for sending commands and queries.</param>
-    public ExpenseManagmentController
-    (
-        IMediator mediator
-    )
-    : base
-    (
-        mediator
-    )
-    { }
     /// <summary>
     /// Endpoint for retrieving all expenses of a specific group.
     /// </summary>

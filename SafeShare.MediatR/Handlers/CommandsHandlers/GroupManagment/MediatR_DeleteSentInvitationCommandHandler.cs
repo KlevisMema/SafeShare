@@ -15,23 +15,16 @@ namespace SafeShare.MediatR.Handlers.CommandsHandlers.GroupManagment;
 /// <summary>
 /// A MediatR command handler for processing requests to delete sent group invitations.
 /// </summary>
-public class MediatR_DeleteSentInvitationCommandHandler :
-    MediatR_GenericHandler<IGroupManagment_GroupInvitationsRepository>,
+/// <remarks>
+/// Initializes a new instance of the <see cref="MediatR_DeleteSentInvitationCommandHandler"/> class.
+/// </remarks>
+/// <param name="service">The group management service used for deleting sent invitations.</param>
+public class MediatR_DeleteSentInvitationCommandHandler
+(
+    IGroupManagment_GroupInvitationsRepository service
+) : MediatR_GenericHandler<IGroupManagment_GroupInvitationsRepository>(service),
     IRequestHandler<MediatR_DeleteSentInvitationCommand, ObjectResult>
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MediatR_DeleteSentInvitationCommandHandler"/> class.
-    /// </summary>
-    /// <param name="service">The group management service used for deleting sent invitations.</param>
-    public MediatR_DeleteSentInvitationCommandHandler
-    (
-        IGroupManagment_GroupInvitationsRepository service
-    )
-    : base
-    (
-        service
-    )
-    { }
     /// <summary>
     /// Handles the process of deleting a sent group invitation.
     /// </summary>

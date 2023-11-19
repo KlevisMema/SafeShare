@@ -15,23 +15,16 @@ namespace SafeShare.MediatR.Handlers.CommandsHandlers.UserManagment;
 /// <summary>
 /// A MediatR command handler for processing forgotten password requests.
 /// </summary>
-public class MediatR_ForgotPasswordCommandHandler : 
-    MediatR_GenericHandler<IAccountManagment>, 
+/// <remarks>
+/// Initializes a new instance of the <see cref="MediatR_ForgotPasswordCommandHandler"/> class.
+/// </remarks>
+/// <param name="service">The account management service used for handling forgotten password requests.</param>
+public class MediatR_ForgotPasswordCommandHandler
+(
+    IAccountManagment service
+) : MediatR_GenericHandler<IAccountManagment>(service),
     IRequestHandler<MediatR_ForgotPasswordCommand, ObjectResult>
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MediatR_ForgotPasswordCommandHandler"/> class.
-    /// </summary>
-    /// <param name="service">The account management service used for handling forgotten password requests.</param>
-    public MediatR_ForgotPasswordCommandHandler
-    (
-        IAccountManagment service
-    )
-    : base
-    (
-        service
-    )
-    { }
     /// <summary>
     /// Handles the process of responding to a forgotten password request.
     /// </summary>

@@ -15,23 +15,16 @@ namespace SafeShare.MediatR.Handlers.CommandsHandlers.UserManagment;
 /// <summary>
 /// A MediatR command handler for processing account activation confirmation requests.
 /// </summary>
-public class MediatR_ActivateAccountConfirmationRequestCommandHandler :
-             MediatR_GenericHandler<IAccountManagment>,
-             IRequestHandler<MediatR_ActivateAccountConfirmationRequestCommand, ObjectResult>
+/// <remarks>
+/// Initializes a new instance of the <see cref="MediatR_ActivateAccountConfirmationRequestCommandHandler"/> class.
+/// </remarks>
+/// <param name="service">The account management service used for confirming account activations.</param>
+public class MediatR_ActivateAccountConfirmationRequestCommandHandler
+(
+    IAccountManagment service
+) : MediatR_GenericHandler<IAccountManagment>(service),
+    IRequestHandler<MediatR_ActivateAccountConfirmationRequestCommand, ObjectResult>
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MediatR_ActivateAccountConfirmationRequestCommandHandler"/> class.
-    /// </summary>
-    /// <param name="service">The account management service used for confirming account activations.</param>
-    public MediatR_ActivateAccountConfirmationRequestCommandHandler
-    (
-        IAccountManagment service
-    )
-    : base
-    (
-        service
-    )
-    { }
     /// <summary>
     /// Handles the process of confirming a user's account activation.
     /// </summary>

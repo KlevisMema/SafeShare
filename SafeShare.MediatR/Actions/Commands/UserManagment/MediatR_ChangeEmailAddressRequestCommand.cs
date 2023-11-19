@@ -13,28 +13,23 @@ namespace SafeShare.MediatR.Actions.Commands.UserManagment;
 /// Represents a MediatR command for processing a request to change a user's email address.
 /// This command includes the user's identifier and the new email address details.
 /// </summary>
-public class MediatR_ChangeEmailAddressRequestCommand : IRequest<ObjectResult>
+/// <remarks>
+/// Initializes a new instance of the <see cref="MediatR_ChangeEmailAddressRequestCommand"/> class.
+/// </remarks>
+/// <param name="userId">The unique identifier of the user requesting the email address change.</param>
+/// <param name="emailAddress">The DTO containing the new email address details.</param>
+public class MediatR_ChangeEmailAddressRequestCommand
+(
+    Guid userId,
+    DTO_ChangeEmailAddressRequest emailAddress
+) : IRequest<ObjectResult>
 {
     /// <summary>
     /// The unique identifier of the user requesting the email address change.
     /// </summary>
-    public Guid UserId { get; set; }
+    public Guid UserId { get; set; } = userId;
     /// <summary>
     /// Data transfer object containing the new email address details.
     /// </summary>
-    public DTO_ChangeEmailAddressRequest EmailAddress { get; set; }
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MediatR_ChangeEmailAddressRequestCommand"/> class.
-    /// </summary>
-    /// <param name="userId">The unique identifier of the user requesting the email address change.</param>
-    /// <param name="emailAddress">The DTO containing the new email address details.</param>
-    public MediatR_ChangeEmailAddressRequestCommand
-    (
-        Guid userId,
-        DTO_ChangeEmailAddressRequest emailAddress
-    )
-    {
-        UserId = userId;
-        EmailAddress = emailAddress;
-    }
+    public DTO_ChangeEmailAddressRequest EmailAddress { get; set; } = emailAddress;
 }

@@ -17,24 +17,16 @@ namespace SafeShare.MediatR.Handlers.CommandsHandlers.GroupManagment;
 /// <summary>
 /// A MediatR command handler for creating new groups within the application.
 /// </summary>
-public class MediatR_CreateGroupCommandHandler : 
-    MediatR_GenericHandler<IGroupManagment_GroupRepository>, 
+/// <remarks>
+/// Initializes a new instance of the <see cref="MediatR_CreateGroupCommandHandler"/> class.
+/// </remarks>
+/// <param name="service">The group management service used for creating new groups.</param>
+public class MediatR_CreateGroupCommandHandler
+(
+    IGroupManagment_GroupRepository service
+) : MediatR_GenericHandler<IGroupManagment_GroupRepository>(service),
     IRequestHandler<MediatR_CreateGroupCommand, ObjectResult>
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MediatR_CreateGroupCommandHandler"/> class.
-    /// </summary>
-    /// <param name="service">The group management service used for creating new groups.</param>
-    public MediatR_CreateGroupCommandHandler
-    (
-        IGroupManagment_GroupRepository service
-    )
-    :
-    base
-    (
-        service
-    )
-    { }
     /// <summary>
     /// Handles the process of creating a new group.
     /// </summary>

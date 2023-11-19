@@ -16,23 +16,14 @@ namespace SafeShare.MediatR.Handlers.CommandsHandlers.Authentication;
 /// <summary>
 /// A MediatR command handler for confirming a user's login using OTP (One-Time Password).
 /// </summary>
-public class MediatR_ConfirmLoginUserCommandHandler : 
-    MediatR_GenericHandler<IAUTH_Login>, 
+/// <remarks>
+/// Initializes a new instance of the <see cref="MediatR_ConfirmLoginUserCommandHandler"/> class.
+/// </remarks>
+/// <param name="service">The authentication service used for login confirmation.</param>
+public class MediatR_ConfirmLoginUserCommandHandler(IAUTH_Login service) : 
+    MediatR_GenericHandler<IAUTH_Login>(service),
     IRequestHandler<MediatR_ConfirmLoginUserCommand, ObjectResult>
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MediatR_ConfirmLoginUserCommandHandler"/> class.
-    /// </summary>
-    /// <param name="service">The authentication service used for login confirmation.</param>
-    public MediatR_ConfirmLoginUserCommandHandler
-    (
-        IAUTH_Login service
-    )
-    : base
-    (
-        service
-    )
-    { }
     /// <summary>
     /// Handles the confirmation of a user login via OTP.
     /// </summary>
