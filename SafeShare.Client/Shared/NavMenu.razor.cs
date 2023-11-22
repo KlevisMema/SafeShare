@@ -12,12 +12,11 @@ namespace SafeShare.Client.Shared;
 
 public partial class NavMenu
 {
-    [Inject] ISnackbar Snackbar { get; set; }
-    [Inject] private HttpClient httpClient { get; set; }
-    [Inject] IDialogService DialogService { get; set; }
-    [Inject] IClientService_UserManagment _userManagment { get; set; }
+    [Inject] ISnackbar Snackbar { get; set; } = null!;
+    [Inject] IDialogService DialogService { get; set; } = null!;
+    [Inject] IClientService_UserManagment _userManagment { get; set; } = null!;
 
-    MudMessageBox mbox { get; set; }
+    MudMessageBox mbox { get; set; } = null!;
 
     protected override Task OnInitializedAsync()
     {
@@ -28,7 +27,7 @@ public partial class NavMenu
 
     private void OpenDialog()
     {
-        DialogOptions closeOnEscapeKey = new DialogOptions() { CloseOnEscapeKey = false };
+        DialogOptions closeOnEscapeKey = new() { CloseOnEscapeKey = false };
 
         DialogService.Show<Test1>("Simple Dialog", closeOnEscapeKey);
     }
@@ -43,6 +42,6 @@ public partial class NavMenu
     {
         var result = await _userManagment.CallTheApi();
 
-        
+
     }
 }

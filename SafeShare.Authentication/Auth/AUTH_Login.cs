@@ -254,7 +254,7 @@ public class AUTH_Login
             (
                 loginResult,
                 true,
-                "User data succsessfully validated!",
+                "Credentials succsessfully validated!",
                 null,
                 System.Net.HttpStatusCode.OK
             );

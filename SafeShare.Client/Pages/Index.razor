@@ -1,5 +1,25 @@
 ﻿@page "/Dashboard"
 @using System.Text.RegularExpressions;
 @using System.ComponentModel.DataAnnotations;
+@using Blazored.LocalStorage
+@using SafeShare.Client.Helpers
+@using SafeShare.ClientDTO.Authentication
+@inject ILocalStorageService _localStorage
+
+@inject AppState AppState 
 
 <PageTitle>Dashboard</PageTitle>
+
+<h1>@AppState.getClientSecrests().Token.CreatedAt</h1>
+
+@code{
+    protected override async Task OnInitializedAsync()
+    {
+        await _localStorage.SetItemAsync("Client", AppState.getClientSecrests());
+
+        if (AppState is null)
+        {
+            AppState.setClientSecrests(await _localStorage.GetItemAsync<ClientDto_LoginResult>("Client"));
+        }
+    }
+}
