@@ -56,7 +56,7 @@ public class Security_JwtTokenAuth
 
         var tokenDto = await AddToDb(token.Id, claims.Single(x => x.Type == ClaimTypes.NameIdentifier).Value);
         tokenDto.Token = new JwtSecurityTokenHandler().WriteToken(token);
-
+        tokenDto.ValididtyTime = token.ValidTo;
         return tokenDto;
     }
     /// <summary>
@@ -131,14 +131,14 @@ public class Security_JwtTokenAuth
     {
         var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.Name, user.Email),
-            new Claim(ClaimTypes.NameIdentifier, user.Id),
-            new Claim(JwtRegisteredClaimNames.NameId, user.Id!),
-            new Claim(JwtRegisteredClaimNames.Email, user.Email),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim(JwtRegisteredClaimNames.Aud, jwtOptions.Value.Audience),
-            new Claim(JwtRegisteredClaimNames.Iss, jwtOptions.Value.Issuer),
-            new Claim(JwtRegisteredClaimNames.FamilyName, user.FullName),
+            new(ClaimTypes.Name, user.Email),
+            new(ClaimTypes.NameIdentifier, user.Id),
+            new(JwtRegisteredClaimNames.NameId, user.Id!),
+            new(JwtRegisteredClaimNames.Email, user.Email),
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new(JwtRegisteredClaimNames.Aud, jwtOptions.Value.Audience),
+            new(JwtRegisteredClaimNames.Iss, jwtOptions.Value.Issuer),
+            new(JwtRegisteredClaimNames.FamilyName, user.FullName),
         };
 
         claims.AddRange(user.Roles.Select(role => new Claim(ClaimTypes.Role, role)));

@@ -45,6 +45,7 @@ using SafeShare.DataTransormObject.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using SafeShare.Security.JwtSecurity.Implementations;
 using SafeShare.MediatR.Handlers.CommandsHandlers.Authentication;
+using SafeShare.API.Helpers;
 
 namespace SafeShare.API.Startup;
 
@@ -67,7 +68,6 @@ public static class API_Helper_ProgramStartup
        IHostBuilder host
     )
     {
-        Services.AddControllers();
         Services.AddMemoryCache();
         Services.AddEndpointsApiExplorer();
         Services.AddSwaggerGen();
@@ -80,6 +80,7 @@ public static class API_Helper_ProgramStartup
         AddSwagger(Services, Configuration);
         AddServices(Services);
         AddCors(Services, Configuration);
+        Services.AddControllers();
         AddAPIRateLimiting(Services);
         AddSerilog(host);
         AddMediatR(Services);
@@ -100,6 +101,7 @@ public static class API_Helper_ProgramStartup
     )
     {
         services.Configure<Util_JwtSettings>(configuration.GetSection(Util_JwtSettings.SectionName));
+        services.Configure<API_Helper_CookieSettings>(configuration.GetSection(API_Helper_CookieSettings.SectionName));
         services.Configure<DataProtectionTokenProviderOptions>
         (
             opt => opt.TokenLifespan = TimeSpan.FromHours(double.Parse(configuration.GetSection("DefaultTokenExpirationTimeInHours").Value!))
@@ -373,9 +375,10 @@ public static class API_Helper_ProgramStartup
         {
             options.AddPolicy(Configuration.GetSection("Cors:Policy:Name").Value!, builder =>
             {
-                builder.AllowAnyOrigin()
+                builder.WithOrigins("https://localhost:7027", "https://localhost:7038", "http://localhost:5026", "https://127.0.0.1")
                        .AllowAnyHeader()
-                       .AllowAnyMethod();
+                       .AllowAnyMethod()
+                       .AllowCredentials();
             });
         });
     }

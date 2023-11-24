@@ -2,11 +2,13 @@
 
 namespace SafeShare.Client.Helpers;
 
-internal class AppState
+public class AppState
 {
     private ClientDto_LoginResult? ClientSecrests { get; set; }
 
-    public void setClientSecrests
+
+    public void
+    SetClientSecrests
     (
         ClientDto_LoginResult? clientSecrest
     )
@@ -14,7 +16,8 @@ internal class AppState
         ClientSecrests = clientSecrest;
     }
 
-    public ClientDto_LoginResult? getClientSecrests()
+    public ClientDto_LoginResult?
+    GetClientSecrests()
     {
         return ClientSecrests;
     }

@@ -15,10 +15,11 @@ namespace SafeShare.Client.Shared.Forms;
 public partial class LoginForm
 {
     #region Injections
-    [Inject] private AppState AppState { get; set; } = null!; 
+    [Inject] private AppState AppState { get; set; } = null!;
     [Inject] private ISnackbar _snackbar { get; set; } = null!;
     [Inject] private IJSRuntime _jsInterop { get; set; } = null!;
-    
+    [Inject] private ILocalStorageService _localStorage { get; set; } = null!;
+
     [Inject] private NavigationManager _navigationManager { get; set; } = null!;
     [Inject] private IAuthenticationService _authenticationService { get; set; } = null!;
     #endregion
@@ -26,11 +27,17 @@ public partial class LoginForm
     private EditForm? loginForm;
     private bool _processing = false;
     private ClientDto_Login clientDto_Login { get; set; } = new();
-
     private const string SnackbarMessage = "Redirecting you in the dashboard page";
     private const string SnackbarMessage1 = "Credentials are being validated";
 
-   
+    protected override async Task OnInitializedAsync()
+    {
+        if (await _localStorage.GetItemAsync<bool>("SessionExpired"))
+        {
+            _snackbar.Add("Session Expired!", Severity.Error, config => { config.CloseAfterNavigation = true; });
+            await _localStorage.RemoveItemAsync("SessionExpired");
+        }
+    }
 
     private async Task
     SubmitLoginForm()
@@ -42,7 +49,7 @@ public partial class LoginForm
 
         if (loginResult.Succsess)
         {
-            AppState.setClientSecrests(loginResult.Value);
+            AppState.SetClientSecrests(loginResult.Value);
             _snackbar.Add(loginResult.Message, Severity.Success, config => { config.CloseAfterNavigation = true; });
             await Task.Delay(2000);
             _snackbar.Add($"{SnackbarMessage}", Severity.Info, config => { config.CloseAfterNavigation = true; });
@@ -50,14 +57,12 @@ public partial class LoginForm
             _navigationManager.NavigateTo("/Dashboard");
         }
         else
-        {
             _snackbar.Add(loginResult.Message, Severity.Error);
-        }
 
         _processing = false;
     }
 
-    async Task
+    private async Task
     ValidateForm()
     {
         var validationPassed = loginForm.EditContext.Validate();
@@ -70,7 +75,7 @@ public partial class LoginForm
     }
 
     private async Task
-   ToggleForms()
+    ToggleForms()
     {
         await _jsInterop.InvokeVoidAsync("LoginPage");
     }

@@ -29,4 +29,8 @@ public class DTO_Token
     /// Gets or sets the creation time of the token. This property is nullable.
     /// </summary>
     public DateTime? CreatedAt { get; set; }
+    /// <summary>
+    /// Gets or sets the validity of the time for the token
+    /// </summary>
+    public DateTime ValididtyTime { get; set; }
 }

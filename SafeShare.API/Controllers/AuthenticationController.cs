@@ -5,15 +5,25 @@
 
 using MediatR;
 using System.Net;
+using System.Net.Http;
+using SafeShare.API.Helpers;
 using System.Security.Claims;
+using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
+using System.Net.Http.Formatting;
+using Microsoft.Extensions.Options;
 using SafeShare.Utilities.Responses;
 using System.IdentityModel.Tokens.Jwt;
+using SafeShare.DataAccessLayer.Models;
 using SafeShare.Security.API.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.DataProtection;
 using SafeShare.ClientServerShared.Routes;
 using SafeShare.Security.API.ActionFilters;
 using SafeShare.DataTransormObject.Security;
+using Microsoft.AspNetCore.Http.HttpResults;
+using SafeShare.Utilities.ConfigurationSettings;
 using SafeShare.DataTransormObject.Authentication;
 using SafeShare.MediatR.Actions.Commands.Authentication;
 
@@ -28,10 +38,11 @@ namespace SafeShare.API.Controllers;
 /// Initializes a new instance of the <see cref="AuthenticationController"/> class with the specified mediator.
 /// </remarks>
 /// <param name="mediator">The mediator used for command and query handling.</param>
+/// <param name="cookieOpt">The options/settings from the config file</param>
 [ApiController]
 [Route(BaseRoute.Route)]
 //[ServiceFilter(typeof(IApiKeyAuthorizationFilter))]
-public class AuthenticationController(IMediator mediator) : ControllerBase
+public class AuthenticationController(IMediator mediator, IOptions<API_Helper_CookieSettings> cookieOpt) : ControllerBase
 {
     /// <summary>
     /// Endpoint to register a new user in the SafeShare system.
@@ -95,7 +106,15 @@ public class AuthenticationController(IMediator mediator) : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        return await mediator.Send(new MediatR_LoginUserCommand(loginDto));
+        var result = await mediator.Send(new MediatR_LoginUserCommand(loginDto));
+
+        if (result.Succsess && result.Value is not null && result.Value.Token is not null)
+        {
+            SetCookiesResposne(result.Value.Token);
+            result.Value.Token = null;
+        }
+
+        return Ok(result);
     }
     /// <summary>
     /// Endpoint to confirm a user's login, typically used in two-factor authentication processes.
@@ -165,17 +184,86 @@ public class AuthenticationController(IMediator mediator) : ControllerBase
     /// Endpoint for refreshing an expired authentication token.
     /// Validates the old token and issues a new one if the user is still authenticated.
     /// </summary>
-    /// <param name="validateToken">The data required to validate and refresh the token.</param>
     /// <returns>A response indicating the success or failure of the token refresh process and includes the new token if successful.</returns>
     [AllowAnonymous]
     [HttpPost(Route_AuthenticationRoute.RefreshToken)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
     public async Task<ActionResult<Util_GenericResponse<DTO_Token>>>
-    RefreshToken
+    RefreshToken()
+    {
+        var refreshTokenResult = await mediator.Send(new MediatR_RefreshTokenCommand(new DTO_ValidateToken
+        {
+            Token = Request.Cookies.TryGetValue(cookieOpt.Value.AuthTokenCookieName, out string? authToken) ? authToken : string.Empty,
+            RefreshToken = Request.Cookies.TryGetValue(cookieOpt.Value.RefreshAuthTokenCookieName, out string? refreshToken) ? refreshToken : string.Empty,
+            RefreshTokenId = Request.Cookies.TryGetValue
+            (
+                cookieOpt.Value.RefreshAuthTokenIdCookieName,
+                out string? refreshTokenId
+            ) ? Guid.Parse(refreshTokenId) : Guid.Empty,
+        }));
+
+        if 
+        (
+            refreshTokenResult.Succsess && 
+            refreshTokenResult.Value is not null && 
+            refreshTokenResult.Value.Token is not null
+        )
+        {
+            SetCookiesResposne(refreshTokenResult.Value);
+        }
+
+        refreshTokenResult.Value = null;
+
+        return Ok();
+    }
+    /// <summary>
+    /// Sets the cookies in the clients browser
+    /// </summary>
+    /// <param name="token">The generated values</param>
+    private void
+    SetCookiesResposne
     (
-        DTO_ValidateToken validateToken
+        DTO_Token token
     )
     {
-        return await mediator.Send(new MediatR_RefreshTokenCommand(validateToken));
+
+        HttpContext.Response.Cookies.Append
+        (
+            cookieOpt.Value.AuthTokenCookieName, token!.Token!,
+            new CookieOptions
+            {
+                Secure = true,
+                HttpOnly = true,
+                IsEssential = true,
+                SameSite = SameSiteMode.None,
+                Expires = token.ValididtyTime.AddHours(1),
+            }
+        );
+
+        HttpContext.Response.Cookies.Append
+        (
+            cookieOpt.Value.RefreshAuthTokenCookieName, token.RefreshToken!,
+            new CookieOptions
+            {
+                Secure = true,
+                HttpOnly = true,
+                IsEssential = true,
+                SameSite = SameSiteMode.None,
+                Expires = token.ValididtyTime.AddHours(1),
+            }
+        );
+
+        HttpContext.Response.Cookies.Append
+        (
+            cookieOpt.Value.RefreshAuthTokenIdCookieName, token.RefreshTokenId!.ToString(),
+            new CookieOptions
+            {
+                Secure = true,
+                HttpOnly = true,
+                IsEssential = true,
+                SameSite = SameSiteMode.None,
+                Expires = token.ValididtyTime.AddHours(1),
+            }
+        );
     }
 }

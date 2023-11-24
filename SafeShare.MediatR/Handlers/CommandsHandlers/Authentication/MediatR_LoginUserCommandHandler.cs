@@ -22,7 +22,7 @@ namespace SafeShare.MediatR.Handlers.CommandsHandlers.Authentication;
 public class MediatR_LoginUserCommandHandler
 (
     IAUTH_Login loginUser
-) : IRequestHandler<MediatR_LoginUserCommand, ObjectResult>
+) : IRequestHandler<MediatR_LoginUserCommand, Util_GenericResponse<DTO_LoginResult>>
 {
     /// <summary>
     /// Handles the login request and returns an appropriate ObjectResult.
@@ -30,7 +30,7 @@ public class MediatR_LoginUserCommandHandler
     /// <param name="request">The login request to handle.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>An ObjectResult that represents the result of the login operation.</returns>
-    public async Task<ObjectResult>
+    public async Task<Util_GenericResponse<DTO_LoginResult>>
     Handle
     (
         MediatR_LoginUserCommand request,
@@ -39,6 +39,6 @@ public class MediatR_LoginUserCommandHandler
     {
         var loginResult = await loginUser.LoginUser(request.Login);
 
-        return Util_GenericControllerResponse<DTO_LoginResult>.ControllerResponse(loginResult);
+        return loginResult;
     }
 }

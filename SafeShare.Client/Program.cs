@@ -27,14 +27,23 @@ builder.Services.AddMudServices(config =>
     config.SnackbarConfiguration.SnackbarVariant = Variant.Filled;
 });
 
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:7046/") });
+builder.Services.AddTransient<TokenExpiryHandler>();
+builder.Services.AddScoped<IClientAuthentication_TokenRefreshService, ClientAuthentication_TokenRefreshService>();
 
-builder.Services.AddSingleton<AppState>();
+
+builder.Services.AddHttpClient("MyHttpClient", client =>
+{
+    client.BaseAddress = new Uri("https://localhost:7046/");
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
+})
+.AddHttpMessageHandler<TokenExpiryHandler>();
+
+builder.Services.AddScoped<AppState>();
+builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IClientService_UserManagment, ClientService_UserManagment>();
 
-builder.Services.AddBlazoredLocalStorage();
-
+//builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:7046/") });
 //builder.Services.AddBlazoredLocalStorageAsSingleton();
 
 await builder.Build().RunAsync();

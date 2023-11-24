@@ -4,7 +4,7 @@
  */
 
 using MediatR;
-using Microsoft.AspNetCore.Mvc;
+using SafeShare.Utilities.Responses;
 using SafeShare.DataTransormObject.Security;
 
 namespace SafeShare.MediatR.Actions.Commands.Authentication;
@@ -20,7 +20,7 @@ namespace SafeShare.MediatR.Actions.Commands.Authentication;
 public class MediatR_RefreshTokenCommand
 (
     DTO_ValidateToken dTO_ValidateToken
-) : IRequest<ObjectResult>
+) : IRequest<Util_GenericResponse<DTO_Token>>
 {
     /// <summary>
     /// Data transfer object containing the information required for token validation and refresh.

@@ -24,7 +24,7 @@ public class MediatR_RefreshTokenCommandHandler
 (
     IAUTH_RefreshToken service
 ) : MediatR_GenericHandler<IAUTH_RefreshToken>(service),
-    IRequestHandler<MediatR_RefreshTokenCommand, ObjectResult>
+    IRequestHandler<MediatR_RefreshTokenCommand, Util_GenericResponse<DTO_Token>>
 {
     /// <summary>
     /// Handles the refresh token process.
@@ -32,7 +32,7 @@ public class MediatR_RefreshTokenCommandHandler
     /// <param name="request">The command containing the data for the refresh token request.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>An ObjectResult with the outcome of the refresh token process.</returns>
-    public async Task<ObjectResult>
+    public async Task<Util_GenericResponse<DTO_Token>>
     Handle
     (
         MediatR_RefreshTokenCommand request,
@@ -41,6 +41,6 @@ public class MediatR_RefreshTokenCommandHandler
     {
         var refreshTokenResult = await _service.RefreshToken(request.DTO_ValidateToken);
 
-        return Util_GenericControllerResponse<DTO_Token>.ControllerResponse(refreshTokenResult);
+        return refreshTokenResult;
     }
 }

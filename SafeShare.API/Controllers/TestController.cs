@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using SafeShare.Security.API.Interfaces;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -23,6 +25,14 @@ namespace SafeShare.API.Controllers
 
             var encryptedData = rsa.Encrypt(bytesToEncrypt, true);
             return Ok(Convert.ToBase64String(encryptedData));
+        }
+
+        [HttpGet("yyyy")]
+        [Authorize(AuthenticationSchemes = "Default")]
+        //[ServiceFilter(typeof(IApiKeyAuthorizationFilter))]
+        public IActionResult Test()
+        {
+            return Ok("hI");
         }
     }
 }

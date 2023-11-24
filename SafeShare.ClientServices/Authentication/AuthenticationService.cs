@@ -7,13 +7,8 @@ using SafeShare.ClientServices.Interfaces;
 
 namespace SafeShare.ClientServices.Authentication;
 
-public class AuthenticationService(HttpClient httpClient) : IAuthenticationService
+public class AuthenticationService(IHttpClientFactory httpClientFactory) : IAuthenticationService
 {
-    private static readonly JsonSerializerOptions s_writeOptions = new()
-    {
-        WriteIndented = false
-    };
-
     public async Task<ClientUtil_ApiResponse<ClientDto_LoginResult>>
     LogInUser
     (
@@ -22,6 +17,10 @@ public class AuthenticationService(HttpClient httpClient) : IAuthenticationServi
     {
         try
         {
+            var requestMessage = new HttpRequestMessage();
+            var httpClient = httpClientFactory.CreateClient("MyHttpClient");
+
+
             var loginData = new Dictionary<string, string>
             {
                 { nameof(ClientDto_Login.Email), login.Email },
@@ -43,8 +42,14 @@ public class AuthenticationService(HttpClient httpClient) : IAuthenticationServi
         }
         catch (Exception ex)
         {
-
-            throw;
+            return new ClientUtil_ApiResponse<ClientDto_LoginResult>()
+            {
+                Message = "Something went wrong",
+                Errors = null,
+                StatusCode = System.Net.HttpStatusCode.InternalServerError,
+                Succsess = false,
+                Value = null
+            };
         }
     }
 }

@@ -17,7 +17,7 @@ public class DTO_LoginResult
     /// <summary>
     /// Gets or sets the authentication token provided upon successful login.
     /// </summary>
-    public DTO_Token Token { get; set; } = new();
+    public DTO_Token? Token { get; set; } = new();
     /// <summary>
     /// Gets or sets a value indicating whether an OTP (One Time Password) is required during the login process.
     /// </summary>

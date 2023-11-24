@@ -6,6 +6,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using SafeShare.DataTransormObject.Authentication;
+using SafeShare.Utilities.Responses;
 
 namespace SafeShare.MediatR.Actions.Commands.Authentication;
 
@@ -19,7 +20,7 @@ namespace SafeShare.MediatR.Actions.Commands.Authentication;
 public class MediatR_LoginUserCommand
 (
     DTO_Login login
-) : IRequest<ObjectResult>
+) : /*IRequest<ObjectResult>*/ IRequest<Util_GenericResponse<DTO_LoginResult>>
 {
     /// <summary>
     /// Gets or sets the login details for the user.
