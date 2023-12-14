@@ -178,6 +178,8 @@ public class AuthenticationController(IMediator mediator, IOptions<API_Helper_Co
     {
         await mediator.Send(new MediatR_LogOutCommand(userId.ToString()));
 
+        ClearCookies();
+
         return Ok();
     }
     /// <summary>
@@ -265,5 +267,25 @@ public class AuthenticationController(IMediator mediator, IOptions<API_Helper_Co
                 Expires = token.ValididtyTime.AddHours(1),
             }
         );
+    }
+
+    private void ClearCookies()
+    {
+        ClearCookie(".AspNetCore.Identity.Application");
+        ClearCookie(cookieOpt.Value.AuthTokenCookieName);
+        ClearCookie(cookieOpt.Value.RefreshAuthTokenCookieName);
+        ClearCookie(cookieOpt.Value.RefreshAuthTokenIdCookieName);
+    }
+
+    private void ClearCookie(string cookieName)
+    {
+        HttpContext.Response.Cookies.Append(cookieName, "", new CookieOptions
+        {
+            Secure = true,
+            HttpOnly = true,
+            IsEssential = true,
+            SameSite = SameSiteMode.None,
+            Expires = DateTimeOffset.UtcNow.AddDays(-1)
+        });
     }
 }

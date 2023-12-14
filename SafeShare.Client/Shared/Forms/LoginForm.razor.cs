@@ -54,6 +54,7 @@ public partial class LoginForm
             await Task.Delay(2000);
             _snackbar.Add($"{SnackbarMessage}", Severity.Info, config => { config.CloseAfterNavigation = true; });
             await Task.Delay(500);
+            await _localStorage.SetItemAsStringAsync("UserData",loginResult.Value!.UserId);
             _navigationManager.NavigateTo("/Dashboard");
         }
         else

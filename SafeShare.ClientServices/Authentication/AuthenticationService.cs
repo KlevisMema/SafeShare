@@ -4,6 +4,7 @@ using SafeShare.ClientServerShared.Routes;
 using SafeShare.ClientUtilities.Responses;
 using SafeShare.ClientDTO.AccountManagment;
 using SafeShare.ClientServices.Interfaces;
+using System.Text;
 
 namespace SafeShare.ClientServices.Authentication;
 
@@ -40,7 +41,7 @@ public class AuthenticationService(IHttpClientFactory httpClientFactory) : IAuth
 
             return readResult!;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return new ClientUtil_ApiResponse<ClientDto_LoginResult>()
             {
@@ -50,6 +51,26 @@ public class AuthenticationService(IHttpClientFactory httpClientFactory) : IAuth
                 Succsess = false,
                 Value = null
             };
+        }
+    }
+
+    public async Task 
+    LogoutUser
+    (
+        Guid userId
+    )
+    {
+        try
+        {
+            var httpClient = httpClientFactory.CreateClient("MyHttpClient");
+
+            var content = new StringContent(JsonSerializer.Serialize(new { userId }), Encoding.UTF8, "application/json");
+
+            var response = await httpClient.PostAsync(BaseRoute.RouteAuthenticationForClient + Route_AuthenticationRoute.LogOut.Replace("{userId}", userId.ToString()), content);
+
+        }
+        catch (Exception)
+        {
         }
     }
 }

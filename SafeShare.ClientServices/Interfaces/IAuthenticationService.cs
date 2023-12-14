@@ -5,6 +5,16 @@ namespace SafeShare.ClientServices.Interfaces
 {
     public interface IAuthenticationService
     {
-        Task<ClientUtil_ApiResponse<ClientDto_LoginResult>> LogInUser(ClientDto_Login login);
+        Task<ClientUtil_ApiResponse<ClientDto_LoginResult>> 
+        LogInUser
+        (
+            ClientDto_Login login
+        );
+
+        Task
+        LogoutUser
+        (
+            Guid userId
+        );
     }
 }

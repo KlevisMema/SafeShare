@@ -1,4 +1,11 @@
-﻿@inherits LayoutComponentBase
+﻿@using Blazored.LocalStorage
+@using SafeShare.ClientServices.Interfaces
+
+@inherits LayoutComponentBase
+@inject IAuthenticationService authService
+@inject ILocalStorageService _localStorage
+@inject NavigationManager _navigationManager
+@inject ISnackbar _snackbar
 
 <MudThemeProvider />
 <MudDialogProvider />
@@ -23,7 +30,7 @@
             </MudTooltip>
 
             <MudTooltip Text="Log Out" Color="Color.Primary" Placement="Placement.Top">
-                <MudIconButton Icon="@Icons.Material.Filled.Logout" Color="Color.Inherit" Edge="Edge.End" />
+                <MudIconButton Icon="@Icons.Material.Filled.Logout" Color="Color.Inherit" Edge="Edge.End" OnClick="() => LogoutUser()"/>
             </MudTooltip>
 
         </MudAppBar>
@@ -50,5 +57,15 @@
     void DrawerToggle()
     {
         _drawerOpen = !_drawerOpen;
+    }
+
+    async Task LogoutUser()
+    {
+        _snackbar.Add("Logging you out", Severity.Success, config => { config.CloseAfterNavigation = true; });
+        await Task.Delay(2000);
+        var userId = await _localStorage.GetItemAsStringAsync("UserData");
+        await authService.LogoutUser(Guid.Parse(userId));
+        await _localStorage.RemoveItemAsync("UserData");
+        _navigationManager.NavigateTo("/Login");
     }
 }
