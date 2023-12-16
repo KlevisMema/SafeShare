@@ -41,9 +41,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{0EC815
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SafeShare.ClientServerShared", "SafeShare.ClientServerShared\SafeShare.ClientServerShared.csproj", "{50E1FF71-6CAF-4F11-BF43-E046F8483499}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SafeShare.ClientUtilities", "SafeShare.ClientUtilities\SafeShare.ClientUtilities.csproj", "{A1A56CEC-5BE3-4E80-AC7C-1A412AE80C0B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SafeShare.ClientUtilities", "SafeShare.ClientUtilities\SafeShare.ClientUtilities.csproj", "{A1A56CEC-5BE3-4E80-AC7C-1A412AE80C0B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SafeShare.ClientServices", "SafeShare.ClientServices\SafeShare.ClientServices.csproj", "{2CBC9950-4618-4B68-A774-51480A9E136E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SafeShare.ClientServices", "SafeShare.ClientServices\SafeShare.ClientServices.csproj", "{2CBC9950-4618-4B68-A774-51480A9E136E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

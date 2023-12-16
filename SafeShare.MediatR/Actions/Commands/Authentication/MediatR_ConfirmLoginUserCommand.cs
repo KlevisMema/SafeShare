@@ -5,6 +5,8 @@
 
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using SafeShare.Utilities.Responses;
+using SafeShare.DataTransormObject.Authentication;
 
 namespace SafeShare.MediatR.Actions.Commands.Authentication;
 
@@ -21,7 +23,7 @@ public class MediatR_ConfirmLoginUserCommand
 (
     string oTP,
     Guid userId
-) : IRequest<ObjectResult>
+) : IRequest<Util_GenericResponse<DTO_LoginResult>>
 {
     /// <summary>
     /// The unique identifier of the user.

@@ -22,7 +22,7 @@ namespace SafeShare.MediatR.Handlers.CommandsHandlers.Authentication;
 /// <param name="service">The authentication service used for login confirmation.</param>
 public class MediatR_ConfirmLoginUserCommandHandler(IAUTH_Login service) : 
     MediatR_GenericHandler<IAUTH_Login>(service),
-    IRequestHandler<MediatR_ConfirmLoginUserCommand, ObjectResult>
+    IRequestHandler<MediatR_ConfirmLoginUserCommand, Util_GenericResponse<DTO_LoginResult>>
 {
     /// <summary>
     /// Handles the confirmation of a user login via OTP.
@@ -30,7 +30,7 @@ public class MediatR_ConfirmLoginUserCommandHandler(IAUTH_Login service) :
     /// <param name="request">The command containing user ID and OTP for confirmation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>An ObjectResult with the outcome of the login confirmation process.</returns>
-    public async Task<ObjectResult>
+    public async Task<Util_GenericResponse<DTO_LoginResult>>
     Handle
     (
         MediatR_ConfirmLoginUserCommand request,
@@ -39,6 +39,6 @@ public class MediatR_ConfirmLoginUserCommandHandler(IAUTH_Login service) :
     {
         var confirmLoginResult = await _service.ConfirmLogin(request.UserId, request.OTP);
 
-        return Util_GenericControllerResponse<DTO_LoginResult>.ControllerResponse(confirmLoginResult);
+        return confirmLoginResult;
     }
 }

@@ -79,7 +79,7 @@ public class AuthenticationController(IMediator mediator, IOptions<API_Helper_Co
     public async Task<ActionResult<Util_GenericResponse<bool>>>
     ConfirmRegistration
     (
-        DTO_ConfirmRegistration confirmRegistrationDto
+        [FromBody] DTO_ConfirmRegistration confirmRegistrationDto
     )
     {
         return await mediator.Send(new MediatR_ConfirmUserRegistrationCommand(confirmRegistrationDto));
@@ -110,6 +110,13 @@ public class AuthenticationController(IMediator mediator, IOptions<API_Helper_Co
 
         if (result.Succsess && result.Value is not null && result.Value.Token is not null)
         {
+            if (result.Value.RequireOtpDuringLogin)
+            {
+                SetCookieResposne(result.Value.Token.Token!);
+                result.Value.Token = null;
+                return Ok(result);
+            }
+
             SetCookiesResposne(result.Value.Token);
             result.Value.Token = null;
         }
@@ -121,7 +128,7 @@ public class AuthenticationController(IMediator mediator, IOptions<API_Helper_Co
     /// Validates the OTP (One-Time Password) sent to the user after the initial login attempt.
     /// </summary>
     /// <param name="userId">The identifier of the user attempting to confirm login.</param>
-    /// <param name="otp">The one-time password for login confirmation.</param>
+    /// <param name="confirmLogin">The object fir user confirm login.</param>
     /// <returns>A response containing the authentication token or an error message.</returns>
     [ServiceFilter(typeof(VerifyUser))]
     [HttpPost(Route_AuthenticationRoute.ConfirmLogin)]
@@ -135,19 +142,27 @@ public class AuthenticationController(IMediator mediator, IOptions<API_Helper_Co
     ConfirmLogin
     (
         Guid userId,
-        string otp
+        DTO_ConfirmLogin confirmLogin
     )
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        return await mediator.Send(new MediatR_ConfirmLoginUserCommand(otp, userId));
+        var result = await mediator.Send(new MediatR_ConfirmLoginUserCommand(confirmLogin.OTP, confirmLogin.UserId));
+
+        if (result.Succsess && result.Value is not null && result.Value.Token is not null)
+        {
+            SetCookiesResposne(result.Value.Token);
+            result.Value.Token = null;
+        }
+
+        return Ok(result);
     }
     /// <summary>
     /// Endpoint for requesting reconfirmation of the registration process.
     /// This can be used if the initial confirmation (like email verification) was not completed or needs to be resent.
     /// </summary>
-    /// <param name="email">The email address of the user requesting reconfirmation.</param>
+    /// <param name="ReConfirmRegistration">The email address of the user requesting reconfirmation.</param>
     /// <returns>A response indicating the success or failure of the registration reconfirmation request.</returns>
     [AllowAnonymous]
     [HttpPost(Route_AuthenticationRoute.ReConfirmRegistrationRequest)]
@@ -155,10 +170,13 @@ public class AuthenticationController(IMediator mediator, IOptions<API_Helper_Co
     public async Task<ActionResult<Util_GenericResponse<bool>>>
     ReConfirmRegistrationRequest
     (
-        string email
+        [FromBody] DTO_ReConfirmRegistration ReConfirmRegistration
     )
     {
-        return await mediator.Send(new MediatR_ReConfirmRegistrationRequestCommand(email));
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        return await mediator.Send(new MediatR_ReConfirmRegistrationRequestCommand(ReConfirmRegistration));
     }
     /// <summary>
     /// Endpoint for logging out a user.
@@ -269,7 +287,8 @@ public class AuthenticationController(IMediator mediator, IOptions<API_Helper_Co
         );
     }
 
-    private void ClearCookies()
+    private void 
+    ClearCookies()
     {
         ClearCookie(".AspNetCore.Identity.Application");
         ClearCookie(cookieOpt.Value.AuthTokenCookieName);
@@ -277,7 +296,11 @@ public class AuthenticationController(IMediator mediator, IOptions<API_Helper_Co
         ClearCookie(cookieOpt.Value.RefreshAuthTokenIdCookieName);
     }
 
-    private void ClearCookie(string cookieName)
+    private void 
+    ClearCookie
+    (
+        string cookieName
+    )
     {
         HttpContext.Response.Cookies.Append(cookieName, "", new CookieOptions
         {
@@ -287,5 +310,26 @@ public class AuthenticationController(IMediator mediator, IOptions<API_Helper_Co
             SameSite = SameSiteMode.None,
             Expires = DateTimeOffset.UtcNow.AddDays(-1)
         });
+    }
+
+    private void
+    SetCookieResposne
+    (
+       string token
+    )
+    {
+        HttpContext.Response.Cookies.Append
+        (
+            cookieOpt.Value.AuthTokenCookieName, token,
+
+            new CookieOptions
+            {
+                Secure = true,
+                HttpOnly = true,
+                IsEssential = true,
+                SameSite = SameSiteMode.None,
+                Expires = DateTime.Now.AddMinutes(5),
+            }
+        );
     }
 }

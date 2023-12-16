@@ -224,6 +224,29 @@ public class AUTH_Register
                 );
             }
 
+            if (user.EmailConfirmed)
+            {
+                _logger.Log
+                (
+                  LogLevel.Error,
+                  """
+                        [Authentication Module]-[AUTH_Register Class]-[ConfirmRegistration Method] => 
+                        [IP] {IP}, user with email {Email} is already confirmated.
+                   """,
+                  await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                  confirmRegistrationDto.Email
+                );
+
+                return Util_GenericResponse<bool>.Response
+                (
+                    true,
+                    true,
+                    "Account is already confirmed",
+                    null,
+                    System.Net.HttpStatusCode.OK
+                );
+            }
+
             user.ModifiedAt = DateTime.UtcNow;
 
             var verifyToken = await _userManager.ConfirmEmailAsync(user, confirmRegistrationDto.Token);
@@ -247,7 +270,7 @@ public class AUTH_Register
                 (
                     false,
                     false,
-                    "Something went wrong, try again.",
+                    "Something went wrong, token not valid.",
                     null,
                     System.Net.HttpStatusCode.NotFound
                 );
@@ -356,7 +379,9 @@ public class AUTH_Register
 
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
 
-            var route = confirmRegistrationSettings.Value.Route.Replace("{token}", token).Replace("{email}", user.Email);
+            var encodedToken = System.Net.WebUtility.UrlEncode(token);
+
+            var route = confirmRegistrationSettings.Value.Route.Replace("{token}", encodedToken).Replace("{email}", user.Email);
 
             var emailResult = await Util_Email.SendEmailForRegistrationConfirmation(user.Email!, route, user.FullName);
 

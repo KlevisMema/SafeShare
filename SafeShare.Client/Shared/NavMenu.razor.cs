@@ -27,9 +27,9 @@ public partial class NavMenu
 
     private void OpenDialog()
     {
-        DialogOptions closeOnEscapeKey = new() { CloseOnEscapeKey = false };
+        //DialogOptions closeOnEscapeKey = new() { CloseOnEscapeKey = false };
 
-        DialogService.Show<Test1>("Simple Dialog", closeOnEscapeKey);
+        //DialogService.Show<Test1>("Simple Dialog", closeOnEscapeKey);
     }
 
     private async Task OnButtonClicked()

@@ -440,7 +440,8 @@ public class AUTH_Login
             var confirmLoginResult = new DTO_LoginResult
             {
                 RequireOtpDuringLogin = true,
-                Token = await GetToken(user)
+                Token = await GetToken(user),
+                UserId = user.Id
             };
 
             user.OTP = null;

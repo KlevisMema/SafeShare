@@ -21,16 +21,16 @@
 
         <MudDivider Class="my-2" />
 
-        <MudTooltip Text="Create" Color="Color.Primary" Placement="Placement.Bottom">
+        @* <MudTooltip Text="Create" Color="Color.Primary" Placement="Placement.Bottom">
             <MudFab @onclick="OpenDialog" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Create" Size="Size.Small" Class="m-sm-2" />
+        </MudTooltip> *@
+
+        <MudTooltip Text="Invite" Color="Color.Primary" Placement="MudBlazor.Placement.Bottom">
+            <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.GroupAdd" Size="MudBlazor.Size.Small" Class="m-sm-2" />
         </MudTooltip>
 
-        <MudTooltip Text="Invite" Color="Color.Primary" Placement="Placement.Bottom">
-            <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.GroupAdd" Size="Size.Small" Class="m-sm-2" />
-        </MudTooltip>
-
-        <MudTooltip Text="Search" Color="Color.Primary" Placement="Placement.Bottom">
-            <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Search" Size="Size.Small" Class="m-sm-2" />
+        <MudTooltip Text="Search" Color="Color.Primary" Placement="MudBlazor.Placement.Bottom">
+            <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Search" Size="MudBlazor.Size.Small" Class="m-sm-2" />
         </MudTooltip>
 
         <MudNavGroup Title="Groups Created" Icon="@Icons.Material.Filled.PeopleAlt" IconColor="Color.Inherit" Expanded="false">

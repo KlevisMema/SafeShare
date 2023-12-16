@@ -38,7 +38,7 @@ public class MediatR_ReConfirmRegistrationRequestCommandHandler
         CancellationToken cancellationToken
     )
     {
-        var reregistrationRequestResult = await _service.ReConfirmRegistrationRequest(request.Email);
+        var reregistrationRequestResult = await _service.ReConfirmRegistrationRequest(request.ReConfirmRegistration.Email);
 
         return Util_GenericControllerResponse<bool>.ControllerResponse(reregistrationRequestResult);
     }

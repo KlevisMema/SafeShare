@@ -5,6 +5,7 @@
 
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using SafeShare.DataTransormObject.Authentication;
 
 namespace SafeShare.MediatR.Actions.Commands.Authentication;
 
@@ -15,14 +16,14 @@ namespace SafeShare.MediatR.Actions.Commands.Authentication;
 /// <remarks>
 /// Initializes a new instance of the <see cref="MediatR_ReConfirmRegistrationRequestCommand"/> class.
 /// </remarks>
-/// <param name="email">The email address of the user requesting re-confirmation.</param>
+/// <param name="reConfirmRegistration">The email address of the user requesting re-confirmation.</param>
 public class MediatR_ReConfirmRegistrationRequestCommand
 (
-    string email
+    DTO_ReConfirmRegistration reConfirmRegistration
 ) : IRequest<ObjectResult>
 {
     /// <summary>
     /// The email address of the user requesting re-confirmation of registration.
     /// </summary> 
-    public string Email { get; set; } = email;
+    public DTO_ReConfirmRegistration ReConfirmRegistration { get; set; } = reConfirmRegistration;
 }
