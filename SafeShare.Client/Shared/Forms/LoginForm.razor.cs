@@ -9,7 +9,8 @@ using SafeShare.ClientDTO.Authentication;
 using SafeShare.ClientServices.Interfaces;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Components.Forms;
-using System.Runtime.InteropServices.JavaScript; 
+using System.Runtime.InteropServices.JavaScript;
+using SafeShare.ClientDTO.AccountManagment;
 #endregion
 
 namespace SafeShare.Client.Shared.Forms;
@@ -28,10 +29,9 @@ public partial class LoginForm
     #region Other properties
     private EditForm? loginForm;
     private EditForm? registerForm;
-
+    
     private bool _processing = false;
     private bool _processingRegistering = false;
-
     private ClientDto_Login clientDto_Login { get; set; } = new();
     private ClientDto_Register clientDto_Register { get; set; } = new();
     #endregion
@@ -207,9 +207,10 @@ public partial class LoginForm
         }
     }
 
-    private IEnumerable<string>
+    private static IEnumerable<string> 
     PasswordStrength
     (
+
         string pw
     )
     {
@@ -218,15 +219,32 @@ public partial class LoginForm
             yield return "Password is required!";
             yield break;
         }
-        if (pw.Length < 8)
-            yield return "Password must be at least of length 8";
-        if (!Regex.IsMatch(pw, @"[A-Z]"))
-            yield return "Password must contain at least one capital letter";
-        if (!Regex.IsMatch(pw, @"[a-z]"))
+        if (pw.Length < 6)
+            yield return "Password must be at least 6 characters long";
+        if (!MyRegex().IsMatch(pw))
+            yield return "Password must contain at least one uppercase letter";
+        if (!MyRegex1().IsMatch(pw))
             yield return "Password must contain at least one lowercase letter";
-        if (!Regex.IsMatch(pw, @"[0-9]"))
+        if (!MyRegex2().IsMatch(pw))
             yield return "Password must contain at least one digit";
-    } 
+        if (!MyRegex3().IsMatch(pw))
+            yield return "Password must contain at least one special character";
+    }
+
+    private void
+    NavigateToForgotPasswordPage()
+    {
+        _navigationManager.NavigateTo("/UserManagment/ForgotPassword");
+    }
+
+    [GeneratedRegex(@"[A-Z]")]
+    private static partial Regex MyRegex();
+    [GeneratedRegex(@"[a-z]")]
+    private static partial Regex MyRegex1();
+    [GeneratedRegex(@"[0-9]")]
+    private static partial Regex MyRegex2();
+    [GeneratedRegex(@"[\p{P}\p{S}]")]
+    private static partial Regex MyRegex3();
 
     #endregion
 }

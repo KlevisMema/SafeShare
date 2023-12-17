@@ -841,7 +841,9 @@ public class AccountManagment
         {
             var token = await userManager.GeneratePasswordResetTokenAsync(user);
 
-            var route = resetPasswordSettings.Value.Route.Replace("{token}", token).Replace("{email}", email);
+            var encodedToken = System.Net.WebUtility.UrlEncode(token);
+
+            var route = resetPasswordSettings.Value.Route.Replace("{token}", encodedToken).Replace("{email}", email);
 
             var sendEmailResult = await Util_Email.SendForgotPassordTokenEmail(user.Email, user.FullName, route);
 

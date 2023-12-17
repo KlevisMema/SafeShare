@@ -11,7 +11,6 @@ public partial class ActivateAccount
     [Inject] private NavigationManager _navigationManager { get; set; } = null!;
     [Inject] private IAuthenticationService _authenticationService { get; set; } = null!;
 
-
     private string? token;
     private string? email;
     private bool isVisible = true;

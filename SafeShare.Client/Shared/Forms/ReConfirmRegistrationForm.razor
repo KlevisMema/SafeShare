@@ -17,7 +17,7 @@
     }
 
     .wrapper {
-        height: 300px;
+        height: 350px;
         width: 600px !important;
         position: relative;
         max-width: 500px;
@@ -182,7 +182,7 @@
 
             <DataAnnotationsValidator />
 
-            <input type="email" @bind-value="@ConfirmRegistration.Email" placeholder="Email address" required />
+            <input type="email" @bind-value="@ConfirmRegistration.Email" placeholder="Email address" required autocomplete="on" />
 
             <MudButton Disabled="@_processing" OnClick="(() => ValidateReConfirmRegistration())" Variant="Variant.Filled" Color="Color.Primary" Class="mudSubmitButton position-relative">
                 @if (_processing)
@@ -194,6 +194,10 @@
                 {
                     <MudText>SUBMIT</MudText>
                 }
+            </MudButton>
+
+            <MudButton OnClick="(() => RedirectToLoginPage())" Variant="Variant.Outlined" Color="Color.Primary" Class="position-relative">
+                <MudText>Back to LogIn</MudText>
             </MudButton>
 
         </EditForm>

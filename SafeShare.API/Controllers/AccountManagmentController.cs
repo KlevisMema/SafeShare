@@ -169,7 +169,7 @@ public class AccountManagmentController(IMediator mediator) : BaseController(med
     /// <summary>
     /// Initiates the password reset process for a user based on their email address.
     /// </summary>
-    /// <param name="email">The email address of the user who forgot their password.</param>
+    /// <param name="forgotPassword">The object that contains the email address of a user</param>
     /// <returns>A response indicating the success or failure of the forgot password request.</returns>
     [AllowAnonymous]
     [HttpPost(Route_AccountManagmentRoute.ForgotPassword)]
@@ -181,10 +181,13 @@ public class AccountManagmentController(IMediator mediator) : BaseController(med
     public async Task<ActionResult<Util_GenericResponse<bool>>>
     ForgotPassword
     (
-       [FromForm] string email
+       [FromForm] DTO_ForgotPassword forgotPassword
     )
     {
-        return await _mediator.Send(new MediatR_ForgotPasswordCommand(email));
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        return await _mediator.Send(new MediatR_ForgotPasswordCommand(forgotPassword.Email));
     }
     /// <summary>
     /// Allows a user to reset their password using a password reset token.

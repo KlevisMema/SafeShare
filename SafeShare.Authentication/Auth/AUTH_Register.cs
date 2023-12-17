@@ -120,7 +120,9 @@ public class AUTH_Register
 
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(mappedUser);
 
-            var route = confirmRegistrationSettings.Value.Route.Replace("{token}", token).Replace("{email}", mappedUser.Email);
+            var encodedToken = System.Net.WebUtility.UrlEncode(token);
+
+            var route = confirmRegistrationSettings.Value.Route.Replace("{token}", encodedToken).Replace("{email}", mappedUser.Email);
 
             var emailResult = await Util_Email.SendEmailForRegistrationConfirmation(mappedUser.Email!, route, mappedUser.FullName);
 

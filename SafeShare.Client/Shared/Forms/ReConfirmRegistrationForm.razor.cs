@@ -9,6 +9,7 @@ namespace SafeShare.Client.Shared.Forms;
 public partial class ReConfirmRegistrationForm
 {
     [Inject] private ISnackbar _snackbar { get; set; } = null!;
+    [Inject] private NavigationManager _navigationManager { get; set; } = null!;
     [Inject] private IAuthenticationService _authenticationService { get; set; } = null!;
 
     private bool _processing = false;
@@ -54,5 +55,11 @@ public partial class ReConfirmRegistrationForm
     {
         foreach (var validationMessage in validationMessages)
             _snackbar.Add(validationMessage, Severity.Warning, config => { config.CloseAfterNavigation = true; });
+    }
+
+    private void
+    RedirectToLoginPage()
+    {
+        _navigationManager.NavigateTo("/Login");
     }
 }

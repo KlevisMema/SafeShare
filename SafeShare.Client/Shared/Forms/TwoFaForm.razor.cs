@@ -1,10 +1,12 @@
 ﻿using MudBlazor;
+using System.Net;
 using Blazored.LocalStorage;
 using SafeShare.Client.Helpers;
 using Microsoft.AspNetCore.Components;
 using SafeShare.ClientDTO.Authentication;
 using SafeShare.ClientServices.Interfaces;
 using Microsoft.AspNetCore.Components.Forms;
+using SafeShare.ClientUtilities.Responses;
 
 namespace SafeShare.Client.Shared.Forms;
 
@@ -19,7 +21,9 @@ public partial class TwoFaForm
 
     private EditForm? TwoFAForm;
     private bool _processing = false;
+    private string heightStyle = "300px";
     private ClientDto_2FA TwoFA { get; set; } = new();
+    private HttpStatusCode HttpStatusCode { get; set; }
 
     private const string SnackbarMessage = "Redirecting you in the dashboard page";
 
@@ -37,50 +41,89 @@ public partial class TwoFaForm
         await ConfirmLogin2FASubmit();
     }
 
-    private async Task
-    ConfirmLogin2FASubmit()
+    private async Task ConfirmLogin2FASubmit()
     {
-        _snackbar.Add("Validating the OTP", Severity.Info, config => { config.CloseAfterNavigation = true; });
-
+        ShowSnackbar("Validating the OTP", Severity.Info);
         _processing = true;
         await Task.Delay(1000);
 
-        try
+        if (!TryParseUserId(out Guid parsedUserId))
         {
-            TwoFA.UserId = Guid.Parse(userId);
-        }
-        catch (Exception)
-        {
-            _snackbar.Add("An unexpected error happened, try again", Severity.Error, config => { config.CloseAfterNavigation = true; });
-            TwoFA = new();
-            _processing = false;
+            HandleUserIdParsingError();
             return;
         }
 
-        var twoFaResult = await _authenticationService.ConfirmLogin2FA(TwoFA);
+        TwoFA.UserId = parsedUserId;
 
+        var twoFaResult = await _authenticationService.ConfirmLogin2FA(TwoFA);
         if (!twoFaResult.Succsess)
         {
-            if (String.IsNullOrEmpty(twoFaResult.Message))
-                _snackbar.Add("An unexpected error happened", Severity.Error, config => { config.CloseAfterNavigation = true; });
-            else
-                _snackbar.Add(twoFaResult.Message, Severity.Warning, config => { config.CloseAfterNavigation = true; });
-            //ShowValidationsMessages(registerResult.Errors!);
-        }
-        else
-        {
-            AppState.SetClientSecrests(twoFaResult.Value);
-            _snackbar.Add(twoFaResult.Message, Severity.Success, config => { config.CloseAfterNavigation = true; });
-            await Task.Delay(2000);
-            _snackbar.Add($"{SnackbarMessage}", Severity.Info, config => { config.CloseAfterNavigation = true; });
-            await Task.Delay(500);
-            await _localStorage.SetItemAsStringAsync("UserData", twoFaResult.Value!.UserId);
-            _navigationManager.NavigateTo("/Dashboard");
+            HandleTwoFAResultFailure(twoFaResult);
+            return;
         }
 
+        await HandleTwoFAResultSuccess(twoFaResult);
+    }
+
+    private void ShowSnackbar(string message, Severity severity)
+    {
+        _snackbar.Add(message, severity, config => { config.CloseAfterNavigation = true; });
+    }
+
+    private bool TryParseUserId(out Guid userId)
+    {
+        try
+        {
+            userId = Guid.Parse(this.userId);
+            return true;
+        }
+        catch (Exception)
+        {
+            userId = default;
+            return false;
+        }
+    }
+
+    private void HandleUserIdParsingError()
+    {
+        ShowSnackbar("An unexpected error happened, try again", Severity.Error);
+        heightStyle = "350px";
+        HttpStatusCode = HttpStatusCode.InternalServerError;
         TwoFA = new();
         _processing = false;
     }
+
+    private void HandleTwoFAResultFailure(ClientUtil_ApiResponse<ClientDto_LoginResult> result)
+    {
+        string message = String.IsNullOrEmpty(result.Message) ?
+                         "An unexpected error happened" : result.Message;
+        Severity severity = result.StatusCode == HttpStatusCode.InternalServerError ?
+                            Severity.Error : Severity.Warning;
+
+        if (result.StatusCode == HttpStatusCode.InternalServerError)
+            heightStyle = "350px";
+
+        HttpStatusCode = result.StatusCode;
+
+        ShowSnackbar(message, severity);
+        TwoFA = new();
+        _processing = false;
+    }
+
+    private async Task HandleTwoFAResultSuccess(ClientUtil_ApiResponse<ClientDto_LoginResult> result)
+    {
+        AppState.SetClientSecrests(result.Value);
+        ShowSnackbar(result.Message, Severity.Success);
+        await Task.Delay(2000);
+        ShowSnackbar($"{SnackbarMessage}", Severity.Info);
+        await Task.Delay(500);
+        await _localStorage.SetItemAsStringAsync("UserData", result.Value!.UserId);
+        _navigationManager.NavigateTo("/Dashboard");
+        TwoFA = new();
+        _processing = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
 
     private void
     ShowValidationsMessages
@@ -90,5 +133,11 @@ public partial class TwoFaForm
     {
         foreach (var validationMessage in validationMessages)
             _snackbar.Add(validationMessage, Severity.Warning, config => { config.CloseAfterNavigation = true; });
+    }
+
+    private void
+    RedirectToLoginPage()
+    {
+        _navigationManager.NavigateTo("/Login");
     }
 }

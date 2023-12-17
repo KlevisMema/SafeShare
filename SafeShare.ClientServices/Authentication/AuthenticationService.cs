@@ -5,7 +5,6 @@ using SafeShare.ClientServerShared.Routes;
 using SafeShare.ClientUtilities.Responses;
 using SafeShare.ClientServices.Interfaces;
 using SafeShare.ClientDTO.AccountManagment;
-using System.Security.Cryptography.X509Certificates;
 
 namespace SafeShare.ClientServices.Authentication;
 
@@ -100,7 +99,7 @@ public class AuthenticationService(IHttpClientFactory httpClientFactory) : IAuth
         }
     }
 
-    public async Task 
+    public async Task
     LogoutUser
     (
         Guid userId
@@ -215,7 +214,14 @@ public class AuthenticationService(IHttpClientFactory httpClientFactory) : IAuth
         }
         catch (Exception)
         {
-            throw;
+            return new ClientUtil_ApiResponse<ClientDto_LoginResult>()
+            {
+                Errors = null,
+                Message = "Something went wrong, please try logging in again",
+                Succsess = false,
+                Value = null,
+                StatusCode = System.Net.HttpStatusCode.InternalServerError
+            };
         }
     }
 }
