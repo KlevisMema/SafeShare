@@ -28,6 +28,7 @@ using SafeShare.Security.API.Interfaces;
 using SafeShare.DataAccessLayer.Context;
 using SafeShare.UserManagment.Interfaces;
 using Microsoft.Extensions.Configuration;
+using SafeShare.Security.User.Interfaces;
 using SafeShare.Authentication.Interfaces;
 using SafeShare.GroupManagment.Interfaces;
 using SafeShare.UserManagment.UserAccount;
@@ -35,6 +36,7 @@ using SafeShare.Mappings.ExpenseManagment;
 using Microsoft.AspNetCore.DataProtection;
 using SafeShare.Security.API.ActionFilters;
 using SafeShare.DataTransormObject.Security;
+using SafeShare.Security.User.Implementation;
 using SafeShare.ExpenseManagement.Interfaces;
 using SafeShare.GroupManagment.GroupManagment;
 using SafeShare.Security.API.Imeplementations;
@@ -156,6 +158,7 @@ public static class API_Helper_ProgramStartup
         Services.AddScoped<IAccountManagment, AccountManagment>();
         Services.AddScoped<IAUTH_RefreshToken, AUTH_RefreshToken>();
         Services.AddScoped<ISecurity_JwtTokenHash, Security_JwtTokenAuth>();
+        Services.AddScoped<ISecurity_UserDataProtectionService, Security_UserDataProtectionService>();
         // Add the custom auth filter, a filter that is used by all enpoints
         Services.AddScoped<IApiKeyAuthorizationFilter>(provider =>
         {

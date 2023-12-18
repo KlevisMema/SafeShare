@@ -10,6 +10,7 @@ using SafeShare.API.Helpers;
 using System.Security.Claims;
 using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Mvc;
+using SafeShare.Utilities.User;
 using Microsoft.AspNetCore.Http;
 using System.Net.Http.Formatting;
 using Microsoft.Extensions.Options;
@@ -23,9 +24,11 @@ using SafeShare.ClientServerShared.Routes;
 using SafeShare.Security.API.ActionFilters;
 using SafeShare.DataTransormObject.Security;
 using Microsoft.AspNetCore.Http.HttpResults;
+using SafeShare.Security.User.Implementation;
 using SafeShare.Utilities.ConfigurationSettings;
 using SafeShare.DataTransormObject.Authentication;
 using SafeShare.MediatR.Actions.Commands.Authentication;
+using SafeShare.Security.JwtSecurity.Helpers;
 
 namespace SafeShare.API.Controllers;
 
@@ -43,10 +46,15 @@ namespace SafeShare.API.Controllers;
 [ApiController]
 [Route(BaseRoute.Route)]
 //[ServiceFilter(typeof(IApiKeyAuthorizationFilter))]
-public class AuthenticationController(IMediator mediator, IOptions<API_Helper_CookieSettings> cookieOpt, IDataProtectionProvider dataProtectionProvider) : ControllerBase
+public class AuthenticationController
+(
+    IMediator mediator, 
+    IOptions<API_Helper_CookieSettings> cookieOpt, 
+    ISecurity_UserDataProtectionService _userDataProtection
+) : ControllerBase
 {
 
-    private readonly API_Helper_DataProtection _dataProtectionHelper = new(dataProtectionProvider, "TokenPurpose");
+    //private readonly API_Helper_DataProtection _dataProtectionHelper = new(dataProtectionProvider, "TokenPurpose");
 
     /// <summary>
     /// Endpoint to register a new user in the SafeShare system.
@@ -121,7 +129,7 @@ public class AuthenticationController(IMediator mediator, IOptions<API_Helper_Co
                 return Ok(result);
             }
 
-            SetCookiesResposne(result.Value.Token);
+            SetCookiesResposne(result.Value.Token, result.Value.UserId);
             result.Value.Token = null;
         }
 
@@ -156,7 +164,7 @@ public class AuthenticationController(IMediator mediator, IOptions<API_Helper_Co
 
         if (result.Succsess && result.Value is not null && result.Value.Token is not null)
         {
-            SetCookiesResposne(result.Value.Token);
+            SetCookiesResposne(result.Value.Token, result.Value.UserId);
             result.Value.Token = null;
         }
 
@@ -219,19 +227,21 @@ public class AuthenticationController(IMediator mediator, IOptions<API_Helper_Co
         {
             string decryptedRefreshToken = "";
             Guid decryptedRefreshTokenId = Guid.Empty;
+            var jwtToken = Request.Cookies.TryGetValue(cookieOpt.Value.AuthTokenCookieName, out string? authToken) ? authToken : string.Empty;
+            string userId = Helper_GetUserId.GetUserIdDirectlyFromJwtToken(jwtToken);
 
             if (Request.Cookies.TryGetValue(cookieOpt.Value.RefreshAuthTokenCookieName, out string? refreshToken))
-                decryptedRefreshToken = DecryptToken(refreshToken);
+                decryptedRefreshToken = _userDataProtection.Unprotect(refreshToken, userId);
 
             if (Request.Cookies.TryGetValue(cookieOpt.Value.RefreshAuthTokenIdCookieName, out string? refreshTokenId))
             {
-                var decryptedId = DecryptToken(refreshTokenId);
+                var decryptedId = _userDataProtection.Unprotect(refreshTokenId, userId);
                 decryptedRefreshTokenId = Guid.Parse(decryptedId);
             }
 
             var refreshTokenResult = await mediator.Send(new MediatR_RefreshTokenCommand(new DTO_ValidateToken
             {
-                Token = Request.Cookies.TryGetValue(cookieOpt.Value.AuthTokenCookieName, out string? authToken) ? authToken : string.Empty,
+                Token = jwtToken,
                 RefreshToken = decryptedRefreshToken,
                 RefreshTokenId = decryptedRefreshTokenId,
             }));
@@ -243,7 +253,7 @@ public class AuthenticationController(IMediator mediator, IOptions<API_Helper_Co
                 refreshTokenResult.Value.Token is not null
             )
             {
-                SetCookiesResposne(refreshTokenResult.Value);
+                SetCookiesResposne(refreshTokenResult.Value, userId);
             }
 
             refreshTokenResult.Value = null;
@@ -252,6 +262,7 @@ public class AuthenticationController(IMediator mediator, IOptions<API_Helper_Co
         }
         catch (Exception)
         {
+            ClearCookies();
             return Problem("Something went wrong in refresh token", null, 500,"Error", null);
         }
     }
@@ -262,7 +273,8 @@ public class AuthenticationController(IMediator mediator, IOptions<API_Helper_Co
     private void
     SetCookiesResposne
     (
-        DTO_Token token
+        DTO_Token token,
+        string userId
     )
     {
 
@@ -281,7 +293,7 @@ public class AuthenticationController(IMediator mediator, IOptions<API_Helper_Co
 
         HttpContext.Response.Cookies.Append
         (
-            cookieOpt.Value.RefreshAuthTokenCookieName, EncryptToken(token.RefreshToken!),
+            cookieOpt.Value.RefreshAuthTokenCookieName, _userDataProtection.Protect(token.RefreshToken!, userId),
             new CookieOptions
             {
                 Secure = true,
@@ -294,7 +306,7 @@ public class AuthenticationController(IMediator mediator, IOptions<API_Helper_Co
 
         HttpContext.Response.Cookies.Append
         (
-            cookieOpt.Value.RefreshAuthTokenIdCookieName, EncryptToken(token.RefreshTokenId!.ToString()),
+            cookieOpt.Value.RefreshAuthTokenIdCookieName, _userDataProtection.Protect(token.RefreshTokenId!.ToString(), userId),
             new CookieOptions
             {
                 Secure = true,
@@ -353,21 +365,21 @@ public class AuthenticationController(IMediator mediator, IOptions<API_Helper_Co
         });
     }
 
-    private string
-    EncryptToken
-    (
-        string token
-    )
-    {
-        return _dataProtectionHelper.Encrypt(token);
-    }
+    //private string
+    //EncryptToken
+    //(
+    //    string token
+    //)
+    //{
+    //    return _dataProtectionHelper.Encrypt(token);
+    //}
 
-    private string
-    DecryptToken
-    (
-        string token
-    )
-    {
-       return _dataProtectionHelper.Decrypt(token);
-    }
+    //private string
+    //DecryptToken
+    //(
+    //    string token
+    //)
+    //{
+    //   return _dataProtectionHelper.Decrypt(token);
+    //}
 }
