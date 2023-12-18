@@ -39,11 +39,15 @@ namespace SafeShare.API.Controllers;
 /// </remarks>
 /// <param name="mediator">The mediator used for command and query handling.</param>
 /// <param name="cookieOpt">The options/settings from the config file</param>
+/// <param name="dataProtectionProvider">The data protection provider used for encrypting and decrypting</param>
 [ApiController]
 [Route(BaseRoute.Route)]
 //[ServiceFilter(typeof(IApiKeyAuthorizationFilter))]
-public class AuthenticationController(IMediator mediator, IOptions<API_Helper_CookieSettings> cookieOpt) : ControllerBase
+public class AuthenticationController(IMediator mediator, IOptions<API_Helper_CookieSettings> cookieOpt, IDataProtectionProvider dataProtectionProvider) : ControllerBase
 {
+
+    private readonly API_Helper_DataProtection _dataProtectionHelper = new(dataProtectionProvider, "TokenPurpose");
+
     /// <summary>
     /// Endpoint to register a new user in the SafeShare system.
     /// Accepts user registration data and initiates the registration process.
@@ -211,30 +215,45 @@ public class AuthenticationController(IMediator mediator, IOptions<API_Helper_Co
     public async Task<ActionResult<Util_GenericResponse<DTO_Token>>>
     RefreshToken()
     {
-        var refreshTokenResult = await mediator.Send(new MediatR_RefreshTokenCommand(new DTO_ValidateToken
+        try
         {
-            Token = Request.Cookies.TryGetValue(cookieOpt.Value.AuthTokenCookieName, out string? authToken) ? authToken : string.Empty,
-            RefreshToken = Request.Cookies.TryGetValue(cookieOpt.Value.RefreshAuthTokenCookieName, out string? refreshToken) ? refreshToken : string.Empty,
-            RefreshTokenId = Request.Cookies.TryGetValue
+            string decryptedRefreshToken = "";
+            Guid decryptedRefreshTokenId = Guid.Empty;
+
+            if (Request.Cookies.TryGetValue(cookieOpt.Value.RefreshAuthTokenCookieName, out string? refreshToken))
+                decryptedRefreshToken = DecryptToken(refreshToken);
+
+            if (Request.Cookies.TryGetValue(cookieOpt.Value.RefreshAuthTokenIdCookieName, out string? refreshTokenId))
+            {
+                var decryptedId = DecryptToken(refreshTokenId);
+                decryptedRefreshTokenId = Guid.Parse(decryptedId);
+            }
+
+            var refreshTokenResult = await mediator.Send(new MediatR_RefreshTokenCommand(new DTO_ValidateToken
+            {
+                Token = Request.Cookies.TryGetValue(cookieOpt.Value.AuthTokenCookieName, out string? authToken) ? authToken : string.Empty,
+                RefreshToken = decryptedRefreshToken,
+                RefreshTokenId = decryptedRefreshTokenId,
+            }));
+
+            if
             (
-                cookieOpt.Value.RefreshAuthTokenIdCookieName,
-                out string? refreshTokenId
-            ) ? Guid.Parse(refreshTokenId) : Guid.Empty,
-        }));
+                refreshTokenResult.Succsess &&
+                refreshTokenResult.Value is not null &&
+                refreshTokenResult.Value.Token is not null
+            )
+            {
+                SetCookiesResposne(refreshTokenResult.Value);
+            }
 
-        if 
-        (
-            refreshTokenResult.Succsess && 
-            refreshTokenResult.Value is not null && 
-            refreshTokenResult.Value.Token is not null
-        )
-        {
-            SetCookiesResposne(refreshTokenResult.Value);
+            refreshTokenResult.Value = null;
+
+            return Ok(refreshTokenResult);
         }
-
-        refreshTokenResult.Value = null;
-
-        return Ok();
+        catch (Exception)
+        {
+            return Problem("Something went wrong in refresh token", null, 500,"Error", null);
+        }
     }
     /// <summary>
     /// Sets the cookies in the clients browser
@@ -255,62 +274,38 @@ public class AuthenticationController(IMediator mediator, IOptions<API_Helper_Co
                 Secure = true,
                 HttpOnly = true,
                 IsEssential = true,
-                SameSite = SameSiteMode.None,
+                SameSite = SameSiteMode.Strict,
                 Expires = token.ValididtyTime.AddHours(1),
             }
         );
 
         HttpContext.Response.Cookies.Append
         (
-            cookieOpt.Value.RefreshAuthTokenCookieName, token.RefreshToken!,
+            cookieOpt.Value.RefreshAuthTokenCookieName, EncryptToken(token.RefreshToken!),
             new CookieOptions
             {
                 Secure = true,
                 HttpOnly = true,
                 IsEssential = true,
-                SameSite = SameSiteMode.None,
+                SameSite = SameSiteMode.Strict,
                 Expires = token.ValididtyTime.AddHours(1),
             }
         );
 
         HttpContext.Response.Cookies.Append
         (
-            cookieOpt.Value.RefreshAuthTokenIdCookieName, token.RefreshTokenId!.ToString(),
+            cookieOpt.Value.RefreshAuthTokenIdCookieName, EncryptToken(token.RefreshTokenId!.ToString()),
             new CookieOptions
             {
                 Secure = true,
                 HttpOnly = true,
                 IsEssential = true,
-                SameSite = SameSiteMode.None,
+                SameSite = SameSiteMode.Strict,
                 Expires = token.ValididtyTime.AddHours(1),
             }
         );
     }
 
-    private void 
-    ClearCookies()
-    {
-        ClearCookie(".AspNetCore.Identity.Application");
-        ClearCookie(cookieOpt.Value.AuthTokenCookieName);
-        ClearCookie(cookieOpt.Value.RefreshAuthTokenCookieName);
-        ClearCookie(cookieOpt.Value.RefreshAuthTokenIdCookieName);
-    }
-
-    private void 
-    ClearCookie
-    (
-        string cookieName
-    )
-    {
-        HttpContext.Response.Cookies.Append(cookieName, "", new CookieOptions
-        {
-            Secure = true,
-            HttpOnly = true,
-            IsEssential = true,
-            SameSite = SameSiteMode.None,
-            Expires = DateTimeOffset.UtcNow.AddDays(-1)
-        });
-    }
 
     private void
     SetCookieResposne
@@ -327,9 +322,52 @@ public class AuthenticationController(IMediator mediator, IOptions<API_Helper_Co
                 Secure = true,
                 HttpOnly = true,
                 IsEssential = true,
-                SameSite = SameSiteMode.None,
+                SameSite = SameSiteMode.Strict,
                 Expires = DateTime.Now.AddMinutes(5),
             }
         );
+    }
+
+    private void
+    ClearCookies()
+    {
+        ClearCookie(".AspNetCore.Identity.Application");
+        ClearCookie(cookieOpt.Value.AuthTokenCookieName);
+        ClearCookie(cookieOpt.Value.RefreshAuthTokenCookieName);
+        ClearCookie(cookieOpt.Value.RefreshAuthTokenIdCookieName);
+    }
+
+    private void
+    ClearCookie
+    (
+        string cookieName
+    )
+    {
+        HttpContext.Response.Cookies.Append(cookieName, "", new CookieOptions
+        {
+            Secure = true,
+            HttpOnly = true,
+            IsEssential = true,
+            SameSite = SameSiteMode.Strict,
+            Expires = DateTimeOffset.UtcNow.AddDays(-1)
+        });
+    }
+
+    private string
+    EncryptToken
+    (
+        string token
+    )
+    {
+        return _dataProtectionHelper.Encrypt(token);
+    }
+
+    private string
+    DecryptToken
+    (
+        string token
+    )
+    {
+       return _dataProtectionHelper.Decrypt(token);
     }
 }

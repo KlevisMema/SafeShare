@@ -18,6 +18,7 @@ using SafeShare.DataTransormObject.Security;
 using SafeShare.Utilities.ConfigurationSettings;
 using SafeShare.Security.JwtSecurity.Interfaces;
 using SafeShare.DataTransormObject.Authentication;
+using SafeShare.Security.JwtSecurity.Helpers;
 
 namespace SafeShare.Security.JwtSecurity.Implementations;
 
@@ -35,10 +36,6 @@ public class Security_JwtTokenAuth
     IOptions<Util_JwtSettings> jwtOptions
 ) : ISecurity_JwtTokenAuth<Security_JwtTokenAuth, DTO_AuthUser, DTO_Token>, ISecurity_JwtTokenHash
 {
-    /// <summary>
-    /// A Instance of <see cref="HashAlgorithm"/>
-    /// </summary>
-    private readonly HashAlgorithm _hashAlgorithm = SHA256.Create();
     /// <summary>
     /// Creates a JWT token based on the specified input parameter.
     /// </summary>
@@ -72,12 +69,13 @@ public class Security_JwtTokenAuth
         string hashedTokenInDb
     )
     {
-        string hashedTokenToValidate = Convert.ToBase64String(_hashAlgorithm.ComputeHash(Encoding.UTF8.GetBytes(tokenToValidate)));
+        byte[] key = GetKeyFromBase64String();
 
-        if (hashedTokenInDb == hashedTokenToValidate)
-            return Task.FromResult(true);
+        var hmacHelper = new Security_HMACSHA256Helper(key);
 
-        return Task.FromResult(false);
+        string hashedTokenToValidate = hmacHelper.ComputeHash(tokenToValidate);
+
+        return Task.FromResult(hashedTokenInDb == hashedTokenToValidate);
     }
     /// <summary>
     /// Add the refresh token in the database
@@ -95,7 +93,11 @@ public class Security_JwtTokenAuth
         try
         {
             var randomId = Guid.NewGuid().ToString();
-            var hashedRefreshToken = Convert.ToBase64String(_hashAlgorithm.ComputeHash(Encoding.UTF8.GetBytes(randomId)));
+
+            byte[] key = GetKeyFromBase64String();
+            
+            var hmacHelper = new Security_HMACSHA256Helper(key);
+            var hashedRefreshToken = hmacHelper.ComputeHash(randomId);
 
             var refreshToken = new RefreshToken
             {
@@ -144,5 +146,13 @@ public class Security_JwtTokenAuth
         claims.AddRange(user.Roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
         return claims;
+    }
+
+    private static byte[] 
+    GetKeyFromBase64String
+    ()
+    {
+        string base64Key = Environment.GetEnvironmentVariable("SAFE_SHARE_HMAC");
+        return Convert.FromBase64String(base64Key);
     }
 }

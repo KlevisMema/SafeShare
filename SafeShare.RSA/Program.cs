@@ -7,13 +7,15 @@ namespace SafeShare.RSA
     {
         static void Main(string[] args)
         {
-            var (publicKey, privateKey) = GenerateRsaKeyPair();
+            //var (publicKey, privateKey) = GenerateRsaKeyPair();
 
-            Console.WriteLine("Public Key:");
-            Console.WriteLine(publicKey);
+            //Console.WriteLine("Public Key:");
+            //Console.WriteLine(publicKey);
 
-            Console.WriteLine("\nPrivate Key:");
-            Console.WriteLine(privateKey);
+            //Console.WriteLine("\nPrivate Key:");
+            //Console.WriteLine(privateKey);
+
+            Console.WriteLine(GenerateHMACSHA256Key());
         }
 
         public static (string publicKey, string privateKey) GenerateRsaKeyPair()
@@ -23,5 +25,17 @@ namespace SafeShare.RSA
             var privateKey = rsa.ToXmlString(true); // true indicates exporting both the public and private keys
             return (publicKey, privateKey);
         }
+
+        public static string GenerateHMACSHA256Key()
+        {
+            using (var rng = new RNGCryptoServiceProvider())
+            {
+                byte[] secretKey = new byte[32]; // 256 bits for SHA-256
+                rng.GetBytes(secretKey);
+                return Convert.ToBase64String(secretKey);
+            }
+        }
+
+
     }
 }

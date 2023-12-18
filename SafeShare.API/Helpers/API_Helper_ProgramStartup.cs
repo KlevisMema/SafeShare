@@ -12,6 +12,7 @@ using Serilog;
 using System.Text;
 using System.Reflection;
 using AspNetCoreRateLimit;
+using SafeShare.API.Helpers;
 using SafeShare.Security.API;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Identity;
@@ -31,6 +32,7 @@ using SafeShare.Authentication.Interfaces;
 using SafeShare.GroupManagment.Interfaces;
 using SafeShare.UserManagment.UserAccount;
 using SafeShare.Mappings.ExpenseManagment;
+using Microsoft.AspNetCore.DataProtection;
 using SafeShare.Security.API.ActionFilters;
 using SafeShare.DataTransormObject.Security;
 using SafeShare.ExpenseManagement.Interfaces;
@@ -45,7 +47,8 @@ using SafeShare.DataTransormObject.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using SafeShare.Security.JwtSecurity.Implementations;
 using SafeShare.MediatR.Handlers.CommandsHandlers.Authentication;
-using SafeShare.API.Helpers;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 
 namespace SafeShare.API.Startup;
 
@@ -72,7 +75,14 @@ public static class API_Helper_ProgramStartup
         Services.AddEndpointsApiExplorer();
         Services.AddSwaggerGen();
         Services.AddHttpContextAccessor();
-
+        Services.AddDataProtection()
+                .SetApplicationName("SafeShare")
+                .SetDefaultKeyLifetime(TimeSpan.FromDays(7))
+                .UseCryptographicAlgorithms(new AuthenticatedEncryptorConfiguration
+                {
+                    EncryptionAlgorithm = EncryptionAlgorithm.AES_256_GCM,
+                    ValidationAlgorithm = ValidationAlgorithm.HMACSHA512
+                });
 
         AddDatabase(Services, Configuration);
         AddConfigurations(Services, Configuration);
@@ -229,6 +239,8 @@ public static class API_Helper_ProgramStartup
             ValidateIssuer = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
+            RequireExpirationTime = true,
+            RequireSignedTokens = true,
             ValidIssuer = jwtSetting.GetSection("Issuer").Value,
             ValidAudience = jwtSetting.GetSection("Audience").Value,
             ClockSkew = TimeSpan.Zero,

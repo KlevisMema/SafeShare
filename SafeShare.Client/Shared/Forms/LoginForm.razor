@@ -194,17 +194,27 @@
     .SelectGender .mud-input-label,
     .SelectGender .mud-select .mud-select-input,
     .SelectGender .mud-input {
-        color : white !important;
+        color: white !important;
     }
 
-    .SelectGender .SelectGenderItem{
+    .SelectGender .SelectGenderItem {
         color: white !important;
     }
 
     div.mud-input-slot.mud-input-root.mud-input-root-text.mud-input-root-adorned-end.mud-select-input,
     {
-        color : white !important;
+        color: white !important;
     }
+
+    .forgot-passwd {
+        cursor: pointer;
+        transition: all ease-in-out 0.1s;
+        text-decoration: none !important
+    }
+
+        .forgot-passwd:hover {
+            color: rgba(89,74,226,1);
+        }
 </style>
 
 <MudSnackbarProvider />
@@ -244,7 +254,7 @@
                 <input type="password" @bind-value="@clientDto_Register.ConfirmPassword" placeholder="Confirm Password" required />
             </div>
 
-            
+
 
             <div class="register-group">
 
@@ -283,7 +293,7 @@
 
             <input type="text" placeholder="Email address" required @bind-value="@clientDto_Login.Email" />
             <input type="password" placeholder="Password" required @bind-value="@clientDto_Login.Password" />
-            <a @onclick="() => NavigateToForgotPasswordPage()">Forgot password?</a>
+            <a @onclick="() => NavigateToForgotPasswordPage()" class="forgot-passwd">Forgot password?</a>
 
             <MudButton Disabled="@_processing" OnClick="(() => ValidateForm())" Variant="Variant.Filled" Color="Color.Primary" Class="mudSubmitButton position-relative">
                 @if (_processing)

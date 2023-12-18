@@ -635,7 +635,7 @@ public class AUTH_Login
     {
         var roles = await _userManager.GetRolesAsync(user);
         var userDto = _mapper.Map<DTO_AuthUser>(user);
-        userDto.Roles = roles.ToList();
+        userDto.Roles = [.. roles];
         var token = await jwtTokenService.CreateToken(userDto);
 
         return token;
