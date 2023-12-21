@@ -2,6 +2,7 @@
 using System.Text;
 using System.Text.Json;
 using Newtonsoft.Json.Linq;
+using System.Net.Http.Headers;
 using Microsoft.Net.Http.Headers;
 using System.Collections.Specialized;
 using SafeShare.ClientServerShared.Routes;
@@ -14,8 +15,8 @@ namespace SafeShare.ProxyApi.Container.Services;
 
 public class ProxyAuthentication(IHttpClientFactory httpClientFactory) : IProxyAuthentication
 {
-    private const string ApiKey = "Mjk5NGNmN2EtMWE5Ny00NmFiLThkZWQtZjIwMzA0NjU1NWM2KJ38sZhBWW/IlrgGBvhQyMjrcm/TtI7sWiT1fcR3YUg=";
     private const string Client = "ProxyHttpClient";
+    private readonly string ApiKey = Environment.GetEnvironmentVariable("SAFE_SHARE_API_KEY") ?? string.Empty;
 
     public async Task<Util_GenericResponse<bool>>
     RegisterUser
@@ -217,7 +218,8 @@ public class ProxyAuthentication(IHttpClientFactory httpClientFactory) : IProxyA
             };
 
             requestMessage.Headers.Add("X-Api-Key", $"{ApiKey}");
-            requestMessage.Headers.Add("Bearer", $"{jwtToken}");
+            httpClient.DefaultRequestHeaders.Authorization =
+                    new AuthenticationHeaderValue("Bearer", jwtToken);
 
             var response = await httpClient.SendAsync(requestMessage);
 
@@ -262,7 +264,9 @@ public class ProxyAuthentication(IHttpClientFactory httpClientFactory) : IProxyA
             };
 
             requestMessage.Headers.Add("X-Api-Key", $"{ApiKey}");
-            requestMessage.Headers.Add("Bearer", $"{jwtToken}");
+
+            httpClient.DefaultRequestHeaders.Authorization =
+                    new AuthenticationHeaderValue("Bearer", jwtToken);
 
             var response = await httpClient.SendAsync(requestMessage);
 

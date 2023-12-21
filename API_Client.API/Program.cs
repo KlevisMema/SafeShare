@@ -5,6 +5,7 @@ using Humanizer.Configuration;
 using Microsoft.OpenApi.Models;
 using API_Client.BLL.Interfaces;
 using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using API_Client.BLL.Implementation;
 using Microsoft.AspNetCore.Identity;
@@ -21,7 +22,18 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddDbContext<ApiClientDbContext>(options => options.UseSqlServer(Environment.GetEnvironmentVariable("AZURE_SQL_CONNECTIONSTRING")));
+builder.Services.AddDbContext<ApiClientDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("AZURE_SQL_CONNECTIONSTRING")));
+
+// do not remove
+//if (Environment.GetEnvironmentVariable("AZURE_SQL_CONNECTIONSTRING") == null)
+//{
+//    builder.Services.AddDbContext<ApiClientDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("AZURE_SQL_CONNECTIONSTRING")));
+//}
+//else
+//{
+//    builder.Services.AddDbContext<ApiClientDbContext>(options => options.UseSqlServer(Environment.GetEnvironmentVariable("AZURE_SQL_CONNECTIONSTRING")));
+//}
+
 
 builder.Services.AddIdentity<ApiClient, IdentityRole>
 (
@@ -115,8 +127,13 @@ builder.Services.AddScoped<IApiClientService, ApiClientService>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 
 builder.Host.UseSerilog((context, configuration) => configuration.ReadFrom.Configuration(context.Configuration));
-
 var app = builder.Build();
+
+using var serviceScope = app.Services.CreateScope();
+
+var _apiContext = serviceScope.ServiceProvider.GetService<ApiClientDbContext>();
+
+_apiContext?.Database.EnsureCreated();
 
 if (app.Environment.IsDevelopment())
 {
