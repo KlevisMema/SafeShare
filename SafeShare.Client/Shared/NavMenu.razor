@@ -8,6 +8,7 @@
         <MudNavLink Href="" Icon="@Icons.Material.Filled.Dashboard" IconColor="Color.Inherit">Dashboard</MudNavLink>
 
         <MudNavGroup Title="Profile" Icon="@Icons.Material.Filled.Person" IconColor="Color.Inherit" Expanded="false">
+
             <MudNavLink Icon="@Icons.Material.Filled.RemoveRedEye" IconColor="Color.Inherit">See profile</MudNavLink>
             <MudNavLink Icon="@Icons.Material.Filled.Edit" IconColor="Color.Inherit">Update Data</MudNavLink>
             <MudNavLink Icon="@Icons.Material.Filled.Password" IconColor="Color.Inherit">Change Email</MudNavLink>
@@ -21,10 +22,6 @@
 
         <MudDivider Class="my-2" />
 
-        @* <MudTooltip Text="Create" Color="Color.Primary" Placement="Placement.Bottom">
-            <MudFab @onclick="OpenDialog" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Create" Size="Size.Small" Class="m-sm-2" />
-        </MudTooltip> *@
-
         <MudTooltip Text="Invite" Color="Color.Primary" Placement="MudBlazor.Placement.Bottom">
             <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.GroupAdd" Size="MudBlazor.Size.Small" Class="m-sm-2" />
         </MudTooltip>
@@ -34,11 +31,24 @@
         </MudTooltip>
 
         <MudNavGroup Title="Groups Created" Icon="@Icons.Material.Filled.PeopleAlt" IconColor="Color.Inherit" Expanded="false">
-            <MudNavLink Icon="@Icons.Material.Filled.People" IconColor="Color.Inherit">Users</MudNavLink>
+            @if (GroupTypes is not null && GroupTypes.GroupsCreated is not null)
+            {
+                @foreach (var group in GroupTypes.GroupsCreated )
+                {
+                    <MudNavLink Icon="@Icons.Material.Filled.People" IconColor="Color.Inherit">@group.GroupName</MudNavLink>
+                }
+            }
+          
         </MudNavGroup>
 
         <MudNavGroup Title="Groups Joined" Icon="@Icons.Material.Filled.PeopleAlt" IconColor="Color.Inherit" Expanded="false">
-            <MudNavLink Icon="@Icons.Material.Filled.People" IconColor="Color.Inherit">Users</MudNavLink>
+            @if (GroupTypes is not null && GroupTypes.GroupsJoined is not null)
+            {
+                @foreach (var group in GroupTypes.GroupsJoined)
+                {
+                    <MudNavLink Icon="@Icons.Material.Filled.People" IconColor="Color.Inherit">@group.GroupName</MudNavLink>
+                }
+            }
         </MudNavGroup>
 
     </MudNavMenu>
@@ -54,7 +64,7 @@
 
 
     <YesButton>
-        <MudButton Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.DeleteForever" OnClick="CallTheApi">Delete!</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.DeleteForever">Delete!</MudButton>
     </YesButton>
 
 

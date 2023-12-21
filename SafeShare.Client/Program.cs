@@ -7,6 +7,7 @@ using SafeShare.Client.Helpers;
 using SafeShare.ClientServices.Interfaces;
 using Microsoft.AspNetCore.Components.Web;
 using SafeShare.ClientServices.UserManagment;
+using SafeShare.ClientServices.GroupManagment;
 using SafeShare.ClientServices.Authentication;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
@@ -28,6 +29,7 @@ builder.Services.AddMudServices(config =>
 });
 
 builder.Services.AddTransient<TokenExpiryHandler>();
+builder.Services.AddScoped<IClientService_GroupManagment, ClientService_GroupManagment>();
 builder.Services.AddScoped<IClientAuthentication_TokenRefreshService, ClientAuthentication_TokenRefreshService>();
 
 

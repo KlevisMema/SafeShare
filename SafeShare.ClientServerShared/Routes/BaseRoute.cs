@@ -10,7 +10,8 @@ namespace SafeShare.ClientServerShared.Routes;
 public static class BaseRoute
 {
     public const string Route = "api/[controller]";
-    public const string RouteAuthenticationForClient = "api/Authentication/";
-    public const string RouteAccountManagmentForClient = "api/AccountManagment/";
     public const string RouteAuthenticationProxy = "api/AuthProxy/";
+    public const string RouteAuthenticationForClient = "api/Authentication/";
+    public const string RouteGroupManagmentForClient = "api/GroupManagment/";
+    public const string RouteAccountManagmentForClient = "api/AccountManagment/";
 }

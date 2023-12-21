@@ -28,7 +28,7 @@ namespace SafeShare.API.Controllers;
 
 [ApiController]
 [Route(BaseRoute.Route)]
-//[Authorize(AuthenticationSchemes = "Default")]
+[Authorize(AuthenticationSchemes = "Default")]
 public class BaseController(IMediator mediator) : ControllerBase
 {
     /// <summary>

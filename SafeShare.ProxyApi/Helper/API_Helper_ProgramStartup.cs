@@ -211,7 +211,10 @@ public static class API_Helper_ProgramStartup
         Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
         Services.AddSingleton<IProcessingStrategy, AsyncKeyLockProcessingStrategy>();
         Services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>();
+
         Services.AddScoped<IProxyAuthentication, ProxyAuthentication>();
+        Services.AddScoped<IGroupManagmentProxyService, GroupManagmentProxyService>();
+
 
         return Services;
     }

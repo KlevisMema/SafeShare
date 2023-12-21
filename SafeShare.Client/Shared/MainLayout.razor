@@ -28,18 +28,23 @@
 
     </MudAppBar>
 
+
     <MudDrawer @bind-Open="_drawerOpen" Elevation="3" Width="350px">
 
         <MudDrawerHeader>
             <MudText Typo="Typo.h5" Class="mt-1">Safe Share</MudText>
         </MudDrawerHeader>
 
-        <NavMenu />
+        <NavMenu GroupTypes="this.GroupTypes" Snackbar="this._snackbar" />
 
     </MudDrawer>
 
-    <MudMainContent>
-        @Body
-    </MudMainContent>
+    <CascadingValue Value="this">
+
+        <MudMainContent>
+            @Body
+        </MudMainContent>
+
+    </CascadingValue>
 
 </MudLayout>

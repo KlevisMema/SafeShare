@@ -152,7 +152,34 @@ public class AuthProxyController(IProxyAuthentication authenticationService) : C
             foreach (var cookie in cookies)
                 HttpContext.Response.Headers.Append("Set-Cookie", cookie);
         }
+        else
+            ClearCookies();
 
         return Util_GenericControllerResponse<DTO_Token>.ControllerResponse(result.Item1);
+    }
+
+    private void
+    ClearCookies()
+    {
+        ClearCookie(".AspNetCore.Identity.Application");
+        ClearCookie("AuthToken");
+        ClearCookie("RefreshAuthToken");
+        ClearCookie("RefreshAuthTokenId");
+    }
+
+    private void
+    ClearCookie
+    (
+        string cookieName
+    )
+    {
+        HttpContext.Response.Cookies.Append(cookieName, "", new CookieOptions
+        {
+            Secure = true,
+            HttpOnly = true,
+            IsEssential = true,
+            SameSite = SameSiteMode.Strict,
+            Expires = DateTimeOffset.UtcNow.AddDays(-1)
+        });
     }
 }

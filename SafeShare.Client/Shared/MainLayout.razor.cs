@@ -1,6 +1,7 @@
 ﻿using MudBlazor;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components;
+using SafeShare.ClientDTO.GroupManagment;
 using SafeShare.ClientServices.Interfaces;
 
 
@@ -12,15 +13,30 @@ public partial class MainLayout
     [Inject] private IAuthenticationService authService { get; set; } = null!;
     [Inject] private ILocalStorageService _localStorage { get; set; } = null!;
     [Inject] private NavigationManager _navigationManager { get; set; } = null!;
+    [Inject] private IClientService_GroupManagment _clientService_GroupManagment { get; set; } = null!;
 
     private bool _drawerOpen = true;
 
-    void DrawerToggle()
+    public ClientDto_GroupTypes? GroupTypes { get; set; } = new();
+
+    public string name = "klevis";
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        var getGroupTypes = await _clientService_GroupManagment.GetGroupTypes();
+
+        if (getGroupTypes.Succsess && getGroupTypes.Value is not null)
+            GroupTypes = getGroupTypes.Value;
+    }
+
+    private void DrawerToggle()
     {
         _drawerOpen = !_drawerOpen;
     }
 
-    async Task LogoutUser()
+    private async Task LogoutUser()
     {
         _snackbar.Add("Logging you out", Severity.Success, config => { config.CloseAfterNavigation = true; });
         await Task.Delay(2000);

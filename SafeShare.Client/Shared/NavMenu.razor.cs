@@ -2,17 +2,22 @@
 using System.Net;
 using SafeShare.Client.Shared.Forms;
 using Microsoft.AspNetCore.Components;
-using System.ComponentModel.DataAnnotations;
-using SafeShare.ClientDTO.AccountManagment;
+using SafeShare.ClientDTO.GroupManagment;
 using SafeShare.ClientUtilities.Responses;
 using SafeShare.ClientServerShared.Routes;
 using SafeShare.ClientServices.Interfaces;
+using SafeShare.ClientDTO.AccountManagment;
+using System.ComponentModel.DataAnnotations;
 
 namespace SafeShare.Client.Shared;
 
 public partial class NavMenu
 {
-    [Inject] ISnackbar Snackbar { get; set; } = null!;
+    [Parameter]
+    public ClientDto_GroupTypes? GroupTypes { get; set; }
+    [Parameter] 
+    public ISnackbar Snackbar { get; set; } = null!;
+
     [Inject] IDialogService DialogService { get; set; } = null!;
     [Inject] IClientService_UserManagment _userManagment { get; set; } = null!;
 
@@ -20,16 +25,7 @@ public partial class NavMenu
 
     protected override Task OnInitializedAsync()
     {
-        Snackbar.Add("Reactor meltdown is imminent", Severity.Error);
-
         return base.OnInitializedAsync();
-    }
-
-    private void OpenDialog()
-    {
-        //DialogOptions closeOnEscapeKey = new() { CloseOnEscapeKey = false };
-
-        //DialogService.Show<Test1>("Simple Dialog", closeOnEscapeKey);
     }
 
     private async Task OnButtonClicked()
@@ -41,7 +37,5 @@ public partial class NavMenu
     private async Task CallTheApi()
     {
         var result = await _userManagment.CallTheApi();
-
-
     }
 }
