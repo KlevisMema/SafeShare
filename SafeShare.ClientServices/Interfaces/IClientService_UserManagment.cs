@@ -17,6 +17,6 @@ public interface IClientService_UserManagment
         ClientDto_ResetPassword resetPassword
     );
 
-    Task<ClientUtil_ApiResponse<bool>> 
+    Task<ClientUtil_ApiResponse<bool>>
     CallTheApi();
 }

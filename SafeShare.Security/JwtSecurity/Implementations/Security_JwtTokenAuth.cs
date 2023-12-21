@@ -14,11 +14,12 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using SafeShare.DataAccessLayer.Models;
 using SafeShare.DataAccessLayer.Context;
-using SafeShare.DataTransormObject.Security;
-using SafeShare.Utilities.ConfigurationSettings;
-using SafeShare.Security.JwtSecurity.Interfaces;
-using SafeShare.DataTransormObject.Authentication;
 using SafeShare.Security.JwtSecurity.Helpers;
+using SafeShare.Security.JwtSecurity.Interfaces;
+using SafeShare.DataAccessLayer.Models.SafeShareApi;
+using SafeShare.DataTransormObject.SafeShareApi.Security;
+using SafeShare.Utilities.SafeShareApi.ConfigurationSettings;
+using SafeShare.DataTransormObject.SafeShareApi.Authentication;
 
 namespace SafeShare.Security.JwtSecurity.Implementations;
 

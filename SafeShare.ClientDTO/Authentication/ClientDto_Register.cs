@@ -17,7 +17,7 @@ public class ClientDto_Register
     public DateTime? Birthday { get; set; }
 
     [Required]
-    [DataType(DataType.PhoneNumber)]
+    [Phone(ErrorMessage = "Invalid phone number format")]
     public string PhoneNumber { get; set; } = string.Empty;
 
     [Required]

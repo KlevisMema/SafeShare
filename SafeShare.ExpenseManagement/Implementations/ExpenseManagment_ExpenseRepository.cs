@@ -10,20 +10,19 @@ using System.Net;
 using System.Text;
 using AutoMapper.Execution;
 using SendGrid.Helpers.Mail;
-using SafeShare.Utilities.IP;
-using SafeShare.Utilities.Log;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using SafeShare.Utilities.Responses;
 using Microsoft.EntityFrameworkCore;
 using System.Text.RegularExpressions;
-using SafeShare.Utilities.Dependencies;
-using SafeShare.DataAccessLayer.Models;
 using SafeShare.DataAccessLayer.Context;
-using SafeShare.DataTransormObject.Expenses;
+using SafeShare.Utilities.SafeShareApi.IP;
+using SafeShare.Utilities.SafeShareApi.Log;
 using SafeShare.ExpenseManagement.Interfaces;
-using SafeShare.DataTransormObject.GroupManagment;
-using SafeShare.DataTransormObject.ExpenseManagment;
+using SafeShare.Utilities.SafeShareApi.Responses;
+using SafeShare.Utilities.SafeShareApi.Dependencies;
+using SafeShare.DataAccessLayer.Models.SafeShareApi;
+using SafeShare.DataTransormObject.SafeShareApi.GroupManagment;
+using SafeShare.DataTransormObject.SafeShareApi.ExpenseManagment;
 
 namespace SafeShare.ExpenseManagement.Implementations;
 

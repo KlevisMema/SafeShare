@@ -1,5 +1,12 @@
-﻿namespace SafeShare.ClientServerShared.Routes;
+﻿/* 
+ * Contains route definitions for various aspects of the SafeShare client-server communication.
+ */
 
+namespace SafeShare.ClientServerShared.Routes;
+
+/// <summary>
+/// Routes related to account management functionalities.
+/// </summary>
 public static class Route_AccountManagmentRoute
 {
     public const string GetUser = "GetUser/{userId}";

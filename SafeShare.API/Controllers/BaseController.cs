@@ -13,7 +13,6 @@
 using MediatR;
 using SafeShare.Security.API;
 using Microsoft.AspNetCore.Mvc;
-using SafeShare.Security.API.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using SafeShare.ClientServerShared.Routes;
 
@@ -30,7 +29,6 @@ namespace SafeShare.API.Controllers;
 [ApiController]
 [Route(BaseRoute.Route)]
 //[Authorize(AuthenticationSchemes = "Default")]
-//[ServiceFilter(typeof(IApiKeyAuthorizationFilter))]
 public class BaseController(IMediator mediator) : ControllerBase
 {
     /// <summary>

@@ -11,7 +11,7 @@ namespace SafeShare.ClientServices.Interfaces
             ClientDto_Register register
         );
 
-        Task<ClientUtil_ApiResponse<ClientDto_LoginResult>> 
+        Task<ClientUtil_ApiResponse<ClientDto_LoginResult>>
         LogInUser
         (
             ClientDto_Login login

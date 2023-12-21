@@ -8,14 +8,14 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
-using SafeShare.Utilities.Responses;
 using SafeShare.ClientServerShared.Routes;
 using SafeShare.Security.API.ActionFilters;
-using SafeShare.DataTransormObject.UserManagment;
-using SafeShare.DataTransormObject.GroupManagment;
+using SafeShare.Utilities.SafeShareApi.Responses;
 using SafeShare.MediatR.Actions.Queries.GroupManagment;
 using SafeShare.MediatR.Actions.Commands.GroupManagment;
-using SafeShare.DataTransormObject.GroupManagment.GroupInvitations;
+using SafeShare.DataTransormObject.SafeShareApi.UserManagment;
+using SafeShare.DataTransormObject.SafeShareApi.GroupManagment;
+using SafeShare.DataTransormObject.SafeShareApi.GroupManagment.GroupInvitations;
 
 namespace SafeShare.API.Controllers;
 

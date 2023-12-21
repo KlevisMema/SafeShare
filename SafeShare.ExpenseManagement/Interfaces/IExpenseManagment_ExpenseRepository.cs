@@ -4,9 +4,8 @@
  * getting a specific expense, creating, editing, and deleting expenses.
 */
 
-using SafeShare.Utilities.Responses;
-using SafeShare.DataTransormObject.Expenses;
-using SafeShare.DataTransormObject.ExpenseManagment;
+using SafeShare.DataTransormObject.SafeShareApi.ExpenseManagment;
+using SafeShare.Utilities.SafeShareApi.Responses;
 
 namespace SafeShare.ExpenseManagement.Interfaces;
 

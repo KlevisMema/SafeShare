@@ -7,10 +7,10 @@ using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Components;
 using SafeShare.ClientDTO.Authentication;
 using SafeShare.ClientServices.Interfaces;
+using SafeShare.ClientDTO.AccountManagment;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Components.Forms;
 using System.Runtime.InteropServices.JavaScript;
-using SafeShare.ClientDTO.AccountManagment;
 #endregion
 
 namespace SafeShare.Client.Shared.Forms;
@@ -29,7 +29,7 @@ public partial class LoginForm
     #region Other properties
     private EditForm? loginForm;
     private EditForm? registerForm;
-    
+
     private bool _processing = false;
     private bool _processingRegistering = false;
     private ClientDto_Login clientDto_Login { get; set; } = new();
@@ -56,6 +56,8 @@ public partial class LoginForm
         {
             _snackbar.Add("Session Expired!", Severity.Error, config => { config.CloseAfterNavigation = true; });
             await _localStorage.RemoveItemAsync("SessionExpired");
+            await InvokeAsync(StateHasChanged);
+            clientDto_Login = new();
         }
     }
 
@@ -207,7 +209,7 @@ public partial class LoginForm
         }
     }
 
-    private static IEnumerable<string> 
+    private static IEnumerable<string>
     PasswordStrength
     (
 

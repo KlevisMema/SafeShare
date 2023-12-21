@@ -11,13 +11,13 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
-using SafeShare.Utilities.Responses;
 using Microsoft.AspNetCore.Authorization;
 using SafeShare.ClientServerShared.Routes;
 using SafeShare.Security.API.ActionFilters;
-using SafeShare.DataTransormObject.UserManagment;
 using SafeShare.MediatR.Actions.Queries.UserManagment;
 using SafeShare.MediatR.Actions.Commands.UserManagment;
+using SafeShare.DataTransormObject.SafeShareApi.UserManagment;
+using SafeShare.Utilities.SafeShareApi.Responses;
 
 namespace SafeShare.API.Controllers;
 

@@ -3,12 +3,12 @@
  * This filter compares the user ID provided in the route with the user ID obtained from the JWT token in the HTTP context.
  */
 
-using SafeShare.Utilities.IP;
 using Microsoft.AspNetCore.Mvc;
-using SafeShare.Utilities.User;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Mvc.Filters;
+using SafeShare.Utilities.SafeShareApi.IP;
+using SafeShare.Utilities.SafeShareApi.User;
 
 namespace SafeShare.Security.API.ActionFilters;
 

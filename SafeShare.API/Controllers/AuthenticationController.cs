@@ -10,25 +10,24 @@ using SafeShare.API.Helpers;
 using System.Security.Claims;
 using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Mvc;
-using SafeShare.Utilities.User;
 using Microsoft.AspNetCore.Http;
 using System.Net.Http.Formatting;
 using Microsoft.Extensions.Options;
-using SafeShare.Utilities.Responses;
 using System.IdentityModel.Tokens.Jwt;
 using SafeShare.DataAccessLayer.Models;
-using SafeShare.Security.API.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using SafeShare.ClientServerShared.Routes;
 using SafeShare.Security.API.ActionFilters;
-using SafeShare.DataTransormObject.Security;
+using SafeShare.Utilities.SafeShareApi.User;
 using Microsoft.AspNetCore.Http.HttpResults;
 using SafeShare.Security.User.Implementation;
-using SafeShare.Utilities.ConfigurationSettings;
-using SafeShare.DataTransormObject.Authentication;
-using SafeShare.MediatR.Actions.Commands.Authentication;
 using SafeShare.Security.JwtSecurity.Helpers;
+using SafeShare.Utilities.SafeShareApi.Responses;
+using SafeShare.MediatR.Actions.Commands.Authentication;
+using SafeShare.DataTransormObject.SafeShareApi.Security;
+using SafeShare.Utilities.SafeShareApi.ConfigurationSettings;
+using SafeShare.DataTransormObject.SafeShareApi.Authentication;
 
 namespace SafeShare.API.Controllers;
 
@@ -42,10 +41,9 @@ namespace SafeShare.API.Controllers;
 /// </remarks>
 /// <param name="mediator">The mediator used for command and query handling.</param>
 /// <param name="cookieOpt">The options/settings from the config file</param>
-/// <param name="dataProtectionProvider">The data protection provider used for encrypting and decrypting</param>
+/// <param name="_userDataProtection">The data protection provider used for encrypting and decrypting</param>
 [ApiController]
 [Route(BaseRoute.Route)]
-//[ServiceFilter(typeof(IApiKeyAuthorizationFilter))]
 public class AuthenticationController
 (
     IMediator mediator, 
@@ -53,9 +51,6 @@ public class AuthenticationController
     ISecurity_UserDataProtectionService _userDataProtection
 ) : ControllerBase
 {
-
-    //private readonly API_Helper_DataProtection _dataProtectionHelper = new(dataProtectionProvider, "TokenPurpose");
-
     /// <summary>
     /// Endpoint to register a new user in the SafeShare system.
     /// Accepts user registration data and initiates the registration process.
@@ -94,6 +89,9 @@ public class AuthenticationController
         [FromBody] DTO_ConfirmRegistration confirmRegistrationDto
     )
     {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
         return await mediator.Send(new MediatR_ConfirmUserRegistrationCommand(confirmRegistrationDto));
     }
     /// <summary>
@@ -227,7 +225,9 @@ public class AuthenticationController
         {
             string decryptedRefreshToken = "";
             Guid decryptedRefreshTokenId = Guid.Empty;
+
             var jwtToken = Request.Cookies.TryGetValue(cookieOpt.Value.AuthTokenCookieName, out string? authToken) ? authToken : string.Empty;
+
             string userId = Helper_GetUserId.GetUserIdDirectlyFromJwtToken(jwtToken);
 
             if (Request.Cookies.TryGetValue(cookieOpt.Value.RefreshAuthTokenCookieName, out string? refreshToken))
@@ -270,6 +270,7 @@ public class AuthenticationController
     /// Sets the cookies in the clients browser
     /// </summary>
     /// <param name="token">The generated values</param>
+    /// <param name="userId">The id of the user</param>
     private void
     SetCookiesResposne
     (
@@ -317,8 +318,10 @@ public class AuthenticationController
             }
         );
     }
-
-
+    /// <summary>
+    /// Sets a cookie in the HTTP response with a specific token.
+    /// </summary>
+    /// <param name="token">The token to be stored in the cookie.</param>
     private void
     SetCookieResposne
     (
@@ -339,7 +342,9 @@ public class AuthenticationController
             }
         );
     }
-
+    /// <summary>
+    /// Clears all authentication and refresh tokens stored in cookies.
+    /// </summary>
     private void
     ClearCookies()
     {
@@ -348,7 +353,10 @@ public class AuthenticationController
         ClearCookie(cookieOpt.Value.RefreshAuthTokenCookieName);
         ClearCookie(cookieOpt.Value.RefreshAuthTokenIdCookieName);
     }
-
+    /// <summary>
+    /// Clears a specific cookie identified by its name.
+    /// </summary>
+    /// <param name="cookieName">The name of the cookie to be cleared.</param>
     private void
     ClearCookie
     (
@@ -364,22 +372,4 @@ public class AuthenticationController
             Expires = DateTimeOffset.UtcNow.AddDays(-1)
         });
     }
-
-    //private string
-    //EncryptToken
-    //(
-    //    string token
-    //)
-    //{
-    //    return _dataProtectionHelper.Encrypt(token);
-    //}
-
-    //private string
-    //DecryptToken
-    //(
-    //    string token
-    //)
-    //{
-    //   return _dataProtectionHelper.Decrypt(token);
-    //}
 }

@@ -9,9 +9,9 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.Extensions.Configuration;
-using SafeShare.Utilities.ConfigurationSettings;
 using SafeShare.Security.JwtSecurity.Interfaces;
-using SafeShare.DataTransormObject.Authentication;
+using SafeShare.Utilities.SafeShareApi.ConfigurationSettings;
+using SafeShare.DataTransormObject.SafeShareApi.Authentication;
 
 namespace SafeShare.Security.JwtSecurity.Implementations;
 

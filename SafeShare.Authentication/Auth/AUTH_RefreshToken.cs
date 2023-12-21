@@ -1,23 +1,23 @@
 ﻿using AutoMapper;
 using System.Security.Claims;
-using SafeShare.Utilities.IP;
-using SafeShare.Utilities.Log;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using SafeShare.Utilities.Responses;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
-using SafeShare.Utilities.Dependencies;
-using SafeShare.DataAccessLayer.Models;
 using SafeShare.DataAccessLayer.Context;
 using Microsoft.Extensions.Configuration;
 using SafeShare.Authentication.Interfaces;
-using SafeShare.DataTransormObject.Security;
 using SafeShare.Security.JwtSecurity.Interfaces;
-using SafeShare.DataTransormObject.Authentication;
 using SafeShare.Security.JwtSecurity.Implementations;
+using SafeShare.DataAccessLayer.Models.SafeShareApi;
+using SafeShare.DataTransormObject.SafeShareApi.Authentication;
+using SafeShare.DataTransormObject.SafeShareApi.Security;
+using SafeShare.Utilities.SafeShareApi.Log;
+using SafeShare.Utilities.SafeShareApi.Dependencies;
+using SafeShare.Utilities.SafeShareApi.IP;
+using SafeShare.Utilities.SafeShareApi.Responses;
 
 namespace SafeShare.Authentication.Auth;
 
@@ -366,7 +366,7 @@ public class AUTH_RefreshToken
 
             var roles = await _userManager.GetRolesAsync(storedRefreshToken.User);
             var userDto = _mapper.Map<DTO_AuthUser>(storedRefreshToken.User);
-            userDto.Roles = roles.ToList();
+            userDto.Roles = [.. roles];
             var token = await _jwtTokenService.CreateToken(userDto);
 
             _logger.Log

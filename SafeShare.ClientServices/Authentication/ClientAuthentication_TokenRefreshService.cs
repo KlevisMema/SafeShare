@@ -5,27 +5,22 @@ namespace SafeShare.ClientServices.Authentication;
 
 public class ClientAuthentication_TokenRefreshService(IHttpClientFactory httpClientFactory) : IClientAuthentication_TokenRefreshService
 {
+    private const string Client = "MyHttpClient";
+
     public async Task<bool>
     RefreshToken()
     {
         try
         {
-            var httpClient = httpClientFactory.CreateClient("MyHttpClient");
+            var httpClient = httpClientFactory.CreateClient(Client);
 
-            // Call the refresh token API endpoint
-            var response = await httpClient.PostAsync(BaseRoute.RouteAuthenticationForClient + Route_AuthenticationRoute.RefreshToken, null);
+            var response = await httpClient.PostAsync(BaseRoute.RouteAuthenticationProxy + Route_AuthenticationRoute.RefreshToken, null);
 
-            if (response.IsSuccessStatusCode)
-            {
-                // Token refreshed successfully
-                return true;
-            }
+            return response.IsSuccessStatusCode;
         }
         catch
         {
-            // Handle exceptions
+            return false;
         }
-
-        return false;
     }
 }

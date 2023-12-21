@@ -4,8 +4,8 @@
  */
 
 using MediatR;
-using SafeShare.Utilities.Responses;
-using SafeShare.DataTransormObject.Security;
+using SafeShare.DataTransormObject.SafeShareApi.Security;
+using SafeShare.Utilities.SafeShareApi.Responses;
 
 namespace SafeShare.MediatR.Actions.Commands.Authentication;
 

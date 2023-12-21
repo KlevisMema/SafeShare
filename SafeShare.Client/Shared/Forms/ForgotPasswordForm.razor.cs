@@ -1,9 +1,9 @@
 ﻿using MudBlazor;
 using SafeShare.Client.Pages;
 using Microsoft.AspNetCore.Components;
-using SafeShare.ClientServices.Interfaces;
 using SafeShare.ClientDTO.AccountManagment;
 using Microsoft.AspNetCore.Components.Forms;
+using SafeShare.ClientServices.Interfaces;
 
 namespace SafeShare.Client.Shared.Forms;
 

@@ -18,7 +18,7 @@ if (app.Environment.IsDevelopment())
 }
 app.UseHttpsRedirection();
 
-app.UseMiddleware<API_Helper_JwtCookieToHeaderMiddleware>();
+app.UseMiddleware<API_HELPER_ApiKeyMiddleware>();
 
 app.UseCors(builder.Configuration.GetSection("Cors:Policy:Name").Value!);
 
@@ -33,5 +33,6 @@ app.UseHttpsRedirection();
 app.UseHsts();
 
 app.UseSerilogRequestLogging();
+
 
 app.Run();

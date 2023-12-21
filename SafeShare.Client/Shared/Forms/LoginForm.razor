@@ -291,8 +291,9 @@
 
             <DataAnnotationsValidator />
 
-            <input type="text" @bind-value="@clientDto_Login.Email" placeholder="Email address" required autocomplete="on" />
-            <input type="password" @bind-value="@clientDto_Login.Password" placeholder="Password" required autocomplete="on" />
+            <input type="text" @bind-value="@clientDto_Login.Email" placeholder="Email address" required />
+            <input type="password" @bind-value="@clientDto_Login.Password" placeholder="Password" required />
+
             <a @onclick="() => NavigateToForgotPasswordPage()" class="forgot-passwd">Forgot password?</a>
 
             <MudButton Disabled="@_processing" OnClick="(() => ValidateForm())" Variant="Variant.Filled" Color="Color.Primary" Class="mudSubmitButton position-relative">

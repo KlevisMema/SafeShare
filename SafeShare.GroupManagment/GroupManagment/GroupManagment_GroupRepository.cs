@@ -4,19 +4,18 @@
  */
 
 using AutoMapper;
-using SafeShare.Utilities.IP;
-using SafeShare.Utilities.Log;
-using SafeShare.Utilities.User;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using SafeShare.Utilities.Services;
-using SafeShare.Utilities.Responses;
 using Microsoft.EntityFrameworkCore;
-using SafeShare.DataAccessLayer.Models;
-using SafeShare.Utilities.Dependencies;
 using SafeShare.DataAccessLayer.Context;
 using SafeShare.GroupManagment.Interfaces;
-using SafeShare.DataTransormObject.GroupManagment;
+using SafeShare.Utilities.SafeShareApi.IP;
+using SafeShare.Utilities.SafeShareApi.Log;
+using SafeShare.Utilities.SafeShareApi.User;
+using SafeShare.Utilities.SafeShareApi.Responses;
+using SafeShare.Utilities.SafeShareApi.Dependencies;
+using SafeShare.DataAccessLayer.Models.SafeShareApi;
+using SafeShare.DataTransormObject.SafeShareApi.GroupManagment;
 
 namespace SafeShare.GroupManagment.GroupManagment;
 

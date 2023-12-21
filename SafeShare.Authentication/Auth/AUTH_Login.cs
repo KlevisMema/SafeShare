@@ -5,27 +5,26 @@
 */
 
 using AutoMapper;
-using SafeShare.Utilities.IP;
 using System.Security.Claims;
-using SafeShare.Utilities.Log;
-using SafeShare.Utilities.User;
 using Microsoft.AspNetCore.Http;
-using SafeShare.Utilities.Email;
 using Microsoft.Extensions.Logging;
-using SafeShare.Utilities.Services;
 using Microsoft.AspNetCore.Identity;
-using SafeShare.Utilities.Responses;
 using Microsoft.EntityFrameworkCore;
-using SafeShare.Utilities.Dependencies;
-using SafeShare.DataAccessLayer.Models;
 using SafeShare.DataAccessLayer.Context;
 using Microsoft.Extensions.Configuration;
 using SafeShare.Authentication.Interfaces;
-using SafeShare.DataTransormObject.Security;
+using SafeShare.Utilities.SafeShareApi.IP;
+using SafeShare.Utilities.SafeShareApi.Log;
+using SafeShare.Utilities.SafeShareApi.User;
+using SafeShare.Utilities.SafeShareApi.Email;
 using SafeShare.Security.JwtSecurity.Interfaces;
-using SafeShare.DataTransormObject.UserManagment;
-using SafeShare.DataTransormObject.Authentication;
+using SafeShare.Utilities.SafeShareApi.Responses;
+using SafeShare.DataAccessLayer.Models.SafeShareApi;
+using SafeShare.Utilities.SafeShareApi.Dependencies;
 using SafeShare.Security.JwtSecurity.Implementations;
+using SafeShare.DataTransormObject.SafeShareApi.Security;
+using SafeShare.DataTransormObject.SafeShareApi.UserManagment;
+using SafeShare.DataTransormObject.SafeShareApi.Authentication;
 
 namespace SafeShare.Authentication.Auth;
 

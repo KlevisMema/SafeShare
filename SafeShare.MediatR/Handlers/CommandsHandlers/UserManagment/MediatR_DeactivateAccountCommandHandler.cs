@@ -4,11 +4,11 @@
 
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using SafeShare.Utilities.Responses;
 using SafeShare.MediatR.Dependencies;
 using SafeShare.UserManagment.Interfaces;
 using SafeShare.MediatR.Actions.Commands.UserManagment;
 using SafeShare.MediatR.Actions.Queries.UserManagment;
+using SafeShare.Utilities.SafeShareApi.Responses;
 
 namespace SafeShare.MediatR.Handlers.CommandsHandlers.UserManagment;
 

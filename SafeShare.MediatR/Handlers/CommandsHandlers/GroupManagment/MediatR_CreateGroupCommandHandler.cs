@@ -5,12 +5,12 @@
 
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using SafeShare.Utilities.Responses;
 using SafeShare.MediatR.Dependencies;
 using SafeShare.GroupManagment.Interfaces;
 using SafeShare.GroupManagment.GroupManagment;
-using SafeShare.DataTransormObject.GroupManagment;
 using SafeShare.MediatR.Actions.Commands.GroupManagment;
+using SafeShare.DataTransormObject.SafeShareApi.GroupManagment;
+using SafeShare.Utilities.SafeShareApi.Responses;
 
 namespace SafeShare.MediatR.Handlers.CommandsHandlers.GroupManagment;
 

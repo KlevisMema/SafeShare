@@ -5,7 +5,7 @@
 
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using SafeShare.DataTransormObject.Authentication;
+using SafeShare.DataTransormObject.SafeShareApi.Authentication;
 
 namespace SafeShare.MediatR.Actions.Commands.Authentication;
 

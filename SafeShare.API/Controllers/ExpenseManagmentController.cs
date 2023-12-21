@@ -7,14 +7,13 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
-using SafeShare.Utilities.Responses;
 using SafeShare.DataAccessLayer.Models;
 using SafeShare.ClientServerShared.Routes;
-using SafeShare.DataTransormObject.Expenses;
-using SafeShare.DataTransormObject.GroupManagment;
-using SafeShare.DataTransormObject.ExpenseManagment;
+using SafeShare.Utilities.SafeShareApi.Responses;
 using SafeShare.MediatR.Actions.Queries.ExpenseManagment;
 using SafeShare.MediatR.Actions.Commands.ExpenseManagment;
+using SafeShare.DataTransormObject.SafeShareApi.GroupManagment;
+using SafeShare.DataTransormObject.SafeShareApi.ExpenseManagment;
 
 namespace SafeShare.API.Controllers;
 

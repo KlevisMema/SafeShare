@@ -1,5 +1,12 @@
-﻿namespace SafeShare.ClientServerShared.Routes;
+﻿/* 
+ * Contains route definitions for various aspects of the SafeShare client-server communication.
+ */
 
+namespace SafeShare.ClientServerShared.Routes;
+
+/// <summary>
+/// Routes for group management in the SafeShare application.
+/// </summary>
 public static class Route_GroupManagmentRoutes
 {
     public const string GroupTypes = "GroupTypes/{userId}";

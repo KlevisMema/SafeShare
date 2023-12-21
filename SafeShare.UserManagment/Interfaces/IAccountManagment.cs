@@ -4,9 +4,9 @@
  * deleting users, and changing user passwords.
 */
 
-using SafeShare.Utilities.Responses;
-using SafeShare.DataTransormObject.UserManagment;
-using SafeShare.DataTransormObject.Security;
+using SafeShare.DataTransormObject.SafeShareApi.UserManagment;
+using SafeShare.DataTransormObject.SafeShareApi.Security;
+using SafeShare.Utilities.SafeShareApi.Responses;
 
 namespace SafeShare.UserManagment.Interfaces;
 

@@ -5,7 +5,7 @@
 
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using SafeShare.DataTransormObject.GroupManagment.GroupInvitations;
+using SafeShare.DataTransormObject.SafeShareApi.GroupManagment.GroupInvitations;
 
 namespace SafeShare.MediatR.Actions.Commands.GroupManagment;
 

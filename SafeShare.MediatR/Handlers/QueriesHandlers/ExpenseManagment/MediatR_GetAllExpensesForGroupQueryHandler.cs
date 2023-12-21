@@ -7,11 +7,11 @@
 
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using SafeShare.Utilities.Responses;
 using SafeShare.MediatR.Dependencies;
-using SafeShare.DataTransormObject.Expenses;
 using SafeShare.ExpenseManagement.Interfaces;
 using SafeShare.MediatR.Actions.Queries.ExpenseManagment;
+using SafeShare.DataTransormObject.SafeShareApi.ExpenseManagment;
+using SafeShare.Utilities.SafeShareApi.Responses;
 
 namespace SafeShare.MediatR.Handlers.QueriesHandlers.ExpenseManagment;
 

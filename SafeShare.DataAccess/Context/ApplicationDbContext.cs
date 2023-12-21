@@ -4,8 +4,8 @@
 */
 
 using Microsoft.EntityFrameworkCore;
-using SafeShare.DataAccessLayer.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using SafeShare.DataAccessLayer.Models.SafeShareApi;
 
 namespace SafeShare.DataAccessLayer.Context;
 

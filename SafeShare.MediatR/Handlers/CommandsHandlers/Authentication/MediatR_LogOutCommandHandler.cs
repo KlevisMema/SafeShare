@@ -5,7 +5,6 @@
 
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using SafeShare.Utilities.Responses;
 using SafeShare.MediatR.Dependencies;
 using SafeShare.Authentication.Interfaces;
 using SafeShare.MediatR.Actions.Commands.Authentication;

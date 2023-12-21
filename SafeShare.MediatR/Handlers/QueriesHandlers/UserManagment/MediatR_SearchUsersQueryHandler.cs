@@ -1,10 +1,10 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using SafeShare.Utilities.Responses;
 using SafeShare.MediatR.Dependencies;
 using SafeShare.UserManagment.Interfaces;
-using SafeShare.DataTransormObject.UserManagment;
 using SafeShare.MediatR.Actions.Queries.UserManagment;
+using SafeShare.DataTransormObject.SafeShareApi.UserManagment;
+using SafeShare.Utilities.SafeShareApi.Responses;
 
 namespace SafeShare.MediatR.Handlers.QueriesHandlers.UserManagment;
 

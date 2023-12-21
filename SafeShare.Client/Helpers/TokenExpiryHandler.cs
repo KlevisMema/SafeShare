@@ -1,8 +1,8 @@
-﻿using Blazored.LocalStorage;
+﻿using MudBlazor;
+using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.WebAssembly.Http;
-using MudBlazor;
 using SafeShare.ClientServices.Interfaces;
+using Microsoft.AspNetCore.Components.WebAssembly.Http;
 
 namespace SafeShare.Client.Helpers;
 
@@ -33,7 +33,7 @@ internal class TokenExpiryHandler
             else
             {
                 await localStorage.SetItemAsync<bool>("SessionExpired", true, cancellationToken);
-                navigationManager.NavigateTo("/");
+                navigationManager.NavigateTo("/Login");
             }
         }
 

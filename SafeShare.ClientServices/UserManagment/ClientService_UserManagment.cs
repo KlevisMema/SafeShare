@@ -1,9 +1,9 @@
 ﻿using System.Net.Http;
 using System.Text.Json;
 using SafeShare.ClientServerShared.Routes;
-using SafeShare.ClientServices.Interfaces;
 using SafeShare.ClientUtilities.Responses;
 using SafeShare.ClientDTO.AccountManagment;
+using SafeShare.ClientServices.Interfaces;
 
 namespace SafeShare.ClientServices.UserManagment;
 
@@ -14,7 +14,7 @@ public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) :
         WriteIndented = true
     };
 
-    public async Task<ClientUtil_ApiResponse<bool>> 
+    public async Task<ClientUtil_ApiResponse<bool>>
     CallTheApi()
     {
         //try

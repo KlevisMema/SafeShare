@@ -20,11 +20,6 @@ using Microsoft.EntityFrameworkCore;
 using SafeShare.Authentication.Auth;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Authentication;
-using SafeShare.DataAccessLayer.Models;
-using SafeShare.Mappings.UserManagment;
-using SafeShare.Mappings.Authentication;
-using SafeShare.Mappings.GroupManagment;
-using SafeShare.Security.API.Interfaces;
 using SafeShare.DataAccessLayer.Context;
 using SafeShare.UserManagment.Interfaces;
 using Microsoft.Extensions.Configuration;
@@ -32,22 +27,25 @@ using SafeShare.Security.User.Interfaces;
 using SafeShare.Authentication.Interfaces;
 using SafeShare.GroupManagment.Interfaces;
 using SafeShare.UserManagment.UserAccount;
-using SafeShare.Mappings.ExpenseManagment;
 using Microsoft.AspNetCore.DataProtection;
 using SafeShare.Security.API.ActionFilters;
-using SafeShare.DataTransormObject.Security;
 using SafeShare.Security.User.Implementation;
 using SafeShare.ExpenseManagement.Interfaces;
 using SafeShare.GroupManagment.GroupManagment;
-using SafeShare.Security.API.Imeplementations;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
 using SafeShare.Security.JwtSecurity.Interfaces;
-using SafeShare.Utilities.ConfigurationSettings;
 using SafeShare.ExpenseManagement.Implementations;
-using SafeShare.DataTransormObject.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using SafeShare.Mappings.SafeShareApi.UserManagment;
+using SafeShare.DataAccessLayer.Models.SafeShareApi;
+using SafeShare.Mappings.SafeShareApi.Authentication;
 using SafeShare.Security.JwtSecurity.Implementations;
+using SafeShare.Mappings.SafeShareApi.GroupManagment;
+using SafeShare.Mappings.SafeShareApi.ExpenseManagment;
+using SafeShare.DataTransormObject.SafeShareApi.Security;
+using SafeShare.Utilities.SafeShareApi.ConfigurationSettings;
+using SafeShare.DataTransormObject.SafeShareApi.Authentication;
 using SafeShare.MediatR.Handlers.CommandsHandlers.Authentication;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
@@ -159,16 +157,6 @@ public static class API_Helper_ProgramStartup
         Services.AddScoped<IAUTH_RefreshToken, AUTH_RefreshToken>();
         Services.AddScoped<ISecurity_JwtTokenHash, Security_JwtTokenAuth>();
         Services.AddScoped<ISecurity_UserDataProtectionService, Security_UserDataProtectionService>();
-        // Add the custom auth filter, a filter that is used by all enpoints
-        Services.AddScoped<IApiKeyAuthorizationFilter>(provider =>
-        {
-            var httpContextAccessor = provider.GetRequiredService<IHttpContextAccessor>();
-            var logger = provider.GetRequiredService<ILogger<ApiKeyAuthorizationFilter>>();
-
-            var config = provider.GetService<IConfiguration>();
-            string apikey = Environment.GetEnvironmentVariable("SAFE_SHARE_API_KEY");
-            return new ApiKeyAuthorizationFilter(apikey, httpContextAccessor, logger);
-        });
         Services.AddScoped<IGroupManagment_GroupRepository, GroupManagment_GroupRepository>();
         Services.AddScoped<IExpenseManagment_ExpenseRepository, ExpenseManagment_ExpenseRepository>();
         Services.AddScoped<IGroupManagment_GroupInvitationsRepository, GroupManagment_GroupInvitationsRepository>();
@@ -188,6 +176,7 @@ public static class API_Helper_ProgramStartup
     )
     {
         Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+        Services.AddDbContext<ApiClientDbContext>(options => options.UseSqlServer(Environment.GetEnvironmentVariable("AZURE_SQL_CONNECTIONSTRING")));
 
         Services.AddIdentity<ApplicationUser, IdentityRole>
             (
@@ -291,22 +280,22 @@ public static class API_Helper_ProgramStartup
             });
 
             options.AddSecurityRequirement(new OpenApiSecurityRequirement
+            {
                 {
+                    new OpenApiSecurityScheme
                     {
-                        new OpenApiSecurityScheme
+                        Reference = new OpenApiReference
                         {
-                            Reference = new OpenApiReference
-                            {
-                                Type = ReferenceType.SecurityScheme,
-                                Id = "Default"
-                            },
-                            Scheme = "0auth2",
-                            Name = "Bearer",
-                            In = ParameterLocation.Header,
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Default"
                         },
-                        new List<string>()
-                    }
-                });
+                        Scheme = "0auth2",
+                        Name = "Bearer",
+                        In = ParameterLocation.Header,
+                    },
+                    new List<string>()
+                }
+            });
 
             options.AddSecurityDefinition("ConfirmLogin", new OpenApiSecurityScheme
             {
@@ -390,7 +379,7 @@ public static class API_Helper_ProgramStartup
         {
             options.AddPolicy(Configuration.GetSection("Cors:Policy:Name").Value!, builder =>
             {
-                builder.WithOrigins("https://localhost:7027", "https://localhost:7038", "http://localhost:5026", "https://127.0.0.1")
+                builder.WithOrigins("https://localhost:7027", "https://localhost:7038", "http://localhost:5026", "https://127.0.0.1", "https://localhost:7280")
                        .AllowAnyHeader()
                        .AllowAnyMethod()
                        .AllowCredentials();

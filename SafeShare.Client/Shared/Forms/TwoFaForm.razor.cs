@@ -4,9 +4,9 @@ using Blazored.LocalStorage;
 using SafeShare.Client.Helpers;
 using Microsoft.AspNetCore.Components;
 using SafeShare.ClientDTO.Authentication;
-using SafeShare.ClientServices.Interfaces;
 using Microsoft.AspNetCore.Components.Forms;
 using SafeShare.ClientUtilities.Responses;
+using SafeShare.ClientServices.Interfaces;
 
 namespace SafeShare.Client.Shared.Forms;
 

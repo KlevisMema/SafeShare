@@ -3,8 +3,8 @@
  * This interface provides functionality for managing groups, including creating, editing, deleting, and retrieving group details and types.
  */
 
-using SafeShare.Utilities.Responses;
-using SafeShare.DataTransormObject.GroupManagment;
+using SafeShare.DataTransormObject.SafeShareApi.GroupManagment;
+using SafeShare.Utilities.SafeShareApi.Responses;
 
 namespace SafeShare.GroupManagment.Interfaces;
 

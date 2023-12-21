@@ -3,9 +3,9 @@
  * It provides functionalities like receiving, sending, accepting, and rejecting group invitations.
  */
 
-using SafeShare.Utilities.Responses;
 using SafeShare.DataAccessLayer.Models;
-using SafeShare.DataTransormObject.GroupManagment.GroupInvitations;
+using SafeShare.DataTransormObject.SafeShareApi.GroupManagment.GroupInvitations;
+using SafeShare.Utilities.SafeShareApi.Responses;
 
 namespace SafeShare.GroupManagment.Interfaces;
 

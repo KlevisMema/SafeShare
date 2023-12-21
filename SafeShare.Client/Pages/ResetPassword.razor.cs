@@ -1,7 +1,5 @@
 ﻿using MudBlazor;
 using Microsoft.AspNetCore.Components;
-using SafeShare.ClientServices.Interfaces;
-using SafeShare.ClientServices.Authentication;
 
 namespace SafeShare.Client.Pages;
 
