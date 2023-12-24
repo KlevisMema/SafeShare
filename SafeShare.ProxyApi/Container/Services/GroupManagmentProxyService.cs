@@ -22,7 +22,7 @@ public class GroupManagmentProxyService(IHttpClientFactory httpClientFactory) : 
         string jwtToken
     )
     {
-        var userId = Helper_GetUserId.GetUserIdDirectlyFromJwtToken(jwtToken);
+        var userId = Helper_JwtToken.GetUserIdDirectlyFromJwtToken(jwtToken);
 
         var httpClient = httpClientFactory.CreateClient(Client);
 

@@ -104,7 +104,7 @@ public class AccountManagmentController(IMediator mediator) : BaseController(med
     /// <param name="userId">Unique identifier of the user to be deactivated</param>
     /// <param name="deactivateAccount"> A dto containing user's information for deactivation process </param>
     /// <returns>Returns a boolean indicating the success of the deactivation operation.</returns>
-    //[ServiceFilter(typeof(VerifyUser))]
+    [ServiceFilter(typeof(VerifyUser))]
     [HttpPost(Route_AccountManagmentRoute.DeactivateAccount)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<bool>))]
@@ -218,7 +218,7 @@ public class AccountManagmentController(IMediator mediator) : BaseController(med
     /// <param name="userId">The unique identifier of the user requesting the email change.</param>
     /// <param name="emailAddress">The DTO containing the new email address information.</param>
     /// <returns>A response indicating the success or failure of the email change request.</returns>
-    //[ServiceFilter(typeof(VerifyUser))]
+    [ServiceFilter(typeof(VerifyUser))]
     [HttpPost(Route_AccountManagmentRoute.RequestChangeEmail)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<bool>))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
@@ -243,7 +243,7 @@ public class AccountManagmentController(IMediator mediator) : BaseController(med
     /// <param name="userId">The unique identifier of the user confirming the email change.</param>
     /// <param name="changeEmailAddressConfirmDto">The DTO containing confirmation details for the email change.</param>
     /// <returns>A response indicating the success or failure of the email change confirmation.</returns>
-    //[ServiceFilter(typeof(VerifyUser))]
+    [ServiceFilter(typeof(VerifyUser))]
     [HttpPost(Route_AccountManagmentRoute.ConfirmChangeEmailRequest)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<bool>))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
@@ -268,7 +268,7 @@ public class AccountManagmentController(IMediator mediator) : BaseController(med
     /// <param name="userName">The username</param>
     /// <param name="userId">The id of the user making the request</param>
     /// <returns>The response containing the list of the users</returns>
-    //[ServiceFilter(typeof(VerifyUser))]
+    [ServiceFilter(typeof(VerifyUser))]
     [HttpGet(Route_AccountManagmentRoute.SearchUserByUserName)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<List<DTO_UserSearched>>))]

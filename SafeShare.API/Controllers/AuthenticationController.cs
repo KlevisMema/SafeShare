@@ -228,7 +228,7 @@ public class AuthenticationController
 
             var jwtToken = Request.Cookies.TryGetValue(cookieOpt.Value.AuthTokenCookieName, out string? authToken) ? authToken : string.Empty;
 
-            string userId = Helper_GetUserId.GetUserIdDirectlyFromJwtToken(jwtToken);
+            string userId = Helper_JwtToken.GetUserIdDirectlyFromJwtToken(jwtToken);
 
             if (Request.Cookies.TryGetValue(cookieOpt.Value.RefreshAuthTokenCookieName, out string? refreshToken))
                 decryptedRefreshToken = _userDataProtection.Unprotect(refreshToken, userId);
