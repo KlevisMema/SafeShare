@@ -20,4 +20,12 @@ public static class Route_AccountManagmentRoute
     public const string SearchUserByUserName = "SearchUserByUserName/{userId}";
     public const string ConfirmChangeEmailRequest = "ConfirmChangeEmailRequest/{userId}";
     public const string ActivateAccountRequestConfirmation = "ActivateAccountRequestConfirmation";
+
+    public const string ProxyGetUser = "GetUser";
+    public const string ProxyUpdateUser = "UpdateUser";
+    public const string ProxyChangePassword = "ChangePassword";
+    public const string ProxyDeactivateAccount = "DeactivateAccount";
+    public const string ProxyRequestChangeEmail = "RequestChangeEmail";
+    public const string ProxySearchUserByUserName = "SearchUserByUserName";
+    public const string ProxyConfirmChangeEmailRequest = "ConfirmChangeEmailRequest";
 }

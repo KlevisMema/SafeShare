@@ -14,4 +14,5 @@ public static class BaseRoute
     public const string RouteAuthenticationForClient = "api/Authentication/";
     public const string RouteGroupManagmentForClient = "api/GroupManagment/";
     public const string RouteAccountManagmentForClient = "api/AccountManagment/";
+    public const string RouteExpenseManagmentForClient = "api/ExpenseManagment/";
 }

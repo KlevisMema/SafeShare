@@ -14,4 +14,10 @@ public static class Route_ExpenseManagment
     public const string EditExpense = "EditExpense/{userId}";
     public const string CreateExpense = "CreateExpense/{userId}";
     public const string GetAllExpensesOfGroup = "GetAllExpensesOfGroup/{userId}";
+
+    public const string ProxyGetExpense = "GetExpense";
+    public const string ProxyDeleteExpense = "DeleteExpense";
+    public const string ProxyEditExpense = "EditExpense";
+    public const string ProxyCreateExpense = "CreateExpense";
+    public const string ProxyGetAllExpensesOfGroup = "GetAllExpensesOfGroup";
 }

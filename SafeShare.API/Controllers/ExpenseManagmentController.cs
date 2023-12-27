@@ -108,7 +108,7 @@ public class ExpenseManagmentController(IMediator mediator) : BaseController(med
     (
         Guid userId,
         Guid expenseId,
-        DTO_ExpenseCreate expenseCreateDto
+        [FromForm] DTO_ExpenseCreate expenseCreateDto
     )
     {
         if (!ModelState.IsValid)

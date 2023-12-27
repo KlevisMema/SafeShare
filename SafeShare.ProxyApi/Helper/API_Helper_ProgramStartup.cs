@@ -214,6 +214,7 @@ public static class API_Helper_ProgramStartup
 
         Services.AddScoped<IProxyAuthentication, ProxyAuthentication>();
         Services.AddScoped<IGroupManagmentProxyService, GroupManagmentProxyService>();
+        Services.AddScoped<IExpenseManagmentProxyService, ExpenseManagmentProxyService>();
         Services.AddScoped<IAccountManagmentProxyService, AccountManagmentProxyService>();
 
 

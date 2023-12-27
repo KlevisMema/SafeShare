@@ -15,7 +15,7 @@ namespace SafeShare.ProxyApi.Controllers;
 [Authorize(AuthenticationSchemes = "Default")]
 public class AccountManagmentProxyController(IAccountManagmentProxyService accountManagmentProxyService) : ControllerBase
 {
-    [HttpGet(Route_AccountManagmentRoute.GetUser)]
+    [HttpGet(Route_AccountManagmentRoute.ProxyGetUser)]
     public async Task<ActionResult<Util_GenericResponse<DTO_UserUpdatedInfo>>>
     GetUser()
     {
@@ -24,7 +24,7 @@ public class AccountManagmentProxyController(IAccountManagmentProxyService accou
         return Util_GenericControllerResponse<DTO_UserUpdatedInfo>.ControllerResponse(result);
     }
 
-    [HttpPut(Route_AccountManagmentRoute.UpdateUser)]
+    [HttpPut(Route_AccountManagmentRoute.ProxyUpdateUser)]
     public async Task<ActionResult<Util_GenericResponse<DTO_UserUpdatedInfo>>>
     UpdateUser
     (
@@ -40,7 +40,7 @@ public class AccountManagmentProxyController(IAccountManagmentProxyService accou
         return Util_GenericControllerResponse<DTO_UserUpdatedInfo>.ControllerResponse(result);
     }
 
-    [HttpPut(Route_AccountManagmentRoute.ChangePassword)]
+    [HttpPut(Route_AccountManagmentRoute.ProxyChangePassword)]
     public async Task<ActionResult<Util_GenericResponse<bool>>>
     ChangePassword
     (
@@ -58,7 +58,7 @@ public class AccountManagmentProxyController(IAccountManagmentProxyService accou
         return Util_GenericControllerResponse<bool>.ControllerResponse(result);
     }
 
-    [HttpPost(Route_AccountManagmentRoute.DeactivateAccount)]
+    [HttpPost(Route_AccountManagmentRoute.ProxyDeactivateAccount)]
     public async Task<ActionResult<Util_GenericResponse<bool>>>
     DeactivateAccount
     (
@@ -134,7 +134,7 @@ public class AccountManagmentProxyController(IAccountManagmentProxyService accou
         return Util_GenericControllerResponse<bool>.ControllerResponse(result);
     }
 
-    [HttpPost(Route_AccountManagmentRoute.RequestChangeEmail)]
+    [HttpPost(Route_AccountManagmentRoute.ProxyRequestChangeEmail)]
     public async Task<ActionResult<Util_GenericResponse<bool>>>
     RequestChangeEmail
     (
@@ -151,7 +151,7 @@ public class AccountManagmentProxyController(IAccountManagmentProxyService accou
         return Util_GenericControllerResponse<bool>.ControllerResponse(result);
     }
 
-    [HttpPost(Route_AccountManagmentRoute.ConfirmChangeEmailRequest)]
+    [HttpPost(Route_AccountManagmentRoute.ProxyConfirmChangeEmailRequest)]
     public async Task<ActionResult<Util_GenericResponse<bool>>>
     ConfirmChangeEmailAddressRequest
     (
@@ -168,7 +168,7 @@ public class AccountManagmentProxyController(IAccountManagmentProxyService accou
         return Util_GenericControllerResponse<bool>.ControllerResponse(result);
     }
 
-    [HttpGet(Route_AccountManagmentRoute.SearchUserByUserName)]
+    [HttpGet(Route_AccountManagmentRoute.ProxySearchUserByUserName)]
     public async Task<ActionResult<Util_GenericResponse<List<DTO_UserSearched>>>>
     SearchUserByUserName
     (
@@ -182,7 +182,7 @@ public class AccountManagmentProxyController(IAccountManagmentProxyService accou
         return Util_GenericControllerResponse<DTO_UserSearched>.ControllerResponseList(result);
     }
 
-    private string
+    private static string
     UserId
     (
         string jwtToken
@@ -191,7 +191,7 @@ public class AccountManagmentProxyController(IAccountManagmentProxyService accou
         return Helper_JwtToken.GetUserIdDirectlyFromJwtToken(jwtToken);
     }
 
-    private string
+    private static string
     UserEmail
     (
         string jwtToken

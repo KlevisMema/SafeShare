@@ -46,7 +46,7 @@ public class AccountManagmentProxyService(IHttpClientFactory httpClientFactory) 
             PropertyNameCaseInsensitive = true
         });
 
-        return readResult!;
+        return readResult ?? new Util_GenericResponse<DTO_UserUpdatedInfo>();
     }
 
     public async Task<Util_GenericResponse<DTO_UserUpdatedInfo>>
@@ -89,7 +89,7 @@ public class AccountManagmentProxyService(IHttpClientFactory httpClientFactory) 
             PropertyNameCaseInsensitive = true
         });
 
-        return readResult!;
+        return readResult ?? new Util_GenericResponse<DTO_UserUpdatedInfo>();
     }
 
     public async Task<Util_GenericResponse<bool>>
@@ -129,7 +129,7 @@ public class AccountManagmentProxyService(IHttpClientFactory httpClientFactory) 
             PropertyNameCaseInsensitive = true
         });
 
-        return readResult!;
+        return readResult ?? new Util_GenericResponse<bool>();
     }
 
     public async Task<Util_GenericResponse<bool>>
@@ -168,7 +168,7 @@ public class AccountManagmentProxyService(IHttpClientFactory httpClientFactory) 
             PropertyNameCaseInsensitive = true
         });
 
-        return readResult!;
+        return readResult ?? new Util_GenericResponse<bool>();
     }
 
     public async Task<Util_GenericResponse<bool>>
@@ -197,7 +197,7 @@ public class AccountManagmentProxyService(IHttpClientFactory httpClientFactory) 
             PropertyNameCaseInsensitive = true
         });
 
-        return readResult!;
+        return readResult ?? new Util_GenericResponse<bool>();
     }
 
     public async Task<Util_GenericResponse<bool>>
@@ -228,7 +228,7 @@ public class AccountManagmentProxyService(IHttpClientFactory httpClientFactory) 
             PropertyNameCaseInsensitive = true
         });
 
-        return readResult!;
+        return readResult ?? new Util_GenericResponse<bool>();
     }
 
     public async Task<Util_GenericResponse<bool>>
@@ -262,7 +262,7 @@ public class AccountManagmentProxyService(IHttpClientFactory httpClientFactory) 
             PropertyNameCaseInsensitive = true
         });
 
-        return readResult!;
+        return readResult ?? new Util_GenericResponse<bool>();
     }
 
     public async Task<Util_GenericResponse<bool>>
@@ -299,7 +299,7 @@ public class AccountManagmentProxyService(IHttpClientFactory httpClientFactory) 
             PropertyNameCaseInsensitive = true
         });
 
-        return readResult!;
+        return readResult ?? new Util_GenericResponse<bool>();
     }
 
     public async Task<Util_GenericResponse<bool>>
@@ -339,7 +339,7 @@ public class AccountManagmentProxyService(IHttpClientFactory httpClientFactory) 
             PropertyNameCaseInsensitive = true
         });
 
-        return readResult!;
+        return readResult ?? new Util_GenericResponse<bool>();
     }
 
     public async Task<Util_GenericResponse<bool>>
@@ -374,7 +374,7 @@ public class AccountManagmentProxyService(IHttpClientFactory httpClientFactory) 
             PropertyNameCaseInsensitive = true
         });
 
-        return readResult!;
+        return readResult ?? new Util_GenericResponse<bool>();
     }
 
     public async Task<Util_GenericResponse<List<DTO_UserSearched>>>
@@ -407,6 +407,6 @@ public class AccountManagmentProxyService(IHttpClientFactory httpClientFactory) 
             PropertyNameCaseInsensitive = true
         });
 
-        return readResult!;
+        return readResult ?? new Util_GenericResponse<List<DTO_UserSearched>>();
     }
 }
