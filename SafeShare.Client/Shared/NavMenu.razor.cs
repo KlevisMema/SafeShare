@@ -36,6 +36,6 @@ public partial class NavMenu
 
     private async Task CallTheApi()
     {
-        var result = await _userManagment.CallTheApi();
+        //var result = await _userManagment.CallTheApi();
     }
 }

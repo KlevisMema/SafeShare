@@ -7,12 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="ExpenseManagment\**" />
-    <EmbeddedResource Remove="ExpenseManagment\**" />
-    <None Remove="ExpenseManagment\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
   </ItemGroup>
 

@@ -1,17 +1,16 @@
 ﻿using System.Text;
 using System.Text.Json;
+using Newtonsoft.Json.Linq;
 using SafeShare.ClientDTO.Authentication;
 using SafeShare.ClientServerShared.Routes;
 using SafeShare.ClientUtilities.Responses;
 using SafeShare.ClientServices.Interfaces;
 using SafeShare.ClientDTO.AccountManagment;
-using Newtonsoft.Json.Linq;
 
 namespace SafeShare.ClientServices.Authentication;
 
 public class AuthenticationService(IHttpClientFactory httpClientFactory) : IAuthenticationService
 {
-
     private const string Client = "MyHttpClient";
 
     public async Task<ClientUtil_ApiResponse<bool>>
@@ -39,8 +38,6 @@ public class AuthenticationService(IHttpClientFactory httpClientFactory) : IAuth
             };
 
             var contentForm = new FormUrlEncodedContent(registerData);
-
-            //var response = await httpClient.PostAsync(BaseRoute.RouteAuthenticationForClient + Route_AuthenticationRoute.Register, contentForm);
 
             var response = await httpClient.PostAsync(BaseRoute.RouteAuthenticationProxy + Route_AuthenticationRoute.Register, contentForm);
 

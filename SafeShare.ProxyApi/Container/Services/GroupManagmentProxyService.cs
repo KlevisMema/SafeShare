@@ -8,9 +8,7 @@ using SafeShare.ProxyApi.Container.Interfaces;
 using SafeShare.Utilities.SafeShareApi.Responses;
 using SafeShare.DataTransormObject.SafeShareApi.Security;
 using SafeShare.DataTransormObject.SafeShareApi.GroupManagment;
-using Microsoft.AspNetCore.Mvc;
 using SafeShare.DataTransormObject.SafeShareApi.ExpenseManagment;
-using SendGrid.Helpers.Mail;
 using SafeShare.DataTransormObject.SafeShareApi.GroupManagment.GroupInvitations;
 
 namespace SafeShare.ProxyApi.Container.Services;
@@ -373,7 +371,7 @@ public class GroupManagmentProxyService(IHttpClientFactory httpClientFactory) : 
 
         var content = new StringContent(JsonSerializer.Serialize(new { deleteInvitationRequest }), Encoding.UTF8, "application/json");
 
-        var requestMessage = new HttpRequestMessage(HttpMethod.Post, BaseRoute.RouteGroupManagmentForClient + Route_GroupManagmentRoutes.DeleteInvitation.Replace("{userId}", userId.ToString()))
+        var requestMessage = new HttpRequestMessage(HttpMethod.Delete, BaseRoute.RouteGroupManagmentForClient + Route_GroupManagmentRoutes.DeleteInvitation.Replace("{userId}", userId.ToString()))
         {
             Content = content
         };
