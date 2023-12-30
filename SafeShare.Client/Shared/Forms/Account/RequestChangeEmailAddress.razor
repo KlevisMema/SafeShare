@@ -1,0 +1,36 @@
+﻿<style>
+    .mud-dialog{
+        width: 400px !important;
+    }
+</style>
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-3 mb-n1" />
+            Change email address?
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <EditForm @ref="@changeEmailForm" Model="EmailAddressRequestDto">
+            <DataAnnotationsValidator />
+            <MudTextField @bind-Value="@EmailAddressRequestDto.CurrentEmailAddress" Label="Current email" />
+            <MudTextField @bind-Value="@EmailAddressRequestDto.NewEmailAddress" Label="New email" />
+            <MudTextField @bind-Value="@EmailAddressRequestDto.ConfirmNewEmailAddress" Label="Confirm new email" />
+        </EditForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Disabled="_processing" Color="Color.Primary" ButtonType="ButtonType.Submit" Variant="Variant.Filled" OnClick="ValidateForm">
+            @if (_processing)
+            {
+                <MudProgressCircular Class="ms-n1" Size="MudBlazor.Size.Small" Indeterminate="true" Color="Color.Primary" />
+                <MudText Class="ms-2" Color="Color.Primary">Changing</MudText>
+            }
+            else
+            {
+                <MudText>Change Email</MudText>
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>

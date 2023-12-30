@@ -7,6 +7,8 @@ using SafeShare.Security.JwtSecurity.Helpers;
 using SafeShare.ProxyApi.Container.Interfaces;
 using SafeShare.Utilities.SafeShareApi.Responses;
 using SafeShare.DataTransormObject.SafeShareApi.UserManagment;
+using Microsoft.AspNetCore.Http.HttpResults;
+using SafeShare.DataTransormObject.SafeShareApi.Authentication;
 
 namespace SafeShare.ProxyApi.Controllers;
 
@@ -37,7 +39,14 @@ public class AccountManagmentProxyController(IAccountManagmentProxyService accou
         var jwtToken = JwtToken();
         var result = await accountManagmentProxyService.UpdateUser(UserId(jwtToken), jwtToken, userInfo);
 
-        return Util_GenericControllerResponse<DTO_UserUpdatedInfo>.ControllerResponse(result);
+        if (result.Item2.Headers.Contains("Set-Cookie"))
+        {
+            var cookies = result.Item2.Headers.GetValues("Set-Cookie");
+            foreach (var cookie in cookies)
+                HttpContext.Response.Headers.Append("Set-Cookie", cookie);
+        }
+
+        return Util_GenericControllerResponse<DTO_UserUpdatedInfo>.ControllerResponse(result.Item1);
     }
 
     [HttpPut(Route_AccountManagmentRoute.ProxyChangePassword)]
@@ -165,7 +174,14 @@ public class AccountManagmentProxyController(IAccountManagmentProxyService accou
 
         var result = await accountManagmentProxyService.ConfirmChangeEmailAddressRequest(UserId(jwtToken), jwtToken, changeEmailAddressConfirmDto);
 
-        return Util_GenericControllerResponse<bool>.ControllerResponse(result);
+        if (result.Item2.Headers.Contains("Set-Cookie"))
+        {
+            var cookies = result.Item2.Headers.GetValues("Set-Cookie");
+            foreach (var cookie in cookies)
+                HttpContext.Response.Headers.Append("Set-Cookie", cookie);
+        }
+
+        return Util_GenericControllerResponse<bool>.ControllerResponse(result.Item1);
     }
 
     [HttpGet(Route_AccountManagmentRoute.ProxySearchUserByUserName)]
@@ -180,6 +196,20 @@ public class AccountManagmentProxyController(IAccountManagmentProxyService accou
         var result = await accountManagmentProxyService.SearchUserByUserName(UserId(jwtToken), jwtToken ,userName);
 
         return Util_GenericControllerResponse<DTO_UserSearched>.ControllerResponseList(result);
+    }
+
+    [HttpPost(Route_AccountManagmentRoute.ProxyUploadProfilePicture)]
+    public async Task<ActionResult<Util_GenericResponse<byte[]>>>
+    UploadProfilePicture
+    (
+        [FromForm] IFormFile image
+    )
+    {
+        var jwtToken = JwtToken();
+
+        var result = await accountManagmentProxyService.UploadProfilePicture(UserId(jwtToken), jwtToken, image);
+
+        return Util_GenericControllerResponse<byte[]>.ControllerResponse(result);
     }
 
     private static string

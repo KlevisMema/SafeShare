@@ -13,7 +13,7 @@ public interface IAccountManagmentProxyService
         string jwtToken
     );
 
-    Task<Util_GenericResponse<DTO_UserUpdatedInfo>>
+    Task<Tuple<Util_GenericResponse<DTO_UserUpdatedInfo>, HttpResponseMessage>>
     UpdateUser
     (
         string userId,
@@ -69,7 +69,7 @@ public interface IAccountManagmentProxyService
         DTO_ChangeEmailAddressRequest emailAddress
     );
 
-    Task<Util_GenericResponse<bool>>
+    Task<Tuple<Util_GenericResponse<bool>, HttpResponseMessage>>
     ConfirmChangeEmailAddressRequest
     (
         string userId,
@@ -83,5 +83,13 @@ public interface IAccountManagmentProxyService
         string userId,
         string jwtToken,
         string userName
+    );
+
+    Task<Util_GenericResponse<byte[]>>
+    UploadProfilePicture
+    (
+        string userId,
+        string jwtToken,
+        IFormFile image
     );
 }

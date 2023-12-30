@@ -18,6 +18,7 @@ public static class Route_AccountManagmentRoute
     public const string ActivateAccountRequest = "ActivateAccountRequest";
     public const string RequestChangeEmail = "RequestChangeEmail/{userId}";
     public const string SearchUserByUserName = "SearchUserByUserName/{userId}";
+    public const string UploadProfilePicture = "UploadProfilePicture/{userId}";
     public const string ConfirmChangeEmailRequest = "ConfirmChangeEmailRequest/{userId}";
     public const string ActivateAccountRequestConfirmation = "ActivateAccountRequestConfirmation";
 
@@ -27,5 +28,6 @@ public static class Route_AccountManagmentRoute
     public const string ProxyDeactivateAccount = "DeactivateAccount";
     public const string ProxyRequestChangeEmail = "RequestChangeEmail";
     public const string ProxySearchUserByUserName = "SearchUserByUserName";
+    public const string ProxyUploadProfilePicture = "UploadProfilePicture";
     public const string ProxyConfirmChangeEmailRequest = "ConfirmChangeEmailRequest";
 }

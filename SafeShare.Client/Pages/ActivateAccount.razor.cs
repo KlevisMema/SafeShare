@@ -30,8 +30,8 @@ public partial class ActivateAccount
 
             ConfirmRegistration = new()
             {
-                Token = token,
-                Email = email
+                Token = token ?? string.Empty,
+                Email = email ?? string.Empty
 
             };
 

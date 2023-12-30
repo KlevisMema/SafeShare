@@ -1,6 +1,9 @@
 ﻿using System.Text;
 using System.Net.Http;
 using System.Text.Json;
+using Newtonsoft.Json.Linq;
+using System.Net.Http.Headers;
+using Microsoft.AspNetCore.Http;
 using SafeShare.ClientServerShared.Routes;
 using SafeShare.ClientUtilities.Responses;
 using SafeShare.ClientServices.Interfaces;
@@ -33,7 +36,10 @@ public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) :
         catch (Exception)
         {
 
-            throw;
+            return new ClientUtil_ApiResponse<ClientDto_UserInfo>
+            {
+                Succsess = false
+            };
         }
     }
 
@@ -374,6 +380,40 @@ public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) :
         catch (Exception)
         {
 
+            throw;
+        }
+    }
+
+    public async Task<ClientUtil_ApiResponse<byte[]>>
+    UploadProfilePicture
+    (
+        string fileName,
+        StreamContent streamContent
+    )
+    {
+        try
+        {
+            var httpClient = httpClientFactory.CreateClient(Client);
+
+            var formData = new MultipartFormDataContent
+            {
+                {streamContent, "image", fileName }
+            };
+
+            var response = await httpClient.PostAsync(BaseRoute.RouteAccountManagmentProxy + Route_AccountManagmentRoute.ProxyUploadProfilePicture, formData);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            var readResult = JsonSerializer.Deserialize<ClientUtil_ApiResponse<byte[]>>(responseContent, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            return readResult!;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.ToString());
             throw;
         }
     }

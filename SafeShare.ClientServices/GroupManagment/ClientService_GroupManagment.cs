@@ -31,8 +31,10 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
         }
         catch (Exception)
         {
-
-            throw;
+            return new ClientUtil_ApiResponse<ClientDto_GroupTypes>
+            {
+                Succsess = false
+            };
         }
     }
 

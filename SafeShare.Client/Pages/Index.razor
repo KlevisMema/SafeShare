@@ -1,12 +1,10 @@
 ﻿@page "/Dashboard"
-@using System.Text.RegularExpressions;
-@using System.ComponentModel.DataAnnotations;
-@using Blazored.LocalStorage
-@using SafeShare.Client.Helpers
-@using SafeShare.ClientDTO.Authentication
+@using SafeShare.Client.Shared.Components
 
 <PageTitle>Safe Share - Dashboard</PageTitle>
 
-<button @onclick="(() => test())">Click me after 5 minutes</button>
-
-<h1>@Layout.name</h1>
+<Dashboard GroupsDetails=@Layout.GroupTypes.GroupsDetails 
+           NrGroupsCreated="@Layout.GroupTypes.NrGroupsJoined"
+           NrGroupsJoined="@Layout.GroupTypes.NrGroupsCreated"
+           BalanceGroupsJoined="@Layout.GroupTypes.BalanceGroupsJoined" 
+           BalanceGroupsCreated="@Layout.GroupTypes.BalanceGroupsCreated" />

@@ -1,5 +1,8 @@
-﻿namespace SafeShare.ClientDTO.Enums;
+﻿using System.Text.Json.Serialization;
 
+namespace SafeShare.ClientDTO.Enums;
+
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum Gender
 {
     SelectGender = 0,

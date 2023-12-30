@@ -85,6 +85,29 @@ public class GroupManagment_GroupRepository
 
             var groupTypes = _mapper.Map<DTO_GroupsTypes>(allGroups);
 
+            groupTypes.AllGroupsDetails = allGroups.Where(gm => !gm.IsDeleted && !gm.Group.IsDeleted)
+                                        .Select(gm => new
+                                        {
+                                            Member = gm,
+                                            GroupOwner = _db.GroupMembers
+                                                            .Where(owner => owner.GroupId == gm.GroupId && owner.IsOwner)
+                                                            .Select(owner => owner.User.FullName)
+                                                            .FirstOrDefault(),
+                                            GroupDetails = gm.Group,
+                                            NumberOfMembers = _db.GroupMembers.Count(m => m.GroupId == gm.GroupId)
+                                        })
+                                        .ToList()
+                                        .Select(x => new DTO_GroupDetails
+                                        {
+                                            Description = x.GroupDetails.Description,
+                                            GroupAdmin = x.GroupOwner,
+                                            GroupCreationDate = x.GroupDetails.CreatedAt,
+                                            GroupName = x.GroupDetails.Name,
+                                            LatestExpense = "",
+                                            TotalSpent = x.Member.Balance,
+                                            NumberOfMembers = x.NumberOfMembers
+                                        }).ToList();
+
             return Util_GenericResponse<DTO_GroupsTypes>.Response
             (
                 groupTypes,

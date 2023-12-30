@@ -30,6 +30,7 @@ using SafeShare.DataTransormObject.SafeShareApi.Security;
 using SafeShare.Utilities.SafeShareApi.ConfigurationSettings;
 using SafeShare.DataTransormObject.SafeShareApi.UserManagment;
 using SafeShare.DataTransormObject.SafeShareApi.Authentication;
+using Microsoft.AspNetCore.Mvc;
 
 namespace SafeShare.UserManagment.UserAccount;
 
@@ -78,7 +79,7 @@ public class AccountManagment
         Guid id
     )
     {
-        var getUserResult = await GetUserInfoMapped(id, null);
+        var getUserResult = await GetUserInfoMapped("retrieved", id, null);
 
         return getUserResult;
     }
@@ -134,6 +135,9 @@ public class AccountManagment
             getUser.NormalizedUserName = dtoUser.UserName.ToUpper();
             getUser.PhoneNumber = dtoUser.PhoneNumber;
             getUser.RequireOTPDuringLogin = dtoUser.Enable2FA;
+            getUser.Age = DateTime.UtcNow.Year - dtoUser.Birthday.Year;
+
+            //await _db.SaveChangesAsync();
 
             await DeleteUserRefreshTokens(getUser.Id);
 
@@ -155,7 +159,7 @@ public class AccountManagment
                 getUser
             );
 
-            return await GetUserInfoMapped(id, token);
+            return await GetUserInfoMapped("updated", id, token);
         }
         catch (Exception ex)
         {
@@ -1102,7 +1106,7 @@ public class AccountManagment
                 (
                     false,
                     false,
-                    "Your old email address is incorrect",
+                    "Your current email address is incorrect",
                     null,
                     System.Net.HttpStatusCode.BadRequest
                 );
@@ -1137,7 +1141,9 @@ public class AccountManagment
 
             var tokenForEmailConfirmation = await userManager.GenerateChangeEmailTokenAsync(user, newEmailAddressDto.ConfirmNewEmailAddress);
 
-            var route = changeEmailAddressSettings.Value.Route.Replace("{token}", tokenForEmailConfirmation).Replace("{email}", newEmailAddressDto.ConfirmNewEmailAddress);
+            var encodedToken = System.Net.WebUtility.UrlEncode(tokenForEmailConfirmation);
+
+            var route = changeEmailAddressSettings.Value.Route.Replace("{token}", encodedToken).Replace("{email}", newEmailAddressDto.ConfirmNewEmailAddress);
 
             var sendEmailResult = await Util_Email.SendEmailForEmailConfirmation(newEmailAddressDto.ConfirmNewEmailAddress, route, user.FullName);
 
@@ -1335,7 +1341,7 @@ public class AccountManagment
     /// </summary>
     /// <param name="userName">The username of the user</param>
     /// <param name="userId">The id of the user</param>
-    /// <returns></returns>
+    /// <returns>A generic response indicating the result of the operation</returns>
     public async Task<Util_GenericResponse<List<DTO_UserSearched>>>
     SearchUserByUserName
     (
@@ -1372,6 +1378,164 @@ public class AccountManagment
         }
     }
     /// <summary>
+    /// Uploads an image for a user
+    /// </summary>
+    /// <param name="userId">The id of the user</param>
+    /// <param name="image"> The image of the user</param>
+    /// <returns>A generic response indicating the result of the operation</returns>
+    public async Task<Util_GenericResponse<byte[]>>
+    UploadProfilePicture
+    (
+        Guid userId,
+        IFormFile? image
+    )
+    {
+        try
+        {
+            if (image is null)
+            {
+                _logger.Log
+                (
+                    LogLevel.Error,
+                    """
+                        [UserManagment Module]-[AccountManagment Class]-[UploadProfilePicture Method] => 
+                        [IP] {IP} user with email {Id} tried to upload a profile picture. Null img obj => {imgobj}
+                     """,
+                    await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                    userId,
+                    image
+                );
+
+                return Util_GenericResponse<byte[]>.Response
+                (
+                    null,
+                    false,
+                    "Something went wrong, please upload again.",
+                    null,
+                    System.Net.HttpStatusCode.BadRequest
+                );
+            }
+
+            var user = await GetApplicationUser(userId);
+
+            if (user == null || user.IsDeleted)
+            {
+                _logger.Log
+                (
+                    LogLevel.Error,
+                    """
+                        [UserManagment Module]-[AccountManagment Class]-[UploadProfilePicture Method] => 
+                        [IP] {IP} user with email {Id}  tried to upload a profile picture.
+                     """,
+                    await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                    userId
+                );
+
+                return Util_GenericResponse<byte[]>.Response
+                (
+                    null,
+                    false,
+                    "Something went wrong, please log in and try again.",
+                    null,
+                    System.Net.HttpStatusCode.BadRequest
+                );
+            }
+
+            if (!IsImageFile(image.ContentType))
+            {
+                _logger.Log
+               (
+                   LogLevel.Error,
+                   """
+                        [UserManagment Module]-[AccountManagment Class]-[UploadProfilePicture Method] => 
+                        [IP] {IP} user with email {Id} tried to upload a wrong format profile picture.
+                        Image obj {imgObj}
+                    """,
+                   await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                   userId,
+                   image
+               );
+
+                return Util_GenericResponse<byte[]>.Response
+                (
+                    null,
+                    false,
+                    "Unsupported file format!",
+                    [
+                        "Unsupported file format!"
+                    ],
+                    System.Net.HttpStatusCode.BadRequest
+                );
+            }
+
+            using (var memoryStream = new MemoryStream())
+            {
+                await image.CopyToAsync(memoryStream);
+                var imageData = memoryStream.ToArray();
+
+                var hexImageData = BitConverter.ToString(imageData).Replace("-", "");
+
+                var convertedImageData = StringToByteArray(hexImageData);
+
+                user.ImageData = convertedImageData;
+
+                await _db.SaveChangesAsync();
+            }
+
+            return Util_GenericResponse<byte[]>.Response
+            (
+                user.ImageData,
+                true,
+                "User profile picture uploaded succsessfully",
+                null,
+                System.Net.HttpStatusCode.OK
+            );
+        }
+        catch (Exception ex)
+        {
+            return await Util_LogsHelper<byte[], AccountManagment>.ReturnInternalServerError
+            (
+                ex,
+                _logger,
+                $"""
+                Somewthing went wrong in [UserManagment Module]-[ChangeEmailAddress Class]-[UploadProfilePicture Method],
+                user with [ID] {userId} tried to upload a profile picture.
+                """,
+                null,
+                _httpContextAccessor
+            );
+        }
+    }
+    /// <summary>
+    /// Checks if the image is of allowed formats
+    /// </summary>
+    /// <param name="contentType"> The file content of the image</param>
+    /// <returns> True or false </returns>
+    private static bool IsImageFile
+    (
+        string contentType
+    )
+    {
+        var allowedTypes = new[] { "image/jpeg", "image/jpg", "image/png" };
+        return allowedTypes.Contains(contentType);
+    }
+    /// <summary>
+    /// convert hexadecimal string to byte array
+    /// </summary>
+    /// <param name="hex">The hex value</param>
+    /// <returns>String representation of the hex</returns>
+    public static byte[] 
+    StringToByteArray
+    (
+        string hex
+    )
+    {
+        return Enumerable.Range(0, hex.Length)
+                         .Where(x => x % 2 == 0)
+                         .Select(x => Convert.ToByte(hex.Substring(x, 2), 16))
+                         .ToArray();
+    }
+    /// <summary>
     /// Retrieves the user details mapped to DTO based on the provided user ID.
     /// </summary>
     /// <param name="id">The ID of the user to be retrieved.</param>
@@ -1379,6 +1543,7 @@ public class AccountManagment
     private async Task<Util_GenericResponse<DTO_UserUpdatedInfo>>
     GetUserInfoMapped
     (
+        string purpose,
         Guid id,
         DTO_Token? userToken
     )
@@ -1418,7 +1583,7 @@ public class AccountManagment
             (
                 userInfoMapped,
                 true,
-                "User retrieved succsessfully",
+                $"User {purpose} succsessfully",
                 null,
                 System.Net.HttpStatusCode.OK
             );

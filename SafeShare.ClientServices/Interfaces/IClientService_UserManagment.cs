@@ -1,4 +1,5 @@
-﻿using SafeShare.ClientUtilities.Responses;
+﻿using Microsoft.AspNetCore.Http;
+using SafeShare.ClientUtilities.Responses;
 using SafeShare.ClientDTO.AccountManagment;
 
 namespace SafeShare.ClientServices.Interfaces;
@@ -73,5 +74,12 @@ public interface IClientService_UserManagment
     UpdateUser
     (
         ClientDto_UpdateUser clientDto_UpdateUser
+    );
+
+    Task<ClientUtil_ApiResponse<byte[]>>
+    UploadProfilePicture
+    (
+        string fileName,
+        StreamContent streamContent
     );
 }

@@ -20,4 +20,8 @@ public class DTO_GroupType
     /// Gets or sets the name of the group.
     /// </summary>
     public string GroupName { get; set; } = string.Empty;
+    /// <summary>
+    /// Gets or sets the balance of the group.
+    /// </summary>
+    public decimal Balance { get; set; }    
 }

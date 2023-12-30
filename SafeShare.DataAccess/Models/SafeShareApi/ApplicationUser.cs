@@ -19,6 +19,8 @@ namespace SafeShare.DataAccessLayer.Models.SafeShareApi;
 /// </summary>
 public class ApplicationUser : BaseIdentity
 {
+    public byte[]? ImageData { get; set; }
+
     /// <summary>
     /// Navigation property representing the groups owned by the user.
     /// </summary>

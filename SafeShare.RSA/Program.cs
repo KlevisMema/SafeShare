@@ -18,6 +18,8 @@ class Program
         return (publicKey, privateKey);
     }
 
+    //pair of keys user specific or application specific
+
     public static string GenerateHMACSHA256Key()
     {
         using (var rng = new RNGCryptoServiceProvider())

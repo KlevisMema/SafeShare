@@ -75,7 +75,8 @@ public class Mapper_GroupManagment : Profile
             .Select(x => new DTO_GroupType
             {
                 GroupId = x.GroupId,
-                GroupName = x.Group.Name
+                GroupName = x.Group.Name,
+                Balance = x.Balance,
             })
             .ToList();
     }

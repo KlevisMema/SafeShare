@@ -27,6 +27,7 @@ using SafeShare.Utilities.SafeShareApi.Responses;
 using SafeShare.MediatR.Actions.Commands.Authentication;
 using SafeShare.DataTransormObject.SafeShareApi.Security;
 using SafeShare.Utilities.SafeShareApi.ConfigurationSettings;
+using SafeShare.DataTransormObject.SafeShareApi.UserManagment;
 using SafeShare.DataTransormObject.SafeShareApi.Authentication;
 
 namespace SafeShare.API.Controllers;
@@ -131,7 +132,7 @@ public class AuthenticationController
             result.Value.Token = null;
         }
 
-        return Ok(result);
+        return Util_GenericControllerResponse<DTO_LoginResult>.ControllerResponse(result);
     }
     /// <summary>
     /// Endpoint to confirm a user's login, typically used in two-factor authentication processes.
@@ -166,7 +167,7 @@ public class AuthenticationController
             result.Value.Token = null;
         }
 
-        return Ok(result);
+        return Util_GenericControllerResponse<DTO_LoginResult>.ControllerResponse(result);
     }
     /// <summary>
     /// Endpoint for requesting reconfirmation of the registration process.
@@ -258,7 +259,7 @@ public class AuthenticationController
 
             refreshTokenResult.Value = null;
 
-            return Ok(refreshTokenResult);
+            return Util_GenericControllerResponse<DTO_Token>.ControllerResponse(refreshTokenResult);
         }
         catch (Exception)
         {

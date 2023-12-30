@@ -9,15 +9,20 @@
 */
 
 using MediatR;
+using SafeShare.API.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Authorization;
 using SafeShare.ClientServerShared.Routes;
 using SafeShare.Security.API.ActionFilters;
+using SafeShare.Security.User.Implementation;
 using SafeShare.Utilities.SafeShareApi.Responses;
 using SafeShare.MediatR.Actions.Queries.UserManagment;
 using SafeShare.MediatR.Actions.Commands.UserManagment;
 using SafeShare.DataTransormObject.SafeShareApi.UserManagment;
+using SafeShare.MediatR.Handlers.CommandsHandlers.UserManagment;
+using SafeShare.DataTransormObject.SafeShareApi.Security;
 
 namespace SafeShare.API.Controllers;
 
@@ -28,7 +33,12 @@ namespace SafeShare.API.Controllers;
 /// Initializes a new instance of the <see cref="AccountManagmentController"/> class.
 /// </remarks>
 /// <param name="mediator">Mediator pattern handler.</param>
-public class AccountManagmentController(IMediator mediator) : BaseController(mediator)
+public class AccountManagmentController
+(
+    IMediator mediator,
+    IOptions<API_Helper_CookieSettings> cookieOpt,
+    ISecurity_UserDataProtectionService _userDataProtection
+) : BaseController(mediator)
 {
     /// <summary>
     /// Fetch a user's updated information by their ID.
@@ -71,7 +81,15 @@ public class AccountManagmentController(IMediator mediator) : BaseController(med
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        return await _mediator.Send(new MediatR_UpdateUserCommand(userId, userInfo));
+        var result = await _mediator.Send(new MediatR_UpdateUserCommand(userId, userInfo));
+
+        if (result.Succsess && result.Value is not null && result.Value.UserToken is not null)
+        {
+            SetCookiesResposne(result.Value.UserToken, result.Value.UserID);
+            result.Value.UserToken = null;
+        }
+
+        return Util_GenericControllerResponse<DTO_UserUpdatedInfo>.ControllerResponse(result);
     }
     /// <summary>
     /// Change a user's password by their ID.
@@ -260,7 +278,22 @@ public class AccountManagmentController(IMediator mediator) : BaseController(med
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        return await _mediator.Send(new MediatR_ChangeEmailAddressRequestConfirmationCommand(userId, changeEmailAddressConfirmDto));
+        var result = await _mediator.Send(new MediatR_ChangeEmailAddressRequestConfirmationCommand(userId, changeEmailAddressConfirmDto));
+
+        if (result.Succsess && result.Value is not null)
+        {
+            SetCookiesResposne(result.Value, userId.ToString());
+            result.Value.Token = null;
+        }
+
+        return Util_GenericControllerResponse<bool>.ControllerResponse(new Util_GenericResponse<bool>
+        {
+            Errors = result.Errors,
+            Message = result.Message,
+            StatusCode = result.StatusCode,
+            Succsess = result.Succsess,
+            Value = result.Succsess
+        });
     }
     /// <summary>
     /// Search users by their usernames
@@ -281,5 +314,78 @@ public class AccountManagmentController(IMediator mediator) : BaseController(med
     )
     {
         return await _mediator.Send(new MediatR_SearchUsersQuery(userId, userName));
+    }
+    /// <summary>
+    /// Uploads a profile picture  
+    /// </summary>
+    /// <param name="userId">The id of the user</param>
+    /// <param name="image">The image content</param>
+    /// <returns>A response indicating the success or failure the operation.</returns>
+    [ServiceFilter(typeof(VerifyUser))]
+    [HttpPost(Route_AccountManagmentRoute.UploadProfilePicture)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<byte[]>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(Util_GenericResponse<byte[]>))]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Util_GenericResponse<byte[]>))]
+    public async Task<ActionResult<Util_GenericResponse<byte[]>>>
+    UploadProfilePicture
+    (
+        Guid userId,
+        [FromForm] IFormFile image
+    )
+    {
+        return await _mediator.Send(new MediatR_UploadProfilePictureCommand(userId, image));
+    }
+    /// <summary>
+    /// Sets the cookies in the clients browser
+    /// </summary>
+    /// <param name="token">The generated values</param>
+    /// <param name="userId">The id of the user</param>
+    private void
+    SetCookiesResposne
+    (
+        DTO_Token token,
+        string userId
+    )
+    {
+
+        HttpContext.Response.Cookies.Append
+        (
+            cookieOpt.Value.AuthTokenCookieName, token!.Token!,
+            new CookieOptions
+            {
+                Secure = true,
+                HttpOnly = true,
+                IsEssential = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = token.ValididtyTime.AddHours(1),
+            }
+        );
+
+        HttpContext.Response.Cookies.Append
+        (
+            cookieOpt.Value.RefreshAuthTokenCookieName, _userDataProtection.Protect(token.RefreshToken!, userId),
+            new CookieOptions
+            {
+                Secure = true,
+                HttpOnly = true,
+                IsEssential = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = token.ValididtyTime.AddHours(1),
+            }
+        );
+
+        HttpContext.Response.Cookies.Append
+        (
+            cookieOpt.Value.RefreshAuthTokenIdCookieName, _userDataProtection.Protect(token.RefreshTokenId!.ToString(), userId),
+            new CookieOptions
+            {
+                Secure = true,
+                HttpOnly = true,
+                IsEssential = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = token.ValididtyTime.AddHours(1),
+            }
+        );
     }
 }

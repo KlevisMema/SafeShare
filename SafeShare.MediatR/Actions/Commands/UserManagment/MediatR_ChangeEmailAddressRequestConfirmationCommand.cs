@@ -5,6 +5,8 @@
 
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using SafeShare.Utilities.SafeShareApi.Responses;
+using SafeShare.DataTransormObject.SafeShareApi.Security;
 using SafeShare.DataTransormObject.SafeShareApi.UserManagment;
 
 namespace SafeShare.MediatR.Actions.Commands.UserManagment;
@@ -22,7 +24,7 @@ public class MediatR_ChangeEmailAddressRequestConfirmationCommand
 (
     Guid userId,
     DTO_ChangeEmailAddressRequestConfirm changeEmailAddressConfirm
-) : IRequest<ObjectResult>
+) : IRequest<Util_GenericResponse<DTO_Token>>
 {
     /// <summary>
     /// The unique identifier of the user requesting confirmation of the email address change.

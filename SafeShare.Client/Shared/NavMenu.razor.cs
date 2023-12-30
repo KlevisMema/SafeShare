@@ -8,6 +8,8 @@ using SafeShare.ClientServerShared.Routes;
 using SafeShare.ClientServices.Interfaces;
 using SafeShare.ClientDTO.AccountManagment;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Hosting.Server;
+using SafeShare.Client.Shared.Forms.Account;
 
 namespace SafeShare.Client.Shared;
 
@@ -34,8 +36,10 @@ public partial class NavMenu
         StateHasChanged();
     }
 
-    private async Task CallTheApi()
+    private async Task OpenPopUpForm()
     {
-        //var result = await _userManagment.CallTheApi();
+        var options = new DialogOptions { ClassBackground = "my-custom-class" };
+        var dialog = await DialogService.ShowAsync<RequestChangeEmailAddress>("Change Email Dialog", options);
+        var result = await dialog.Result;
     }
 }

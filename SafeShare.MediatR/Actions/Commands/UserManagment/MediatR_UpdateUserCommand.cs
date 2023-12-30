@@ -4,6 +4,8 @@
 
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using SafeShare.Utilities.SafeShareApi.Responses;
+using SafeShare.DataTransormObject.SafeShareApi.Authentication;
 using SafeShare.DataTransormObject.SafeShareApi.UserManagment;
 
 namespace SafeShare.MediatR.Actions.Commands.UserManagment;
@@ -20,7 +22,7 @@ public class MediatR_UpdateUserCommand
 (
     Guid id,
     DTO_UserInfo dTO_UserInfo
-) : IRequest<ObjectResult>
+) : IRequest<Util_GenericResponse<DTO_UserUpdatedInfo>>
 {
     /// <summary>
     /// Gets or sets the ID of the user to be updated.

@@ -31,7 +31,8 @@ public class Mapper_AccountManagment : Profile
         // Map from ApplicationUser to DTO_UserUpdatedInfo with custom property mappings
         CreateMap<ApplicationUser, DTO_UserUpdatedInfo>()
            .ForMember(dest => dest.UserID, opt => opt.MapFrom(src => src.Id))
-           .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber));
+           .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
+           .ForMember(dest => dest.ProfilePicture, opt => opt.MapFrom(src => src.ImageData));
 
         CreateMap<ApplicationUser, DTO_UserSearched>()
             .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.UserName))

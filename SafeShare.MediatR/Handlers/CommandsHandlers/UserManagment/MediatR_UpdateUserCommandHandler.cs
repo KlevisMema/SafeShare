@@ -6,9 +6,10 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using SafeShare.MediatR.Dependencies;
 using SafeShare.UserManagment.Interfaces;
+using SafeShare.Utilities.SafeShareApi.Responses;
 using SafeShare.MediatR.Actions.Commands.UserManagment;
 using SafeShare.DataTransormObject.SafeShareApi.UserManagment;
-using SafeShare.Utilities.SafeShareApi.Responses;
+using SafeShare.DataTransormObject.SafeShareApi.Authentication;
 
 namespace SafeShare.MediatR.Handlers.CommandsHandlers.UserManagment;
 
@@ -23,7 +24,7 @@ public class MediatR_UpdateUserCommandHandler
 (
     IAccountManagment service
 ) : MediatR_GenericHandler<IAccountManagment>(service),
-    IRequestHandler<MediatR_UpdateUserCommand, ObjectResult>
+    IRequestHandler<MediatR_UpdateUserCommand, Util_GenericResponse<DTO_UserUpdatedInfo>>
 {
 
     /// <summary>
@@ -32,7 +33,7 @@ public class MediatR_UpdateUserCommandHandler
     /// <param name="request">The update user command request.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The result indicating the success or failure of the user update operation.</returns>
-    public async Task<ObjectResult>
+    public async Task<Util_GenericResponse<DTO_UserUpdatedInfo>>
     Handle
     (
         MediatR_UpdateUserCommand request,
@@ -41,6 +42,6 @@ public class MediatR_UpdateUserCommandHandler
     {
         var updateUserResult = await _service.UpdateUser(request.Id, request.DTO_UserInfo);
 
-        return Util_GenericControllerResponse<DTO_UserUpdatedInfo>.ControllerResponse(updateUserResult);
+        return updateUserResult;
     }
 }

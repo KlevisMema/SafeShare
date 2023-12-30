@@ -21,4 +21,8 @@ public class DTO_GroupsTypes
     /// This property may be null if the user has not joined any groups.
     /// </summary>
     public List<DTO_GroupType>? GroupsJoined { get; set; }
+    /// <summary>
+    /// Gets or sets the list of all groups that the user has joined and created.
+    /// </summary>
+    public List<DTO_GroupDetails>? AllGroupsDetails { get; set; }
 }

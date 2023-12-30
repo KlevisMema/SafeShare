@@ -13,6 +13,7 @@ public class ClientDto_UpdateUser
     public Gender Gender { get; set; }
     [Required]
     public string UserName { get; set; } = string.Empty;
+
     [Required]
     [Phone(ErrorMessage = "Invalid phone number format")]
     public string PhoneNumber { get; set; } = string.Empty;

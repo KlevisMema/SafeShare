@@ -49,7 +49,7 @@ public class AccountManagmentProxyService(IHttpClientFactory httpClientFactory) 
         return readResult ?? new Util_GenericResponse<DTO_UserUpdatedInfo>();
     }
 
-    public async Task<Util_GenericResponse<DTO_UserUpdatedInfo>>
+    public async Task<Tuple<Util_GenericResponse<DTO_UserUpdatedInfo>, HttpResponseMessage>>
     UpdateUser
     (
         string userId,
@@ -89,7 +89,15 @@ public class AccountManagmentProxyService(IHttpClientFactory httpClientFactory) 
             PropertyNameCaseInsensitive = true
         });
 
-        return readResult ?? new Util_GenericResponse<DTO_UserUpdatedInfo>();
+        return Tuple.Create(readResult!, response) ?? Tuple.Create(
+            new Util_GenericResponse<DTO_UserUpdatedInfo>()
+            {
+                Message = "Something went wrong",
+                Errors = null,
+                StatusCode = System.Net.HttpStatusCode.InternalServerError,
+                Succsess = false,
+                Value = null
+            }, new HttpResponseMessage()); ;
     }
 
     public async Task<Util_GenericResponse<bool>>
@@ -342,7 +350,7 @@ public class AccountManagmentProxyService(IHttpClientFactory httpClientFactory) 
         return readResult ?? new Util_GenericResponse<bool>();
     }
 
-    public async Task<Util_GenericResponse<bool>>
+    public async Task<Tuple<Util_GenericResponse<bool>, HttpResponseMessage>>
     ConfirmChangeEmailAddressRequest
     (
         string userId,
@@ -374,7 +382,7 @@ public class AccountManagmentProxyService(IHttpClientFactory httpClientFactory) 
             PropertyNameCaseInsensitive = true
         });
 
-        return readResult ?? new Util_GenericResponse<bool>();
+        return Tuple.Create(readResult ?? new Util_GenericResponse<bool>(), response);
     }
 
     public async Task<Util_GenericResponse<List<DTO_UserSearched>>>
@@ -408,5 +416,45 @@ public class AccountManagmentProxyService(IHttpClientFactory httpClientFactory) 
         });
 
         return readResult ?? new Util_GenericResponse<List<DTO_UserSearched>>();
+    }
+
+    public async Task<Util_GenericResponse<byte[]>>
+    UploadProfilePicture
+    (
+        string userId,
+        string jwtToken,
+        IFormFile image
+    )
+    {
+        var httpClient = httpClientFactory.CreateClient(Client);
+
+        var fileContent = new StreamContent(image.OpenReadStream());
+        fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse(image.ContentType);
+
+        var formData = new MultipartFormDataContent
+        {
+            { new StringContent(userId), "userId" },
+            { fileContent, "image", image.FileName }
+        };
+
+        var requestMessage = new HttpRequestMessage(HttpMethod.Post, BaseRoute.RouteAccountManagmentForClient + Route_AccountManagmentRoute.UploadProfilePicture.Replace("{userId}", userId.ToString()))
+        {
+            Content = formData
+        };
+
+        requestMessage.Headers.Add("X-Api-Key", $"{ApiKey}");
+
+        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
+
+        var response = await httpClient.SendAsync(requestMessage);
+
+        var responseContent = await response.Content.ReadAsStringAsync();
+
+        var readResult = JsonSerializer.Deserialize<Util_GenericResponse<byte[]>>(responseContent, new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
+
+        return readResult ?? new Util_GenericResponse<byte[]>();
     }
 }
