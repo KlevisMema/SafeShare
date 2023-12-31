@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Components.Forms;
 using SafeShare.ClientUtilities.Responses;
 using SafeShare.ClientServices.Interfaces;
 
-namespace SafeShare.Client.Shared.Forms;
+namespace SafeShare.Client.Shared.Forms.Auth;
 
 public partial class TwoFaForm
 {

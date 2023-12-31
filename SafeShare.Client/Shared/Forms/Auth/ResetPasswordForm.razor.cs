@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 using SafeShare.ClientDTO.Authentication;
 using SafeShare.ClientServices.Interfaces;
 
-namespace SafeShare.Client.Shared.Forms;
+namespace SafeShare.Client.Shared.Forms.Auth;
 
 public partial class ResetPasswordForm
 {

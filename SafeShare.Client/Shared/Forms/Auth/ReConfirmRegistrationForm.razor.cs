@@ -4,7 +4,7 @@ using SafeShare.ClientDTO.Authentication;
 using Microsoft.AspNetCore.Components.Forms;
 using SafeShare.ClientServices.Interfaces;
 
-namespace SafeShare.Client.Shared.Forms;
+namespace SafeShare.Client.Shared.Forms.Auth;
 
 public partial class ReConfirmRegistrationForm
 {

@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Components.Forms;
 using System.Runtime.InteropServices.JavaScript;
 #endregion
 
-namespace SafeShare.Client.Shared.Forms;
+namespace SafeShare.Client.Shared.Forms.Auth;
 
 public partial class LoginForm
 {

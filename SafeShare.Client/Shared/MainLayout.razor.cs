@@ -35,8 +35,6 @@ public partial class MainLayout
 
         var getGroupTypes = await _clientService_GroupManagment.GetGroupTypes();
 
-        await Task.Delay(5000);
-
         if (getGroupTypes.Succsess && getGroupTypes.Value is not null)
         {
             GroupTypes = getGroupTypes.Value;
@@ -60,7 +58,7 @@ public partial class MainLayout
         var userId = await _localStorage.GetItemAsStringAsync("UserData");
         await authService.LogoutUser(Guid.Parse(userId));
         await _localStorage.RemoveItemAsync("UserData");
-        _navigationManager.NavigateTo("/Login");
+        _navigationManager.NavigateTo("/");
         hideLogOutBtn = false;
         LogOutText = "Log Out";
     }
