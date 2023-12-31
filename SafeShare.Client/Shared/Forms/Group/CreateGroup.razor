@@ -1,0 +1,51 @@
+<style>
+    .mud-dialog {
+        width: 400px !important;
+    }
+
+        .mud-dialog .mud-dialog-actions {
+            padding: 8px 24px 16px 24px !important;
+        }
+
+        .mud-dialog .mud-dialog-title {
+            padding: 16px 24px 8px 24px !important;
+        }
+</style>
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-3 mb-n1" />
+            Create Your Group
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <EditForm @ref="@CreateGroupForm" Model="createGroup">
+            <DataAnnotationsValidator />
+            <MudTextField InputType="@GroupNameInput" @bind-Value="@createGroup.GroupName" Label="Group Name"
+                          Adornment="Adornment.End"
+                          AdornmentColor="Color.Primary"
+                          Variant="Variant.Outlined"
+                          Required=true />
+
+            <MudTextField InputType="@GroupNameInput" @bind-Value="@createGroup.GroupDescription" Label="Description"
+                          Adornment="Adornment.End"
+                          AdornmentColor="Color.Primary"
+                          Variant="Variant.Outlined"
+                          Required=true />
+        </EditForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Disabled="_processing" Color="Color.Primary" ButtonType="ButtonType.Submit" Variant="Variant.Filled" OnClick="ValidateForm">
+            @if (_processing)
+            {
+                <MudProgressCircular Class="ms-n1" Size="MudBlazor.Size.Small" Indeterminate="true" Color="Color.Primary" />
+                <MudText Class="ms-2" Color="Color.Primary">Creating</MudText>
+            }
+            else
+            {
+                <MudText>Create Group</MudText>
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>
