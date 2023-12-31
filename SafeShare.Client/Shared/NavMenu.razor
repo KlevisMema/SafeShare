@@ -5,73 +5,109 @@
     .my-custom-class {
         backdrop-filter: blur(10px);
     }
+
+    .mud-skeleton-nav-btn {
+        display: flex;
+        padding: 8px 16px 8px 16px;
+        gap: 20px;
+    }
+
+    .mud-skeleton-nav-links {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: 10px;
+    }
 </style>
 
 <MudPaper Width="350px" Class="d-inline-flex py-3" Elevation="0">
 
     <MudNavMenu Bordered="true" Class="mud-width-full" Color="Color.Primary">
 
-        <MudNavLink Match="NavLinkMatch.All" Href="/Dashboard" Icon="@Icons.Material.Filled.Dashboard" IconColor="Color.Inherit">Dashboard</MudNavLink>
+        @if (!DataRetrieved)
+        {
+            <MudSkeleton Animation="Animation.Pulse" SkeletonType="SkeletonType.Rectangle" Height="40px" Width="100%" />
+        }
+        else
+        {
+            <MudNavLink Match="NavLinkMatch.All" Href="/Dashboard" Icon="@Icons.Material.Filled.Dashboard" IconColor="Color.Inherit">Dashboard</MudNavLink>
+        }
 
-        <MudNavGroup Title="Profile" Icon="@Icons.Material.Filled.Person" IconColor="Color.Inherit" Expanded="true" >
+        <br />
 
-            <MudNavLink Match="NavLinkMatch.All" Href="/Profile" Icon="@Icons.Material.Filled.RemoveRedEye" IconColor="Color.Inherit">See profile</MudNavLink>
-            <MudNavLink Match="NavLinkMatch.All" Href="/Profile/Edit" Icon="@Icons.Material.Filled.Edit" IconColor="Color.Inherit">Update Data</MudNavLink>
-            <MudNavLink Match="NavLinkMatch.All" OnClick="OpenPopUpForm" Icon="@Icons.Material.Filled.Password" IconColor="Color.Inherit">Change Email</MudNavLink>
-            <MudNavLink Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Email" IconColor="Color.Inherit">Change Password</MudNavLink>
+        @if (!DataRetrieved)
+        {
+            <div class="mud-skeleton-nav-links">
+                <MudSkeleton Animation="Animation.Pulse" SkeletonType="SkeletonType.Rectangle" Height="40px" Width="100%" />
+                <MudSkeleton Animation="Animation.Pulse" SkeletonType="SkeletonType.Rectangle" Height="40px" Width="100%" />
+                <MudSkeleton Animation="Animation.Pulse" SkeletonType="SkeletonType.Rectangle" Height="40px" Width="100%" />
+                <MudSkeleton Animation="Animation.Pulse" SkeletonType="SkeletonType.Rectangle" Height="40px" Width="100%" />
+                <MudSkeleton Animation="Animation.Pulse" SkeletonType="SkeletonType.Rectangle" Height="40px" Width="100%" />
+            </div>
+        }
+        else
+        {
+            <MudNavGroup Title="Profile" Icon="@Icons.Material.Filled.Person" IconColor="Color.Inherit" Expanded="true">
+                <MudNavLink Match="NavLinkMatch.All" Href="/Profile" Icon="@Icons.Material.Filled.RemoveRedEye" IconColor="Color.Inherit">See profile</MudNavLink>
+                <MudNavLink Match="NavLinkMatch.All" Href="/Profile/Edit" Icon="@Icons.Material.Filled.Edit" IconColor="Color.Inherit">Update Data</MudNavLink>
+                <MudNavLink OnClick="OpenPopUpChangeEmailForm" Icon="@Icons.Material.Filled.Password" IconColor="Color.Inherit">Change Email</MudNavLink>
+                <MudNavLink OnClick="OpenPopUpChangePasswordForm" Icon="@Icons.Material.Filled.Email" IconColor="Color.Inherit">Change Password</MudNavLink>
+                <MudNavLink OnClick="OpenPopUpDeactivateAccountForm" Icon="@Icons.Material.Filled.Delete" IconColor="Color.Inherit">Deactivate Account</MudNavLink>
+            </MudNavGroup>
+        }
 
-            <MudNavLink Icon="@Icons.Material.Filled.Delete" IconColor="Color.Inherit" OnClick="OnButtonClicked">
-                Deactivate Account
-            </MudNavLink>
 
-        </MudNavGroup>
 
         <MudDivider Class="my-2" />
 
-        <MudTooltip Text="Invite" Color="Color.Primary" Placement="MudBlazor.Placement.Bottom">
-            <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.GroupAdd" Size="MudBlazor.Size.Small" Class="m-sm-2" />
-        </MudTooltip>
+        @if (!DataRetrieved)
+        {
+            <div class="mud-skeleton-nav-btn">
+                <MudSkeleton Animation="Animation.Pulse" SkeletonType="SkeletonType.Circle" Height="40px" Width="40px" />
+                <MudSkeleton Animation="Animation.Pulse" SkeletonType="SkeletonType.Circle" Height="40px" Width="40px" />
+            </div>
+            <br />
 
-        <MudTooltip Text="Search" Color="Color.Primary" Placement="MudBlazor.Placement.Bottom">
-            <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Search" Size="MudBlazor.Size.Small" Class="m-sm-2" />
-        </MudTooltip>
+            <div class="mud-skeleton-nav-links">
+                <MudSkeleton Animation="Animation.Pulse" SkeletonType="SkeletonType.Rectangle" Height="40px" Width="100%" />
+                <MudSkeleton Animation="Animation.Pulse" SkeletonType="SkeletonType.Rectangle" Height="40px" Width="100%" />
+            </div>
+        }
+        else
+        {
+            <div class="mud-skeleton-nav-btn">
+                <MudTooltip Text="Invite" Color="Color.Primary" Placement="MudBlazor.Placement.Bottom">
+                    <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.GroupAdd" Size="MudBlazor.Size.Small" Class="m-sm-2" />
+                </MudTooltip>
 
-        <MudNavGroup Title="Groups Created" Icon="@Icons.Material.Filled.PeopleAlt" IconColor="Color.Inherit" Expanded="false">
-            @if (GroupTypes is not null && GroupTypes.GroupsCreated is not null)
-            {
-                @foreach (var group in GroupTypes.GroupsCreated )
+                <MudTooltip Text="Search" Color="Color.Primary" Placement="MudBlazor.Placement.Bottom">
+                    <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Search" Size="MudBlazor.Size.Small" Class="m-sm-2" />
+                </MudTooltip>
+            </div>
+
+            <MudNavGroup Title="Groups Created" Icon="@Icons.Material.Filled.PeopleAlt" IconColor="Color.Inherit" Expanded="false">
+                @if (GroupTypes is not null && GroupTypes.GroupsCreated is not null)
                 {
-                    <MudNavLink Icon="@Icons.Material.Filled.People" IconColor="Color.Inherit">@group.GroupName</MudNavLink>
+                    @foreach (var group in GroupTypes.GroupsCreated)
+                    {
+                        <MudNavLink Icon="@Icons.Material.Filled.People" IconColor="Color.Inherit">@group.GroupName</MudNavLink>
+                    }
                 }
-            }
-          
-        </MudNavGroup>
 
-        <MudNavGroup Title="Groups Joined" Icon="@Icons.Material.Filled.PeopleAlt" IconColor="Color.Inherit" Expanded="false">
-            @if (GroupTypes is not null && GroupTypes.GroupsJoined is not null)
-            {
-                @foreach (var group in GroupTypes.GroupsJoined)
+            </MudNavGroup>
+
+            <MudNavGroup Title="Groups Joined" Icon="@Icons.Material.Filled.PeopleAlt" IconColor="Color.Inherit" Expanded="false">
+                @if (GroupTypes is not null && GroupTypes.GroupsJoined is not null)
                 {
-                    <MudNavLink Icon="@Icons.Material.Filled.People" IconColor="Color.Inherit">@group.GroupName</MudNavLink>
+                    @foreach (var group in GroupTypes.GroupsJoined)
+                    {
+                        <MudNavLink Icon="@Icons.Material.Filled.People" IconColor="Color.Inherit">@group.GroupName</MudNavLink>
+                    }
                 }
-            }
-        </MudNavGroup>
+            </MudNavGroup>
+        }
 
     </MudNavMenu>
 
 </MudPaper>
-
-
-<MudMessageBox @ref="mbox" Title="Delete?" CancelText="No">
-
-    <MessageContent>
-        Are you sure you want to deactivate your account?
-    </MessageContent>
-
-
-    <YesButton>
-        <MudButton Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.DeleteForever">Delete!</MudButton>
-    </YesButton>
-
-
-</MudMessageBox>

@@ -21,29 +21,47 @@ public partial class MainLayout
     public ClientDto_GroupTypes? GroupTypes { get; set; } = new();
 
     public string name = "klevis";
+    public string LogOutText { get; set; } = "Log Out";
+
+    public bool DataRetrieved { get; set; } = false;
+
+    private bool hideLogOutBtn { get; set; } = false;
 
 
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task
+    OnInitializedAsync()
     {
+
         var getGroupTypes = await _clientService_GroupManagment.GetGroupTypes();
 
+        await Task.Delay(5000);
+
         if (getGroupTypes.Succsess && getGroupTypes.Value is not null)
+        {
             GroupTypes = getGroupTypes.Value;
+            DataRetrieved = true;
+        }
     }
 
-    private void DrawerToggle()
+    private void
+    DrawerToggle()
     {
         _drawerOpen = !_drawerOpen;
     }
 
-    private async Task LogoutUser()
+    private async Task
+    LogoutUser()
     {
+        LogOutText = "Logging Out";
+        hideLogOutBtn = true;
         _snackbar.Add("Logging you out", Severity.Success, config => { config.CloseAfterNavigation = true; });
         await Task.Delay(2000);
         var userId = await _localStorage.GetItemAsStringAsync("UserData");
         await authService.LogoutUser(Guid.Parse(userId));
         await _localStorage.RemoveItemAsync("UserData");
         _navigationManager.NavigateTo("/Login");
+        hideLogOutBtn = false;
+        LogOutText = "Log Out";
     }
 }

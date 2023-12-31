@@ -340,68 +340,117 @@
         <div class="main">
 
             <div class="box-container">
-                <div class="box box1">
-                    <div class="text">
-                        <h2 class="topic-heading">@NrGroupsCreated</h2>
-                        <h2 class="topic">Nr. Group Created</h2>
+
+                @if (!DataRetrieved)
+                {
+                    <MudSkeleton Animation="Animation.Pulse" SkeletonType="SkeletonType.Rectangle" Class="box box1">
+                        <div class="text">
+                            <MudSkeleton SkeletonType="SkeletonType.Text" class="topic-heading" />
+                            <MudSkeleton SkeletonType="SkeletonType.Text" class="topic" />
+                        </div>
+
+                    </MudSkeleton>
+
+                    <MudSkeleton Animation="Animation.Pulse" SkeletonType="SkeletonType.Rectangle" Class="box box2">
+                        <div class="text">
+                            <MudSkeleton SkeletonType="SkeletonType.Text" class="topic-heading" />
+                            <MudSkeleton SkeletonType="SkeletonType.Text" class="topic" />
+                        </div>
+
+                    </MudSkeleton>
+
+                    <MudSkeleton Animation="Animation.Pulse" SkeletonType="SkeletonType.Rectangle" Class="box box3">
+                        <div class="text">
+                            <MudSkeleton SkeletonType="SkeletonType.Text" class="topic-heading" />
+                            <MudSkeleton SkeletonType="SkeletonType.Text" class="topic" />
+                        </div>
+
+                    </MudSkeleton>
+
+                    <MudSkeleton Animation="Animation.Pulse" SkeletonType="SkeletonType.Rectangle" Class="box box4">
+                        <div class="text">
+                            <MudSkeleton SkeletonType="SkeletonType.Text" class="topic-heading" />
+                            <MudSkeleton SkeletonType="SkeletonType.Text" class="topic" />
+                        </div>
+
+                    </MudSkeleton>
+                }
+                else
+                {
+                    <div class="box box1">
+                        <div class="text">
+                            <h2 class="topic-heading">@NrGroupsCreated</h2>
+                            <h2 class="topic">Nr. Group Created</h2>
+                        </div>
+
+                        <MudIcon Icon="@Icons.Material.Filled.GroupAdd" Title="Favorite" Color="Color.Info" Size="Size.Large" />
                     </div>
 
-                    <MudIcon Icon="@Icons.Material.Filled.GroupAdd" Title="Favorite" Color="Color.Info" Size="Size.Large" />
-                </div>
+                    <div class="box box2">
+                        <div class="text">
+                            <h2 class="topic-heading">@NrGroupsJoined</h2>
+                            <h2 class="topic">Nr. Groups Joined</h2>
+                        </div>
 
-                <div class="box box2">
-                    <div class="text">
-                        <h2 class="topic-heading">@NrGroupsJoined</h2>
-                        <h2 class="topic">Nr. Groups Joined</h2>
+                        <MudIcon Icon="@Icons.Material.Filled.Groups" Title="Favorite" Color="Color.Info" Size="Size.Large" />
                     </div>
 
-                    <MudIcon Icon="@Icons.Material.Filled.Groups" Title="Favorite" Color="Color.Info" Size="Size.Large" />
-                </div>
 
-                <div class="box box3">
-                    <div class="text">
-                        <h2 class="topic-heading">@BalanceGroupsCreated.ToString("0.00") $</h2>
-                        <h2 class="topic">Balance In Groups Created</h2>
+
+                    <div class="box box3">
+                        <div class="text">
+                            <h2 class="topic-heading">@BalanceGroupsCreated.ToString("0.00") $</h2>
+                            <h2 class="topic">Balance In Groups Created</h2>
+                        </div>
+
+                        <MudIcon Icon="@Icons.Material.Filled.AccountBalanceWallet" Title="Favorite" Color="Color.Info" Size="Size.Large" />
                     </div>
 
-                    <MudIcon Icon="@Icons.Material.Filled.AccountBalanceWallet" Title="Favorite" Color="Color.Info" Size="Size.Large" />
-                </div>
+                    <div class="box box4">
+                        <div class="text">
+                            <h2 class="topic-heading">@BalanceGroupsJoined.ToString("0.00") $</h2>
+                            <h2 class="topic">Balance In Groups Joined</h2>
+                        </div>
 
-                <div class="box box4">
-                    <div class="text">
-                        <h2 class="topic-heading">@BalanceGroupsJoined.ToString("0.00") $</h2>
-                        <h2 class="topic">Balance In Groups Joined</h2>
+                        <MudIcon Icon="@Icons.Material.Filled.AccountBalanceWallet" Title="Favorite" Color="Color.Info" Size="Size.Large" />
                     </div>
 
-                    <MudIcon Icon="@Icons.Material.Filled.AccountBalanceWallet" Title="Favorite" Color="Color.Info" Size="Size.Large" />
-                </div>
+                }
+
             </div>
 
-            <MudDataGrid Items="@GroupsDetails" SortMode="SortMode.Multiple" Filterable="true" Hideable="true" Groupable="true" QuickFilter="@_quickFilter">
+            @if (!DataRetrieved)
+            {
+                <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Width="100%" Height="300px" />
+            }
+            else
+            {
+                <MudDataGrid Items="@GroupsDetails" SortMode="SortMode.Multiple" Filterable="true" Hideable="true" Groupable="true" QuickFilter="@_quickFilter">
 
-                <ToolBarContent>
-                    <MudText Typo="Typo.h6">Group Details</MudText>
-                    <MudSpacer />
-                    <MudTextField @bind-Value="@_searchString" Placeholder="Search" Adornment="Adornment.Start" Immediate="true"
-                                  AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
-                </ToolBarContent>
+                    <ToolBarContent>
+                        <MudText Typo="Typo.h6">Group Details</MudText>
+                        <MudSpacer />
+                        <MudTextField @bind-Value="@_searchString" Placeholder="Search" Adornment="Adornment.Start" Immediate="true"
+                                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                    </ToolBarContent>
 
-                <Columns>
-                    <SelectColumn />
-                    <PropertyColumn Property="x => x.GroupName" Title="Group Name" Sortable="true" Filterable="true" />
-                    <PropertyColumn Property="x => x.GroupAdmin" Title="Group Admin" />
-                    <PropertyColumn Property="x => x.GroupCreationDate" Title="Group Creation Date" />
-                    <PropertyColumn Property="x => x.LatestExpense" Title="Latest Expense" />
-                    <PropertyColumn Property="x => x.TotalSpent" Title="Total Spent" />
-                    <PropertyColumn Property="x => x.Description" Title="Description" />
-                    <PropertyColumn Property="x => x.NumberOfMembers" Title="Nr Of Members" />
-                </Columns>
+                    <Columns>
+                        <SelectColumn />
+                        <PropertyColumn Property="x => x.GroupName" Title="Group Name" Sortable="true" Filterable="true" />
+                        <PropertyColumn Property="x => x.GroupAdmin" Title="Group Admin" />
+                        <PropertyColumn Property="x => x.GroupCreationDate" Title="Group Creation Date" />
+                        <PropertyColumn Property="x => x.LatestExpense" Title="Latest Expense" />
+                        <PropertyColumn Property="x => x.TotalSpent" Title="Total Spent" />
+                        <PropertyColumn Property="x => x.Description" Title="Description" />
+                        <PropertyColumn Property="x => x.NumberOfMembers" Title="Nr Of Members" />
+                    </Columns>
 
-                <PagerContent>
-                    <MudDataGridPager />
-                </PagerContent>
+                    <PagerContent>
+                        <MudDataGridPager />
+                    </PagerContent>
 
-            </MudDataGrid>
+                </MudDataGrid>
+            }
 
         </div>
     </div>

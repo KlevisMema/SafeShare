@@ -30,7 +30,6 @@ using SafeShare.DataTransormObject.SafeShareApi.Security;
 using SafeShare.Utilities.SafeShareApi.ConfigurationSettings;
 using SafeShare.DataTransormObject.SafeShareApi.UserManagment;
 using SafeShare.DataTransormObject.SafeShareApi.Authentication;
-using Microsoft.AspNetCore.Mvc;
 
 namespace SafeShare.UserManagment.UserAccount;
 

@@ -29,7 +29,7 @@ public interface IAccountManagmentProxyService
         DTO_UserChangePassword changePassword
     );
 
-    Task<Util_GenericResponse<bool>>
+    Task<Tuple<Util_GenericResponse<bool>, HttpResponseMessage>>
     DeactivateAccount
     (
         string userId,

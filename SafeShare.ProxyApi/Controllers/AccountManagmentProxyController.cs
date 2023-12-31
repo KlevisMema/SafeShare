@@ -3,11 +3,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Authorization;
 using SafeShare.ClientServerShared.Routes;
 using SafeShare.Security.API.ActionFilters;
+using Microsoft.AspNetCore.Http.HttpResults;
 using SafeShare.Security.JwtSecurity.Helpers;
 using SafeShare.ProxyApi.Container.Interfaces;
 using SafeShare.Utilities.SafeShareApi.Responses;
 using SafeShare.DataTransormObject.SafeShareApi.UserManagment;
-using Microsoft.AspNetCore.Http.HttpResults;
 using SafeShare.DataTransormObject.SafeShareApi.Authentication;
 
 namespace SafeShare.ProxyApi.Controllers;
@@ -81,7 +81,14 @@ public class AccountManagmentProxyController(IAccountManagmentProxyService accou
 
         var result = await accountManagmentProxyService.DeactivateAccount(UserId(jwtToken), jwtToken, deactivateAccount);
 
-        return Util_GenericControllerResponse<bool>.ControllerResponse(result);
+        if (result.Item2.Headers.Contains("Set-Cookie"))
+        {
+            var cookies = result.Item2.Headers.GetValues("Set-Cookie");
+            foreach (var cookie in cookies)
+                HttpContext.Response.Headers.Append("Set-Cookie", cookie);
+        }
+
+        return Util_GenericControllerResponse<bool>.ControllerResponse(result.Item1);
     }
 
     [AllowAnonymous]
@@ -193,7 +200,7 @@ public class AccountManagmentProxyController(IAccountManagmentProxyService accou
     {
         var jwtToken = JwtToken();
 
-        var result = await accountManagmentProxyService.SearchUserByUserName(UserId(jwtToken), jwtToken ,userName);
+        var result = await accountManagmentProxyService.SearchUserByUserName(UserId(jwtToken), jwtToken, userName);
 
         return Util_GenericControllerResponse<DTO_UserSearched>.ControllerResponseList(result);
     }

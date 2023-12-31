@@ -21,6 +21,9 @@ namespace SafeShare.Client.Shared.Components
         [Parameter]
         public decimal BalanceGroupsCreated { get; set; }
 
+        [Parameter]
+        public bool DataRetrieved { get; set; }
+
 
         private string _searchString;
 

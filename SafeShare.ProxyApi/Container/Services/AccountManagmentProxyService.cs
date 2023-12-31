@@ -140,7 +140,7 @@ public class AccountManagmentProxyService(IHttpClientFactory httpClientFactory) 
         return readResult ?? new Util_GenericResponse<bool>();
     }
 
-    public async Task<Util_GenericResponse<bool>>
+    public async Task<Tuple<Util_GenericResponse<bool>, HttpResponseMessage>>
     DeactivateAccount
     (
         string userId,
@@ -176,7 +176,7 @@ public class AccountManagmentProxyService(IHttpClientFactory httpClientFactory) 
             PropertyNameCaseInsensitive = true
         });
 
-        return readResult ?? new Util_GenericResponse<bool>();
+        return Tuple.Create(readResult ?? new Util_GenericResponse<bool>(), response);
     }
 
     public async Task<Util_GenericResponse<bool>>

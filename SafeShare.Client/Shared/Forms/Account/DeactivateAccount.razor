@@ -15,33 +15,30 @@
 <MudDialog>
     <TitleContent>
         <MudText Typo="Typo.h6">
-            <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-3 mb-n1" />
-            Change email address?
+            <MudIcon Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Class="mr-3 mb-n1" />
+            Deactivate Account?
         </MudText>
     </TitleContent>
     <DialogContent>
-        <EditForm @ref="@changeEmailForm" Model="EmailAddressRequestDto">
+        <EditForm @ref="@deactivateAccountForm" Model="@Dto_DeactivateAccount">
             <DataAnnotationsValidator />
-            <MudTextField InputType="InputType.Email" @bind-Value="@EmailAddressRequestDto.CurrentEmailAddress" Label="Current email"
+            <MudTextField InputType="InputType.Email" @bind-Value="@Dto_DeactivateAccount.Email" Label="Email"
                           Adornment="Adornment.End"
                           AdornmentIcon="@Icons.Material.Filled.Email"
                           AdornmentColor="Color.Primary"
+                          AdornmentAriaLabel="Show Password"
                           Variant="Variant.Outlined"
                           Required=true />
 
-            <MudTextField InputType="InputType.Email" @bind-Value="@EmailAddressRequestDto.NewEmailAddress" Label="New email"
+            <MudTextField InputType="@PasswordInput" @bind-Value="@Dto_DeactivateAccount.Password" Label="Password"
                           Adornment="Adornment.End"
-                          AdornmentIcon="@Icons.Material.Filled.Email"
+                          AdornmentIcon="@PasswordInputIcon"
                           AdornmentColor="Color.Primary"
+                          OnAdornmentClick="DisplayTxtPassword"
+                          AdornmentAriaLabel="Show Password"
                           Variant="Variant.Outlined"
                           Required=true />
 
-            <MudTextField InputType="InputType.Email" @bind-Value="@EmailAddressRequestDto.ConfirmNewEmailAddress" Label="Confirm new email"
-                          Adornment="Adornment.End"
-                          AdornmentIcon="@Icons.Material.Filled.Email"
-                          AdornmentColor="Color.Primary"
-                          Variant="Variant.Outlined"
-                          Required=true />
         </EditForm>
     </DialogContent>
     <DialogActions>
@@ -49,11 +46,11 @@
             @if (_processing)
             {
                 <MudProgressCircular Class="ms-n1" Size="MudBlazor.Size.Small" Indeterminate="true" Color="Color.Primary" />
-                <MudText Class="ms-2" Color="Color.Primary">Changing</MudText>
+                <MudText Class="ms-2" Color="Color.Primary">Deactivating</MudText>
             }
             else
             {
-                <MudText>Change Email</MudText>
+                <MudText>Deactivate</MudText>
             }
         </MudButton>
     </DialogActions>

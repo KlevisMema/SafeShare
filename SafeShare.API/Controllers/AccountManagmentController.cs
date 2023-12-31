@@ -20,9 +20,9 @@ using SafeShare.Security.User.Implementation;
 using SafeShare.Utilities.SafeShareApi.Responses;
 using SafeShare.MediatR.Actions.Queries.UserManagment;
 using SafeShare.MediatR.Actions.Commands.UserManagment;
+using SafeShare.DataTransormObject.SafeShareApi.Security;
 using SafeShare.DataTransormObject.SafeShareApi.UserManagment;
 using SafeShare.MediatR.Handlers.CommandsHandlers.UserManagment;
-using SafeShare.DataTransormObject.SafeShareApi.Security;
 
 namespace SafeShare.API.Controllers;
 
@@ -139,7 +139,11 @@ public class AccountManagmentController
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        return await _mediator.Send(new MediatR_DeactivateAccountCommand(userId, deactivateAccount));
+        var result = await _mediator.Send(new MediatR_DeactivateAccountCommand(userId, deactivateAccount));
+
+        ClearCookies();
+
+        return result;
     }
     /// <summary>
     /// Sends a request to activate an account based on the provided email address.
@@ -387,5 +391,36 @@ public class AccountManagmentController
                 Expires = token.ValididtyTime.AddHours(1),
             }
         );
+
+    }
+    /// <summary>
+    /// Clears all authentication and refresh tokens stored in cookies.
+    /// </summary>
+    private void
+    ClearCookies()
+    {
+        ClearCookie(".AspNetCore.Identity.Application");
+        ClearCookie(cookieOpt.Value.AuthTokenCookieName);
+        ClearCookie(cookieOpt.Value.RefreshAuthTokenCookieName);
+        ClearCookie(cookieOpt.Value.RefreshAuthTokenIdCookieName);
+    }
+    /// <summary>
+    /// Clears a specific cookie identified by its name.
+    /// </summary>
+    /// <param name="cookieName">The name of the cookie to be cleared.</param>
+    private void
+    ClearCookie
+    (
+        string cookieName
+    )
+    {
+        HttpContext.Response.Cookies.Append(cookieName, "", new CookieOptions
+        {
+            Secure = true,
+            HttpOnly = true,
+            IsEssential = true,
+            SameSite = SameSiteMode.Strict,
+            Expires = DateTimeOffset.UtcNow.AddDays(-1)
+        });
     }
 }

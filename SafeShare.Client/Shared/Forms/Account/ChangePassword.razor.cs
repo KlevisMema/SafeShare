@@ -3,31 +3,41 @@ using Microsoft.AspNetCore.Components;
 using SafeShare.ClientServices.Interfaces;
 using SafeShare.ClientDTO.AccountManagment;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace SafeShare.Client.Shared.Forms.Account;
 
-public partial class RequestChangeEmailAddress
+public enum FieldVariant
+{
+    OldPassword = 1,
+    NewPassword = 2,
+    ConfirmNewPassword = 3
+}
+
+public partial class ChangePassword
 {
     [CascadingParameter]
     MudDialogInstance MudDialog { get; set; }
+    [Inject] private ISnackbar _snackbar { get; set; } = null!;
+    [Inject] private IClientService_UserManagment _userManagmentService { get; set; } = null!;
 
-    [Inject]
-    private ISnackbar _snackbar { get; set; } = null!;
+    private ClientDto_UserChangePassword UserChangePassword { get; set; } = new();
 
-    [Inject]
-    private IClientService_UserManagment _userManagmentService { get; set; } = null!;
+    InputType PasswordInput = InputType.Password;
+    string PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
+
     private bool _processing = false;
-    private ClientDto_ChangeEmailAddressRequest EmailAddressRequestDto { get; set; } = new();
+    private EditForm? ChangePasswordForm;
 
-    private EditForm? changeEmailForm;
+    bool isShow;
 
     private async Task
     ValidateForm()
     {
-        var validationsPassed = changeEmailForm!.EditContext!.Validate()!;
+        var validationsPassed = ChangePasswordForm!.EditContext!.Validate()!;
 
         if (!validationsPassed)
-            ShowValidationsMessages(changeEmailForm.EditContext.GetValidationMessages());
+            ShowValidationsMessages(ChangePasswordForm.EditContext.GetValidationMessages());
         else
             await SubmitUserDataUpdateForm();
     }
@@ -38,7 +48,7 @@ public partial class RequestChangeEmailAddress
         _processing = true;
         await Task.Delay(1000);
 
-        var updateDataResult = await _userManagmentService.RequestChangeEmail(EmailAddressRequestDto);
+        var updateDataResult = await _userManagmentService.ChangePassword(UserChangePassword);
 
         if (!updateDataResult.Succsess)
         {
@@ -52,7 +62,7 @@ public partial class RequestChangeEmailAddress
             _snackbar.Add(updateDataResult.Message, Severity.Success, config => { config.CloseAfterNavigation = true; });
         }
 
-        EmailAddressRequestDto = new();
+        UserChangePassword = new();
         _processing = false;
     }
 
@@ -65,6 +75,23 @@ public partial class RequestChangeEmailAddress
         foreach (var validationMessage in validationMessages)
         {
             _snackbar.Add(validationMessage, Severity.Warning, config => { config.CloseAfterNavigation = true; config.VisibleStateDuration = 3000; });
+        }
+    }
+
+    private void
+    DisplayTxtPassword()
+    {
+        if (isShow)
+        {
+            isShow = false;
+            PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
+            PasswordInput = InputType.Password;
+        }
+        else
+        {
+            isShow = true;
+            PasswordInputIcon = Icons.Material.Filled.Visibility;
+            PasswordInput = InputType.Text;
         }
     }
 }
