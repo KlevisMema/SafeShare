@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using SafeShare.Client.Shared;
+using Microsoft.AspNetCore.Components;
 using SafeShare.ClientServices.Interfaces;
 using SafeShare.ClientDTO.AccountManagment;
 
@@ -6,6 +7,8 @@ namespace SafeShare.Client.Pages.Account;
 
 public partial class Profile
 {
+    private bool DataRetrieved { get; set; } = false;
+
     [Inject]
     private IClientService_UserManagment _userManagmentService { get; set; } = null!;
 
@@ -13,9 +16,13 @@ public partial class Profile
 
     protected override async Task OnInitializedAsync()
     {
+        DataRetrieved = false;
+
         var getUserInfo = await _userManagmentService.GetUser();
 
         if (getUserInfo.Succsess)
             UserInfo = getUserInfo.Value;
+
+        DataRetrieved = true;
     }
 }

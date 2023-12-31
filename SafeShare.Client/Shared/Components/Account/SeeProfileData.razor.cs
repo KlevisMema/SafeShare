@@ -8,6 +8,9 @@ namespace SafeShare.Client.Shared.Components.Account
         [Parameter]
         public ClientDto_UserInfo? UserInfo { get; set; }
 
+        [Parameter]
+        public bool DataRetrieved { get; set; }
+
         protected override void OnInitialized()
         {
             UserInfo ??= new();
