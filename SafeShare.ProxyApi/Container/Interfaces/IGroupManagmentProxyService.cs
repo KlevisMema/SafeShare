@@ -21,7 +21,7 @@ public interface IGroupManagmentProxyService
         Guid groupId
     );
 
-    Task<Util_GenericResponse<bool>>
+    Task<Util_GenericResponse<DTO_GroupType>>
     CreateGroup
     (
          string userId,

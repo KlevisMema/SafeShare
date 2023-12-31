@@ -45,7 +45,7 @@ public class GroupManagmentProxyController(IGroupManagmentProxyService groupMana
     }
 
     [HttpPost(Route_GroupManagmentRoutes.ProxyCreateGroup)]
-    public async Task<ActionResult<Util_GenericResponse<bool>>>
+    public async Task<ActionResult<Util_GenericResponse<DTO_GroupType>>>
     CreateGroup
     (
         [FromForm] DTO_CreateGroup createGroup
@@ -58,7 +58,7 @@ public class GroupManagmentProxyController(IGroupManagmentProxyService groupMana
 
         var result = await groupManagmentProxyService.CreateGroup(UserId(jwtToken), jwtToken, createGroup);
 
-        return Util_GenericControllerResponse<bool>.ControllerResponse(result);
+        return Util_GenericControllerResponse<DTO_GroupType>.ControllerResponse(result);
     }
 
     [HttpPut(Route_GroupManagmentRoutes.ProxyEditGroup)]

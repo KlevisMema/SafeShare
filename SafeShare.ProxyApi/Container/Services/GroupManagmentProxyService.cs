@@ -84,7 +84,7 @@ public class GroupManagmentProxyService(IHttpClientFactory httpClientFactory) : 
         return readResult ?? new Util_GenericResponse<DTO_GroupDetails>();
     }
 
-    public async Task<Util_GenericResponse<bool>>
+    public async Task<Util_GenericResponse<DTO_GroupType>>
     CreateGroup
     (
          string userId,
@@ -115,12 +115,12 @@ public class GroupManagmentProxyService(IHttpClientFactory httpClientFactory) : 
 
         var responseContent = await response.Content.ReadAsStringAsync();
 
-        var readResult = JsonSerializer.Deserialize<Util_GenericResponse<bool>>(responseContent, new JsonSerializerOptions
+        var readResult = JsonSerializer.Deserialize<Util_GenericResponse<DTO_GroupType>>(responseContent, new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true
         });
 
-        return readResult ?? new Util_GenericResponse<bool>();
+        return readResult ?? new Util_GenericResponse<DTO_GroupType>();
     }
 
     public async Task<Util_GenericResponse<DTO_GroupType>>

@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Hosting.Server;
 using SafeShare.ClientDTO.AccountManagment;
 using System.ComponentModel.DataAnnotations;
 using SafeShare.Client.Shared.Forms.Account;
+using SafeShare.Client.Shared.Forms.Group;
 
 namespace SafeShare.Client.Shared;
 
@@ -45,6 +46,13 @@ public partial class NavMenu
     OpenPopUpChangePasswordForm()
     {
         var dialog = await DialogService.ShowAsync<ChangePassword>("Change Password Dialog", DialogOptions());
+        await dialog.Result;
+    }
+    
+    private async Task
+        OpenPopUpCreateGroup()
+    {
+        var dialog = await DialogService.ShowAsync<CreateGroup>("Change Email Dialog", DialogOptions());
         await dialog.Result;
     }
 

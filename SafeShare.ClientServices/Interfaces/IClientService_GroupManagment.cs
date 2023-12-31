@@ -11,7 +11,7 @@ public interface IClientService_GroupManagment
         ClientDto_InvitationRequestActions invitationRequestActions
     );
 
-    Task<ClientUtil_ApiResponse<bool>> 
+    Task<ClientUtil_ApiResponse<ClientDto_GroupType>> 
     CreateGroup
     (
         ClientDto_CreateGroup createGroup

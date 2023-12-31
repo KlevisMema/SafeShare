@@ -81,7 +81,7 @@ public class GroupManagmentController(IMediator mediator) : BaseController(media
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<bool>))]
     [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Util_GenericResponse<bool>))]
-    public async Task<ActionResult<Util_GenericResponse<bool>>>
+    public async Task<ActionResult<Util_GenericResponse<DTO_GroupType>>>
     CreateGroup
     (
         Guid userId,

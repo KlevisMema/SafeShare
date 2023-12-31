@@ -66,7 +66,7 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
         }
     }
 
-    public async Task<ClientUtil_ApiResponse<bool>>
+    public async Task<ClientUtil_ApiResponse<ClientDto_GroupType>>
     CreateGroup
     (
         ClientDto_CreateGroup createGroup
@@ -88,7 +88,7 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
 
             var responseContent = await response.Content.ReadAsStringAsync();
 
-            var readResult = JsonSerializer.Deserialize<ClientUtil_ApiResponse<bool>>(responseContent, new JsonSerializerOptions
+            var readResult = JsonSerializer.Deserialize<ClientUtil_ApiResponse<ClientDto_GroupType>>(responseContent, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             });
