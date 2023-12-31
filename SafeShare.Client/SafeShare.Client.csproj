@@ -26,10 +26,4 @@
     <ProjectReference Include="..\SafeShare.ClientUtilities\SafeShare.ClientUtilities.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Update="Shared\Forms\Group\CreateGroup.cs">
-      <DependentUpon>CreateGroup.razor</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
 </Project>

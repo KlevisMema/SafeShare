@@ -1,10 +1,11 @@
 using MudBlazor;
+using SafeShare.Client.Helpers;
 using Microsoft.AspNetCore.Components;
+using SafeShare.ClientDTO.GroupManagment;
+using Microsoft.AspNetCore.Components.Web;
 using SafeShare.ClientServices.Interfaces;
 using SafeShare.ClientDTO.AccountManagment;
 using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.AspNetCore.Components.Web;
-using SafeShare.ClientDTO.GroupManagment;
 using SafeShare.ClientServices.GroupManagment;
 
 namespace SafeShare.Client.Shared.Forms.Group;
@@ -13,6 +14,7 @@ public partial class CreateGroup
 {
     [CascadingParameter] MudDialogInstance MudDialog { get; set; }
     [Inject] private ISnackbar _snackbar { get; set; } = null!;
+    [Inject] private AppState _appState { get; set; } = null!;
     [Inject] private IClientService_GroupManagment _userGroupeManagment { get; set; } = null!;
 
     private ClientDto_CreateGroup createGroup { get; set; } = new();
@@ -25,36 +27,38 @@ public partial class CreateGroup
     bool isShow;
 
     private async Task
-        ValidateForm()
+    ValidateForm()
     {
         var validationsPassed = CreateGroupForm!.EditContext!.Validate()!;
 
         if (!validationsPassed)
             ShowValidationsMessages(CreateGroupForm.EditContext.GetValidationMessages());
         else
-            await SubmitUserDataUpdateForm();
+            await SubmitCreateGroupForm();
     }
 
     private async Task
-        SubmitUserDataUpdateForm()
+    SubmitCreateGroupForm()
     {
         _processing = true;
         await Task.Delay(1000);
 
-        var updateDataResult = await _userGroupeManagment.CreateGroup(createGroup);
+        var createGroupResult = await _userGroupeManagment.CreateGroup(createGroup);
 
-        if (!updateDataResult.Succsess)
+        if (!createGroupResult.Succsess)
         {
-            _snackbar.Add(updateDataResult.Message, Severity.Warning,
+            _snackbar.Add(createGroupResult.Message, Severity.Warning,
                 config => { config.CloseAfterNavigation = true; });
 
-            if (updateDataResult.Errors is not null)
-                ShowValidationsMessages(updateDataResult.Errors);
+            if (createGroupResult.Errors is not null)
+                ShowValidationsMessages(createGroupResult.Errors);
         }
         else
         {
-            _snackbar.Add(updateDataResult.Message, Severity.Success,
+            _snackbar.Add(createGroupResult.Message, Severity.Success,
                 config => { config.CloseAfterNavigation = true; });
+
+            _appState.NewGroupAdded(createGroupResult.Value);
         }
 
         createGroup = new();
@@ -63,10 +67,10 @@ public partial class CreateGroup
     }
 
     private void
-        ShowValidationsMessages
-        (
-            IEnumerable<string> validationMessages
-        )
+    ShowValidationsMessages
+    (
+        IEnumerable<string> validationMessages
+    )
     {
         foreach (var validationMessage in validationMessages)
         {
