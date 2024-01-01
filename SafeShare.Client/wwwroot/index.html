@@ -29,6 +29,28 @@
         <a href="" class="reload">Reload</a>
         <a class="dismiss">🗙</a>
     </div>
+
+    <script>
+        function registerScreenWidthChanged(dotnetHelper) {
+            window.onScreenWidthChanged = function (width) {
+                dotnetHelper.invokeMethodAsync('UpdateScreenWidth', width);
+            };
+        }
+
+        window.onScreenWidthChanged = null;
+
+        window.getScreenWidth = function () {
+            return window.innerWidth;
+        };
+
+        window.addEventListener("resize", function () {
+            var screenWidth = window.innerWidth;
+            if (window.onScreenWidthChanged) {
+                window.onScreenWidthChanged(screenWidth);
+            }
+        });
+    </script>
+
     <script src="_framework/blazor.webassembly.js"></script>
 
     <script src="_content/MudBlazor/MudBlazor.min.js"></script>

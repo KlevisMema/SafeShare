@@ -1,0 +1,119 @@
+﻿@page "/Group/{groupId:guid}"
+
+<style>
+    :root {
+        --background-color1: #fafaff;
+        --background-color2: #ffffff;
+        --background-color3: #ededed;
+        --background-color4: #cad7fda4;
+        --primary-color: #4b49ac;
+        --secondary-color: rgba(89,74,226,1);
+        --Border-color: #3f0097;
+        --one-use-color: #3f0097;
+        --two-use-color: #5500cb;
+    }
+
+    body {
+        background-color: var(--background-color4);
+        max-width: 100%;
+    }
+
+    .tabs {
+        padding: 20px;
+    }
+
+    .card {
+        background-color: #fff;
+        padding: 20px;
+        width: 100%;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+
+    .data-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .data-item {
+        margin: 10px;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s;
+    }
+
+        .data-item:hover {
+            transform: translateY(-5px);
+        }
+
+    .data-label {
+        font-weight: bold;
+        margin-left: 5px;
+    }
+
+    #groupDetails {
+        display: flex;
+        justify-content: flex-start;
+        width: 100%;
+    }
+</style>
+
+<body>
+
+    <div class="tabs">
+
+        <MudTabs ApplyEffectsToContainer=true
+                 Outlined=true
+                 Elevation="4"
+                 Rounded="true"
+                 Centered="true"
+                 Color="@Color.Primary"
+                 Position="@TabPosition"
+                 HeaderPosition="TabHeaderPosition.Before">
+
+            <MudTabPanel Text="Group Details" Icon="@Icons.Material.Outlined.Details">
+                <div id="groupDetails" class="tab-content active">
+
+                    <div class="card">
+                        <div class="data-item">
+                            <MudIcon Icon="@Icons.Material.Filled.Label" Color="Color.Primary" /> <span class="data-label">Group Name:</span> @GroupDetailsDto.GroupName
+                        </div>
+                        <div class="data-item">
+                            <MudIcon Icon="@Icons.Material.Filled.Numbers" Color="Color.Primary" /> <span class="data-label">Number of Members:</span> @GroupDetailsDto.NumberOfMembers
+                        </div>
+                        <div class="data-item">
+                            <MudIcon Icon="@Icons.Material.Filled.DateRange" Color="Color.Primary" /> <span class="data-label">Latest Expense:</span> @GroupDetailsDto.LatestExpense
+                        </div>
+                        <div class="data-item">
+                            <MudIcon Icon="@Icons.Material.Filled.Info" Color="Color.Primary" /> <span class="data-label">Description:</span> @GroupDetailsDto.Description
+                        </div>
+
+                    </div>
+
+                    <div class="card">
+                        <div class="data-item">
+                            <MudIcon Icon="@Icons.Material.Filled.AdminPanelSettings" Color="Color.Primary" /> <span class="data-label">Group Admin:</span> @GroupDetailsDto.GroupAdmin
+                        </div>
+                        <div class="data-item">
+                            <MudIcon Icon="@Icons.Material.Filled.DateRange" Color="Color.Primary" /> <span class="data-label">Group Creation Date:</span> @GroupDetailsDto.GroupCreationDate
+                        </div>
+                        <div class="data-item">
+                            <MudIcon Icon="@Icons.Material.Filled.MoneyOff" Color="Color.Primary" /> <span class="data-label">Total Spent:</span> @GroupDetailsDto.TotalSpent.ToString("0.00")
+                        </div>
+                    </div>
+
+                </div>
+            </MudTabPanel>
+
+            <MudTabPanel Text="Members" Icon="@Icons.Material.Outlined.Groups" />
+            <MudTabPanel Text="Expenses" Icon="@Icons.Material.Outlined.AttachMoney" />
+        </MudTabs>
+
+    </div>
+
+
+</body>

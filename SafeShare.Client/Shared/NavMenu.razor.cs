@@ -23,6 +23,7 @@ public partial class NavMenu
     [Parameter] public bool DataRetrieved { get; set; }
     [Inject] private AppState _appState { get; set; } = null!;
     [Inject] IDialogService DialogService { get; set; } = null!;
+    [Inject] NavigationManager _navigationManager { get; set; } = null!;
 
     protected override Task
     OnInitializedAsync()
@@ -83,5 +84,14 @@ public partial class NavMenu
             CloseButton = true,
             Position = DialogPosition.Center
         };
+    }
+
+    private void
+    GroupDetails
+    (
+        Guid groupId
+    )
+    {
+        _navigationManager.NavigateTo($"/Group/{groupId}");
     }
 }
