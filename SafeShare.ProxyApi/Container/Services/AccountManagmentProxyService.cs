@@ -189,7 +189,7 @@ public class AccountManagmentProxyService(IHttpClientFactory httpClientFactory) 
 
         var content = new StringContent(JsonSerializer.Serialize(new { email }), Encoding.UTF8, "application/json");
 
-        var requestMessage = new HttpRequestMessage(HttpMethod.Post, BaseRoute.RouteAccountManagmentForClient + Route_AccountManagmentRoute.ActivateAccountRequest)
+        var requestMessage = new HttpRequestMessage(HttpMethod.Post, BaseRoute.RouteAccountManagmentForClient + Route_AccountManagmentRoute.ActivateAccountRequest + $"?email={email}")
         {
             Content = content
         };
@@ -220,7 +220,7 @@ public class AccountManagmentProxyService(IHttpClientFactory httpClientFactory) 
 
         var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-        var requestMessage = new HttpRequestMessage(HttpMethod.Post, BaseRoute.RouteAccountManagmentForClient + Route_AccountManagmentRoute.ActivateAccountRequest)
+        var requestMessage = new HttpRequestMessage(HttpMethod.Post, BaseRoute.RouteAccountManagmentForClient + Route_AccountManagmentRoute.ActivateAccountRequestConfirmation)
         {
             Content = content
         };

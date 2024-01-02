@@ -94,9 +94,12 @@ public class AccountManagmentProxyController(IAccountManagmentProxyService accou
     [AllowAnonymous]
     [HttpPost(Route_AccountManagmentRoute.ActivateAccountRequest)]
     public async Task<ActionResult<Util_GenericResponse<bool>>>
-    ActivateAccountRequest()
+    ActivateAccountRequest
+    (
+        string email
+    )
     {
-        var result = await accountManagmentProxyService.ActivateAccountRequest(UserEmail(JwtToken()));
+        var result = await accountManagmentProxyService.ActivateAccountRequest(email);
 
         return Util_GenericControllerResponse<bool>.ControllerResponse(result);
     }

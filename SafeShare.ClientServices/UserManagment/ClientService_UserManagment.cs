@@ -157,13 +157,20 @@ public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) :
     }
 
     public async Task<ClientUtil_ApiResponse<bool>>
-    ActivateAccountRequest()
+    ActivateAccountRequest
+    (
+         ClienDto_ActivateAccountRequest ActivateAccountRequest
+    )
     {
         try
         {
             var httpClient = httpClientFactory.CreateClient(Client);
 
-            var response = await httpClient.PostAsync(BaseRoute.RouteAccountManagmentProxy + Route_AccountManagmentRoute.ActivateAccountRequest, null);
+            var json = JsonSerializer.Serialize(ActivateAccountRequest.Email);
+
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await httpClient.PostAsync(BaseRoute.RouteAccountManagmentProxy + Route_AccountManagmentRoute.ActivateAccountRequest + $"?email={ActivateAccountRequest.Email}", content);
 
             var responseContent = await response.Content.ReadAsStringAsync();
 
@@ -176,8 +183,7 @@ public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) :
         }
         catch (Exception)
         {
-
-            throw;
+            return new ClientUtil_ApiResponse<bool>();
         }
     }
 

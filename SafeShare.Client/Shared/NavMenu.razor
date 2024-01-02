@@ -79,7 +79,6 @@
             <div class="mud-skeleton-nav-btn">
                 <MudTooltip Text="Create group" Color="Color.Primary" Placement="MudBlazor.Placement.Top" Arrow="true" Inline="true">
                     <MudFab OnClick="OpenPopUpCreateGroup" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Size="MudBlazor.Size.Small" Class="m-sm-2" />
-                    
                 </MudTooltip>
 
                 <MudTooltip Text="Search" Color="Color.Primary" Placement="MudBlazor.Placement.Right">
@@ -92,7 +91,7 @@
                 {
                     @foreach (var group in GroupTypes.GroupsCreated)
                     {
-                        <MudNavLink OnClick="() => GroupDetails(group.GroupId)" Icon="@Icons.Material.Filled.People" IconColor="Color.Inherit">@group.GroupName</MudNavLink>
+                        <MudNavLink Match="NavLinkMatch.All" Href=@($"/Group/{group.GroupId}") Icon="@Icons.Material.Filled.People" IconColor="Color.Inherit">@group.GroupName</MudNavLink>
                     }
                 }
             </MudNavGroup>

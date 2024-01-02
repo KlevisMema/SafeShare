@@ -417,7 +417,9 @@ public class AccountManagment
                 );
             }
 
-            var route = activateAccountSettings.Value.Route.Replace("{token}", token).Replace("{email}", email);
+            var encodedToken = System.Net.WebUtility.UrlEncode(token);
+
+            var route = activateAccountSettings.Value.Route.Replace("{token}", encodedToken).Replace("{email}", email);
 
             var sendEmailResult = await Util_Email.SendActivateAccountEmail(user.Email, user.FullName, route);
 

@@ -41,4 +41,8 @@ public class DTO_GroupDetails
     /// Gets or sets the total amount spent by the group.
     /// </summary>
     public decimal TotalSpent { get; set; }
+    /// <summary>
+    /// Gets or sets the users when of the group.
+    /// </summary>
+    public List<DTO_UsersGroupDetails>? UsersGroups { get; set; }
 }

@@ -9,4 +9,5 @@ public class ClientDto_GroupDetails
     public string GroupAdmin { get; set; } = string.Empty;
     public DateTime GroupCreationDate { get; set; }
     public decimal TotalSpent { get; set; }
+    public List<ClientDto_UsersGroupDetails>? UsersGroups { get; set; }
 }

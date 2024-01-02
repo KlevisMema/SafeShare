@@ -85,13 +85,4 @@ public partial class NavMenu
             Position = DialogPosition.Center
         };
     }
-
-    private void
-    GroupDetails
-    (
-        Guid groupId
-    )
-    {
-        _navigationManager.NavigateTo($"/Group/{groupId}");
-    }
 }

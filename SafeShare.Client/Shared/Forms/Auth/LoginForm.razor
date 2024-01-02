@@ -308,6 +308,14 @@
                 }
             </MudButton>
 
+            @if (showActivateAccountRequestBtn)
+            {
+                <MudButton Href="/Profile/Activate" Variant="Variant.Outlined" Color="Color.Primary" Class="position-relative">
+                    <MudText>Activate Account Request</MudText>
+                </MudButton>
+            }
+
+
         </EditForm>
 
     </div>

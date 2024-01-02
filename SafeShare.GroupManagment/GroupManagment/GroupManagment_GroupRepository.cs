@@ -172,18 +172,28 @@ public class GroupManagment_GroupRepository
             }
 
             var group = await _db.GroupMembers.Include(gr => gr.Group)
+                                              .Include(usr => usr.User)            
                                               .Where(gm => gm.GroupId == groupId && !gm.IsDeleted && !gm.Group.IsDeleted)
                                               .Select(gm => new
                                               {
                                                   Member = gm,
                                                   GroupOwner = _db.GroupMembers
-                                                                 .Where(owner => owner.GroupId == gm.GroupId && owner.IsOwner)
+                                                                 .Where(owner => owner.GroupId == gm.GroupId &&owner.IsOwner)
                                                                  .Select(owner => owner.User.FullName)
                                                                  .FirstOrDefault(),
                                                   GroupDetails = gm.Group,
-                                                  NumberOfMembers = _db.GroupMembers.Count(m => m.GroupId == gm.GroupId)
+                                                  NumberOfMembers = _db.GroupMembers.Count(m => m.GroupId == gm.GroupId),
+                                                  Members = _db.GroupMembers
+                                                            .Where(x => x.GroupId == gm.GroupId && !x.IsDeleted)
+                                                            .Select(x => new DTO_UsersGroupDetails
+                                                            {
+                                                                UserImage = x.User.ImageData,
+                                                                UserName = x.User.UserName,
+                                                                IsAdmin = x.IsOwner
+                                                            })
+                                                            .ToList()
                                               })
-                                              .FirstOrDefaultAsync(gm => gm.Member.UserId == userId.ToString());
+                                              .FirstOrDefaultAsync();
 
             if (group is null)
             {
@@ -239,7 +249,8 @@ public class GroupManagment_GroupRepository
                 GroupName = group.GroupDetails.Name,
                 LatestExpense = "",
                 TotalSpent = group.Member.Balance,
-                NumberOfMembers = group.NumberOfMembers
+                NumberOfMembers = group.NumberOfMembers,
+                UsersGroups = group.Members
             };
 
             return Util_GenericResponse<DTO_GroupDetails>.Response

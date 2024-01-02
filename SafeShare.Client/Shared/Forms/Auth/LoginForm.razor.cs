@@ -34,6 +34,7 @@ public partial class LoginForm
     private bool _processingRegistering = false;
     private ClientDto_Login clientDto_Login { get; set; } = new();
     private ClientDto_Register clientDto_Register { get; set; } = new();
+    private bool showActivateAccountRequestBtn { get; set; } = false;
     #endregion
 
     #region Constants
@@ -52,6 +53,8 @@ public partial class LoginForm
     protected override async Task
     OnInitializedAsync()
     {
+        showActivateAccountRequestBtn = false;
+
         if (await _localStorage.GetItemAsync<bool>("SessionExpired"))
         {
             _snackbar.Add("Session Expired!", Severity.Error, config => { config.CloseAfterNavigation = true; });
@@ -82,7 +85,13 @@ public partial class LoginForm
             await RedirectToDashboardPage(loginResult.Message, loginResult.Value);
         }
         else
+        {
             _snackbar.Add(loginResult.Message, Severity.Error);
+
+            if (loginResult.Message.Contains("deactivated"))
+                showActivateAccountRequestBtn = true;
+
+        }
 
         _processing = false;
     }
