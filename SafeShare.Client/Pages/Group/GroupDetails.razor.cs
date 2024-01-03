@@ -90,7 +90,8 @@ public partial class GroupDetails
         }
 
         _snackbar.Add(updateResult.Message, updateResult.StatusCode == System.Net.HttpStatusCode.OK ? Severity.Success : Severity.Warning, config => { config.CloseAfterNavigation = true; config.VisibleStateDuration = 3000; });
-
+        GroupDetailsDto.GroupName = EditGroup.GroupName;
+        GroupDetailsDto.Description = EditGroup.GroupDescription;
         _processing = false;
     }
 
