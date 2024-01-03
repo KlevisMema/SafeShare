@@ -72,7 +72,7 @@
     }
 
     .user-card {
-        padding: 5px;
+        padding: 15px 10px;
         flex-basis: calc(25% - 20px);
         display: flex;
         flex-direction: column;
@@ -153,6 +153,15 @@
     .user-username {
         text-align: center
     }
+
+    .editGrDetailsForm {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        padding: 20px 0px;
+        background: white;
+    }
 </style>
 
 <body>
@@ -197,23 +206,58 @@
                         <div class="data-item">
                             <MudIcon Icon="@Icons.Material.Filled.MoneyOff" Color="Color.Primary" /> <span class="data-label">Total Spent:</span> @GroupDetailsDto.TotalSpent.ToString("0.00")
                         </div>
+                        @if (GroupDetailsDto.ImAdmin)
+                        {
+                            <div class="data-item">
+                                <MudButton StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="OpenPopUpDeleteConfirmation" Variant="Variant.Filled">
+                                    Delete
+                                </MudButton>
+                            </div>
+                        }
                     </div>
 
                 </div>
             </MudTabPanel>
 
+            @if (GroupDetailsDto.ImAdmin)
+            {
+                <MudTabPanel Text="Edit Group" Icon="@Icons.Material.Outlined.Edit">
+                    <div class="editGrDetailsForm">
 
-            <MudTabPanel Text="Edit Group" Icon="@Icons.Material.Outlined.Edit">
-                <EditForm @ref="EditGroupForm" Model="EditGroup" OnValidSubmit="OnValidSubmit">
-                    <DataAnnotationsValidator />
+                        <EditForm @ref="EditGroupForm" Model="EditGroup" OnValidSubmit="OnValidSubmit" OnInvalidSubmit="OnInValidSubmit" class="col-xl-6">
+                            <DataAnnotationsValidator />
 
-                    <MudTextField Label="Group name" @bind-Value="EditGroup.GroupName" Required="true" />
+                            <MudTextField Label="Group name" @bind-Value="EditGroup.GroupName" Required="true"
+                                          Adornment="Adornment.End"
+                                          AdornmentIcon="@Icons.Material.Filled.Edit"
+                                          AdornmentColor="Color.Primary"
+                                          Variant="Variant.Outlined" />
 
-                    <MudTextField Label="Group description" @bind-Value="EditGroup.GroupDescription" Required="true" />
+                            <br />
 
-                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto">Edit</MudButton>
-                </EditForm>
-            </MudTabPanel>
+                            <MudTextField InputType="InputType.Text" Label="Group description" @bind-Value="EditGroup.GroupDescription" Required="true"
+                                          Adornment="Adornment.End"
+                                          AdornmentIcon="@Icons.Material.Filled.Edit"
+                                          AdornmentColor="Color.Primary"
+                                          Variant="Variant.Outlined" />
+
+                            <br />
+
+                            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Outlined" Color="Color.Primary">
+                                @if (_processing)
+                                {
+                                    <MudProgressCircular Class="ms-n1" Size="MudBlazor.Size.Small" Indeterminate="true" Color="Color.Primary" />
+                                    <MudText Class="ms-2" Color="Color.Primary">SAVING</MudText>
+                                }
+                                else
+                                {
+                                    <MudText>SAVE</MudText>
+                                }
+                            </MudButton>
+                        </EditForm>
+                    </div>
+                </MudTabPanel>
+            }
 
             <MudTabPanel Text="Members" Icon="@Icons.Material.Outlined.Groups">
                 <div class="users-container">
@@ -244,32 +288,76 @@
                                 </p>
                             </div>
 
-                            @if (user.IsAdmin)
+                            @if (GroupDetailsDto.ImAdmin)
                             {
-
-                            }
-                            else
-                            {
-                                <MudCheckBox Disabled="@(!ReadOnly)" Checked="false" Color="Color.Primary" />
+                                @if (!user.IsAdmin)
+                                {
+                                    <MudButton OnClick="() => UserChecked(user)" Disabled="@(!ReadOnly)" Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined" EndIcon="@iconSelected">
+                                        <MudText>@selectedUserBtnText</MudText>
+                                        </MudButton>
+                                }
                             }
                         </div>
                     }
                 </div>
 
-                <MudToolBar WrapContent="true" Class="group-details-users-toolbar">
-                    <MudSwitch @bind-Value="@ReadOnly" Label="@(ReadOnly ? "Edit Mode" : "Read Mode")" LabelPosition="LabelPosition.Start" Color="Color.Info" />
-                    <MudIconButton Disabled="@(!ReadOnly)" Icon="@Icons.Material.Outlined.Add" />
-                    <MudIconButton Disabled="@(!ReadOnly)" Icon="@Icons.Material.Outlined.Remove" />
-                </MudToolBar>
+                @if (GroupDetailsDto.ImAdmin)
+                {
+                    <MudToolBar WrapContent="true" Class="group-details-users-toolbar">
+                        <MudSwitch @bind-Value="@ReadOnly" Label="@(ReadOnly ? "Edit Mode" : "Read Mode")" LabelPosition="LabelPosition.Start" Color="Color.Info" />
 
+                        <MudIconButton Disabled="@(!ReadOnly)" Icon="@Icons.Material.Outlined.GroupAdd" Title="Invite User" OnClick="InviteUserToGroup" />
+
+                        <MudBadge Content="@SelectedUsers.Count" Color="Color.Primary" Overlap="true" Bordered=true Elevation="5" Origin="Origin.BottomRight">
+                            <MudIconButton Disabled="@(!ReadOnly)" Icon="@Icons.Material.Outlined.Delete" Title="Remove Users" OnClick="RemoveUsersFromGroup" Variant="Variant.Filled" />
+                        </MudBadge>
+
+                    </MudToolBar>
+                }
             </MudTabPanel>
 
             <MudTabPanel Text="Expenses" Icon="@Icons.Material.Outlined.AttachMoney" />
-
 
         </MudTabs>
 
     </div>
 
-
 </body>
+
+<MudMessageBox @ref="mbox" Title="Warning" CancelText="Cancel">
+    <MessageContent>
+        Deleting can <b><i>not</i></b> be undone!
+    </MessageContent>
+    <YesButton>
+        <MudButton OnClick="DeleteGroup" Variant="Variant.Outlined" Color="Color.Error" StartIcon="@Icons.Material.Filled.DeleteForever">
+            @if (_processingDeleteGroup)
+            {
+                <MudProgressCircular Class="ms-n1" Size="MudBlazor.Size.Small" Indeterminate="true" Color="Color.Error" />
+                <MudText Class="ms-2" Color="Color.Error">Deleting</MudText>
+            }
+            else
+            {
+                <MudText>Delete Group</MudText>
+            }
+        </MudButton>
+    </YesButton>
+</MudMessageBox>
+
+<MudMessageBox @ref="mbox2" Title="Warning" CancelText="Cancel">
+    <MessageContent>
+        Deleting can <b><i>not</i></b> be undone!
+    </MessageContent>
+    <YesButton>
+        <MudButton OnClick="RemoveUsers" Variant="Variant.Outlined" Color="Color.Error" StartIcon="@Icons.Material.Filled.DeleteForever">
+            @if (_processingDeleteGroup)
+            {
+                <MudProgressCircular Class="ms-n1" Size="MudBlazor.Size.Small" Indeterminate="true" Color="Color.Error" />
+                <MudText Class="ms-2" Color="Color.Error">Removing</MudText>
+            }
+            else
+            {
+                <MudText>Remove users</MudText>
+            }
+        </MudButton>
+    </YesButton>
+</MudMessageBox>

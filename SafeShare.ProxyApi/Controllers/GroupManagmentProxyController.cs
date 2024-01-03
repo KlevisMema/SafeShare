@@ -183,6 +183,24 @@ public class GroupManagmentProxyController(IGroupManagmentProxyService groupMana
         return Util_GenericControllerResponse<bool>.ControllerResponse(result);
     }
 
+    [HttpDelete(Route_GroupManagmentRoutes.ProxyDeleteUsersFromGroup)]
+    public async Task<ActionResult<Util_GenericResponse<bool>>>
+    DeleteUsersFromGroup
+    (
+        Guid groupId,
+        List<DTO_UsersGroupDetails> UsersToRemoveFromGroup
+    )
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var jwtToken = JwtToken();
+
+        var result = await groupManagmentProxyService.DeleteUsersFromGroup(UserId(jwtToken), jwtToken, groupId, UsersToRemoveFromGroup);
+
+        return Util_GenericControllerResponse<bool>.ControllerResponse(result);
+    }
+
     private static string
     UserId
     (

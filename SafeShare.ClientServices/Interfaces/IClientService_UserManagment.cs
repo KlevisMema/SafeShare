@@ -69,7 +69,8 @@ public interface IClientService_UserManagment
     Task<ClientUtil_ApiResponse<List<ClientDto_UserSearched>>>
     SearchUserByUserName
     (
-        string userName
+        string userName,
+        CancellationToken cancellationToken
     );
 
 

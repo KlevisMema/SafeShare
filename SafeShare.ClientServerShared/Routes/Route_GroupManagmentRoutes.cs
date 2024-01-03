@@ -20,6 +20,7 @@ public static class Route_GroupManagmentRoutes
     public const string GetGroupDetails = "GetGroupDetails/{userId}/{groupId}";
     public const string GetGroupsInvitations = "GetGroupsInvitations/{userId}";
     public const string GetSentGroupInvitations = "GetSentGroupInvitations/{userId}";
+    public const string DeleteUsersFromGroup = "DeleteUsersFromGroup/{userId}/{groupId}";
 
     public const string ProxyGroupTypes = "GroupTypes";
     public const string ProxyCreateGroup = "CreateGroup";
@@ -32,4 +33,5 @@ public static class Route_GroupManagmentRoutes
     public const string ProxyGetGroupDetails = "GetGroupDetails/{groupId}";
     public const string ProxyGetGroupsInvitations = "GetGroupsInvitations";
     public const string ProxyGetSentGroupInvitations = "GetSentGroupInvitations";
+    public const string ProxyDeleteUsersFromGroup = "DeleteUsersFromGroup/{groupId}";
 }

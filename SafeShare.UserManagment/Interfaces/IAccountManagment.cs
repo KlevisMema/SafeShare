@@ -128,6 +128,7 @@ public interface IAccountManagment
     /// </summary>
     /// <param name="userName">The username of the user</param>
     /// <param name="userId">The id of the user</param>
+    /// <param name="cancellationToken">A cancellation token</param>
     /// <returns>A generic response indicating the result of the operation</returns>
     Task<Util_GenericResponse<List<DTO_UserSearched>>>
     SearchUserByUserName

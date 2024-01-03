@@ -82,7 +82,8 @@ public interface IAccountManagmentProxyService
     (
         string userId,
         string jwtToken,
-        string userName
+        string userName,
+        CancellationToken cancellationToken
     );
 
     Task<Util_GenericResponse<byte[]>>

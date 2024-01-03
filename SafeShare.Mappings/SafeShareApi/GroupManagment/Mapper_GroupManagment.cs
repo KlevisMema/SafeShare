@@ -45,7 +45,9 @@ public class Mapper_GroupManagment : Profile
             .ForMember(dest => dest.GroupName, opt => opt.MapFrom(src => src.Group.Name))
             .ForMember(dest => dest.GroupId, opt => opt.MapFrom(src => src.GroupId))
             .ForMember(dest => dest.InvitingUserId, opt => opt.MapFrom(src => Guid.Parse(src.InvitingUserId)))
-            .ForMember(dest => dest.InvitingUserName, opt => opt.MapFrom(src => src.InvitingUser.FullName));
+            .ForMember(dest => dest.InvitingUserName, opt => opt.MapFrom(src => src.InvitingUser.FullName))
+            .ForMember(dest => dest.InvitationStatus, opt => opt.MapFrom(src => src.InvitationStatus))
+            .ForMember(dest => dest.InvitationId, opt => opt.MapFrom(src => src.Id));
 
         // Mapping from GroupInvitation model to DTO_SentInvitations, including group details, invitation status, and invited user details.
         CreateMap<GroupInvitation, DTO_SentInvitations>()

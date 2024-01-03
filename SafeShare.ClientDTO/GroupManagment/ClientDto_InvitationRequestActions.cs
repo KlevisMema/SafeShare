@@ -10,6 +10,5 @@ public class ClientDto_InvitationRequestActions
     public Guid GroupId { get; set; }
     [Required]
     public Guid InvitationId { get; set; }
-    [Required]
     public Guid InvitedUserId { get; set; }
 }

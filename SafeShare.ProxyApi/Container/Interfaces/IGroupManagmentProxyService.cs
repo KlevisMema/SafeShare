@@ -1,7 +1,6 @@
 ﻿using SafeShare.Utilities.SafeShareApi.Responses;
 using SafeShare.DataTransormObject.SafeShareApi.GroupManagment;
 using SafeShare.DataTransormObject.SafeShareApi.GroupManagment.GroupInvitations;
-using Microsoft.AspNetCore.Mvc;
 
 namespace SafeShare.ProxyApi.Container.Interfaces;
 
@@ -90,5 +89,14 @@ public interface IGroupManagmentProxyService
         string userId,
         string jwtToken,
         DTO_InvitationRequestActions deleteInvitationRequest
+    );
+
+    Task<Util_GenericResponse<bool>>
+    DeleteUsersFromGroup
+    (
+        string userId,
+        string jwtToken,
+        Guid groupId,
+        List<DTO_UsersGroupDetails> UsersToRemoveFromGroup
     );
 }

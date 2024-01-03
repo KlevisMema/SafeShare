@@ -390,23 +390,25 @@ public class AccountManagmentProxyService(IHttpClientFactory httpClientFactory) 
     (
         string userId,
         string jwtToken,
-        string userName
+        string userName,
+        CancellationToken cancellationToken
     )
     {
         var httpClient = httpClientFactory.CreateClient(Client);
 
-        var content = new StringContent(JsonSerializer.Serialize(new { userId }), Encoding.UTF8, "application/json");
+        var content = new StringContent(JsonSerializer.Serialize(new { userName }), Encoding.UTF8, "application/json");
 
-        var requestMessage = new HttpRequestMessage(HttpMethod.Get, BaseRoute.RouteAccountManagmentForClient + Route_AccountManagmentRoute.SearchUserByUserName.Replace("{userId}", userId.ToString()))
+        var requestMessage = new HttpRequestMessage(HttpMethod.Get, BaseRoute.RouteAccountManagmentForClient + Route_AccountManagmentRoute.SearchUserByUserName.Replace("{userId}", userId.ToString()) + $"?username={userName}")
         {
-            Content = content
+            Content = content,
+
         };
 
         requestMessage.Headers.Add("X-Api-Key", $"{ApiKey}");
 
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
 
-        var response = await httpClient.SendAsync(requestMessage);
+        var response = await httpClient.SendAsync(requestMessage, cancellationToken);
 
         var responseContent = await response.Content.ReadAsStringAsync();
 

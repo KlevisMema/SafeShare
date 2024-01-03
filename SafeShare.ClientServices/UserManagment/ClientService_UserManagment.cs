@@ -365,14 +365,15 @@ public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) :
     public async Task<ClientUtil_ApiResponse<List<ClientDto_UserSearched>>>
     SearchUserByUserName
     (
-        string userName
+        string userName,
+        CancellationToken cancellationToken
     )
     {
         try
         {
             var httpClient = httpClientFactory.CreateClient(Client);
 
-            var response = await httpClient.GetAsync(BaseRoute.RouteAccountManagmentProxy + Route_AccountManagmentRoute.ProxySearchUserByUserName + $"?username={userName}");
+            var response = await httpClient.GetAsync(BaseRoute.RouteAccountManagmentProxy + Route_AccountManagmentRoute.ProxySearchUserByUserName + $"?username={userName}", cancellationToken);
 
             var responseContent = await response.Content.ReadAsStringAsync();
 

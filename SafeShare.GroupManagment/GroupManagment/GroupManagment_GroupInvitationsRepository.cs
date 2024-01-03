@@ -108,7 +108,8 @@ public class GroupManagment_GroupInvitationsRepository
                                                                  .Where
                                                                  (
                                                                     inv => inv.InvitingUserId == userId.ToString() &&
-                                                                    !inv.IsDeleted
+                                                                    !inv.IsDeleted &&
+                                                                    inv.InvitationStatus == InvitationStatus.Pending
                                                                  )
                                                                  .ToListAsync();
 

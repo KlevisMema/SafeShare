@@ -1,4 +1,6 @@
-﻿namespace SafeShare.ClientDTO.GroupManagment;
+﻿using SafeShare.ClientDTO.Enums;
+
+namespace SafeShare.ClientDTO.GroupManagment;
 
 public class ClientDto_RecivedInvitations
 {
@@ -7,4 +9,6 @@ public class ClientDto_RecivedInvitations
     public string InvitingUserName { get; set; } = string.Empty;
     public Guid GroupId { get; set; }
     public string GroupName { get; set; } = string.Empty;
+    public InvitationStatus InvitationStatus { get; set; }
+    public Guid InvitationId { get; set; }
 }

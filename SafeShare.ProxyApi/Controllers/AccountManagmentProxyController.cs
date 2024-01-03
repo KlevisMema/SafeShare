@@ -198,12 +198,13 @@ public class AccountManagmentProxyController(IAccountManagmentProxyService accou
     public async Task<ActionResult<Util_GenericResponse<List<DTO_UserSearched>>>>
     SearchUserByUserName
     (
-        string userName
+        string userName,
+        CancellationToken cancellationToken
     )
     {
         var jwtToken = JwtToken();
 
-        var result = await accountManagmentProxyService.SearchUserByUserName(UserId(jwtToken), jwtToken, userName);
+        var result = await accountManagmentProxyService.SearchUserByUserName(UserId(jwtToken), jwtToken, userName, cancellationToken);
 
         return Util_GenericControllerResponse<DTO_UserSearched>.ControllerResponseList(result);
     }

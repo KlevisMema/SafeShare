@@ -74,4 +74,18 @@ public interface IGroupManagment_GroupRepository
         Guid ownerId,
         Guid groupId
     );
+    /// <summary>
+    /// Removes users from a group
+    /// </summary>
+    /// <param name="userId">The id of the owner of the group</param>
+    /// <param name="groupId">The id of the group</param>
+    /// <param name="usersToRemoveFromGroup">A list of members of the group</param>
+    /// <returns></returns>
+    Task<Util_GenericResponse<bool>>
+    RemoveUsersFromGroup
+    (
+        Guid ownerId,
+        Guid groupId,
+        List<DTO_UsersGroupDetails> usersToRemoveFromGroup
+    );
 }

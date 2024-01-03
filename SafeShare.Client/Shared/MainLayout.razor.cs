@@ -18,6 +18,7 @@ public partial class MainLayout
 
     private bool _drawerOpen = true;
 
+
     public ClientDto_GroupTypes? GroupTypes { get; set; } = new();
 
     public string name = "klevis";
@@ -26,8 +27,6 @@ public partial class MainLayout
     public bool DataRetrieved { get; set; } = false;
 
     private bool hideLogOutBtn { get; set; } = false;
-
-
 
     protected override async Task
     OnInitializedAsync()
@@ -42,11 +41,7 @@ public partial class MainLayout
         }
     }
 
-    private void
-    DrawerToggle()
-    {
-        _drawerOpen = !_drawerOpen;
-    }
+ 
 
     private async Task
     LogoutUser()
@@ -61,5 +56,11 @@ public partial class MainLayout
         _navigationManager.NavigateTo("/");
         hideLogOutBtn = false;
         LogOutText = "Log Out";
+    }
+
+    private void
+    DrawerToggle()
+    {
+        _drawerOpen = !_drawerOpen;
     }
 }

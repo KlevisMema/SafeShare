@@ -1352,7 +1352,9 @@ public class AccountManagment
     {
         try
         {
-            var users = await _db.Users.Where(x => x.UserName!.Contains(userName)).ToListAsync();
+            var users = await _db.Users.Include(x => x.GroupMembers)
+                                       .Where(x => x.UserName!.Contains(userName) && !x.IsDeleted && x.EmailConfirmed && !x.GroupMembers.Any(x => x.UserId == userId))
+                                       .ToListAsync();
 
             return Util_GenericResponse<List<DTO_UserSearched>>.Response
             (

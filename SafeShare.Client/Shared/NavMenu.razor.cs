@@ -29,10 +29,17 @@ public partial class NavMenu
     OnInitializedAsync()
     {
         _appState.OnNewGroupCreated += HandleNewGroupCreated;
+        _appState.OnGroupEdited += HandleGroupEdited;
+        _appState.OnGroupDeleted += HandleGroupDeleted;
+        _appState.OnGroupInvitationAccepted += HandleGroupInvitationAccepted;
         return base.OnInitializedAsync();
     }
 
-    private void HandleNewGroupCreated(ClientDto_GroupType? newGroup)
+    private void
+    HandleNewGroupCreated
+    (
+        ClientDto_GroupType? newGroup
+    )
     {
         if (newGroup != null)
         {
@@ -40,9 +47,54 @@ public partial class NavMenu
             StateHasChanged();
         }
     }
+
+    private void
+    HandleGroupEdited
+    (
+        ClientDto_GroupType? editedGroup
+    )
+    {
+        if (editedGroup != null)
+        {
+            GroupTypes.GroupsCreated.Find(x => x.GroupId == editedGroup.GroupId).GroupName = editedGroup.GroupName;
+            StateHasChanged();
+        }
+    }
+
+    private void
+    HandleGroupDeleted
+    (
+        Guid groupId
+    )
+    {
+        var deletedGroup = GroupTypes.GroupsCreated.Find(x => x.GroupId == groupId);
+
+        if (deletedGroup is not null)
+        {
+            GroupTypes.GroupsCreated.Remove(deletedGroup);
+        }
+        _navigationManager.NavigateTo("/Dashboard");
+    }
+
+    private void
+    HandleGroupInvitationAccepted
+    (
+        ClientDto_GroupType? group
+    )
+    {
+        if (group != null)
+        {
+            GroupTypes.GroupsJoined.Add(group);
+            StateHasChanged();
+        }
+    }
+
     public void Dispose()
     {
         _appState.OnNewGroupCreated -= HandleNewGroupCreated;
+        _appState.OnGroupEdited -= HandleGroupEdited;
+        _appState.OnGroupDeleted -= HandleGroupDeleted;
+        _appState.OnGroupInvitationAccepted += HandleGroupInvitationAccepted;
     }
 
     private async Task
@@ -73,7 +125,7 @@ public partial class NavMenu
         await dialog.Result;
     }
 
-    private DialogOptions
+    private static DialogOptions
     DialogOptions()
     {
         return new()

@@ -4,7 +4,6 @@ namespace SafeShare.ClientDTO.GroupManagment;
 
 public class ClientDto_SendInvitationRequest
 {
-    [Required]
     public Guid InvitingUserId { get; set; }
     [Required]
     public Guid InvitedUserId { get; set; }

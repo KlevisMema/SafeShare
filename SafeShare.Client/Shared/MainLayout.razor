@@ -1,4 +1,5 @@
-﻿@inherits LayoutComponentBase
+﻿@using SafeShare.Client.Shared.Components
+@inherits LayoutComponentBase
 
 <style>
     .log-out-animation {
@@ -21,14 +22,8 @@
         <MudSpacer />
         <MudDivider DividerType="MudBlazor.DividerType.Inset" />
 
-        <MudTooltip Text="Notifications" Color="Color.Primary" Placement="MudBlazor.Placement.Bottom">
-            <MudBadge Content="3" Overlap="true" Dot="true" Color="Color.Secondary">
-                <MudIconButton Icon="@Icons.Material.Outlined.Notifications" Color="Color.Inherit" Edge="Edge.End" Title="Notifications" />
-            </MudBadge>
-        </MudTooltip>
-
-        <MudTooltip Text="Verified" Color="Color.Primary" Placement="MudBlazor.Placement.Top">
-            <MudIconButton Icon="@Icons.Material.Filled.VerifiedUser" Color="Color.Inherit" Edge="Edge.End" />
+        <MudTooltip Color="Color.Primary">
+            <Notifications />
         </MudTooltip>
 
         <MudTooltip Text="@LogOutText" Color="Color.Primary" Placement="MudBlazor.Placement.Top">

@@ -29,7 +29,7 @@ namespace SafeShare.API.Controllers;
 /// Initializes a new instance of <see cref="GroupManagmentController"/>
 /// </remarks>
 /// <param name="mediator">The instance of mediator used to send commands and queries</param>
-//[ServiceFilter(typeof(VerifyUser))]
+[ServiceFilter(typeof(VerifyUser))]
 public class GroupManagmentController(IMediator mediator) : BaseController(mediator)
 {
     /// <summary>
@@ -268,5 +268,31 @@ public class GroupManagmentController(IMediator mediator) : BaseController(media
             return BadRequest(ModelState);
 
         return await _mediator.Send(new MediatR_DeleteSentInvitationCommand(deleteInvitationRequest));
+    }
+    /// <summary>
+    /// Deletes users from a group
+    /// </summary>
+    /// <param name="userId">The identifier of the user deleting the invitation.</param>
+    /// <param name="groupId">The id of the group</param>
+    /// <param name="UsersToRemoveFromGroup">A list of users</param>
+    /// <returns>A boolean value indicating whether users were successfully deleted.</returns>
+    [HttpDelete(Route_GroupManagmentRoutes.DeleteUsersFromGroup)]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<bool>))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<bool>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(Util_GenericResponse<bool>))]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Util_GenericResponse<bool>))]
+    public async Task<ActionResult<Util_GenericResponse<bool>>>
+    DeleteUsersFromGroup
+    (
+        Guid userId,
+        Guid groupId,
+        List<DTO_UsersGroupDetails> UsersToRemoveFromGroup
+    )
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        return await _mediator.Send(new MediatR_RemoveUsersFromGroupCommand(userId, groupId, UsersToRemoveFromGroup));
     }
 }

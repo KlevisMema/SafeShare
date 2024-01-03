@@ -4,6 +4,8 @@
  * including the invitation message, details about the inviting user and the group involved.
  */
 
+using SafeShare.Utilities.SafeShareApi.Enums;
+
 namespace SafeShare.DataTransormObject.SafeShareApi.GroupManagment.GroupInvitations;
 
 /// <summary>
@@ -32,4 +34,12 @@ public class DTO_RecivedInvitations
     /// Gets or sets the name of the group to which the invitation is related.
     /// </summary>
     public string GroupName { get; set; } = string.Empty;
+    /// <summary>
+    /// Gets or sets the InvitationStatus of the group to which the invitation is related.
+    /// </summary>
+    public InvitationStatus InvitationStatus { get; set; }
+    /// <summary>
+    /// Gets or sets the InvitationId of the group.
+    /// </summary>
+    public Guid InvitationId { get; set; }
 }

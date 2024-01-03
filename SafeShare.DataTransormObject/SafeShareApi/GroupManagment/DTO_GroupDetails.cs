@@ -42,7 +42,11 @@ public class DTO_GroupDetails
     /// </summary>
     public decimal TotalSpent { get; set; }
     /// <summary>
-    /// Gets or sets the users when of the group.
+    /// Gets or sets the users of the group.
     /// </summary>
     public List<DTO_UsersGroupDetails>? UsersGroups { get; set; }
+    /// <summary>
+    /// Gets or sets the ImAdmin.
+    /// </summary>
+    public bool ImAdmin { get; set; }
 }

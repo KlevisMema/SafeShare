@@ -139,7 +139,7 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
         }
     }
 
-    public async Task<ClientUtil_ApiResponse<ClientDto_GroupType>>
+    public async Task<ClientUtil_ApiResponse<bool>>
     DeleteGroup
     (
         Guid groupId
@@ -149,11 +149,11 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
         {
             var httpClient = httpClientFactory.CreateClient(Client);
 
-            var response = await httpClient.DeleteAsync(BaseRoute.RouteGroupManagmentProxy + Route_GroupManagmentRoutes.ProxyEditGroup.Replace("{groupId}", groupId.ToString()));
+            var response = await httpClient.DeleteAsync(BaseRoute.RouteGroupManagmentProxy + Route_GroupManagmentRoutes.ProxyDeleteGroup.Replace("{groupId}", groupId.ToString()));
 
             var responseContent = await response.Content.ReadAsStringAsync();
 
-            var readResult = JsonSerializer.Deserialize<ClientUtil_ApiResponse<ClientDto_GroupType>>(responseContent, new JsonSerializerOptions
+            var readResult = JsonSerializer.Deserialize<ClientUtil_ApiResponse<bool>>(responseContent, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             });
@@ -323,9 +323,45 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
         {
             var httpClient = httpClientFactory.CreateClient(Client);
 
-            var content = new StringContent(JsonSerializer.Serialize(new { invitationRequestActions }), Encoding.UTF8, "application/json");
+            var content = new StringContent(JsonSerializer.Serialize(invitationRequestActions), Encoding.UTF8, "application/json");
 
             var request = new HttpRequestMessage(HttpMethod.Delete, BaseRoute.RouteGroupManagmentProxy + Route_GroupManagmentRoutes.ProxyDeleteInvitation)
+            {
+                Content = content
+            };
+
+            var response = await httpClient.SendAsync(request);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            var readResult = JsonSerializer.Deserialize<ClientUtil_ApiResponse<bool>>(responseContent, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            return readResult!;
+        }
+        catch (Exception)
+        {
+
+            throw;
+        }
+    }
+
+    public async Task<ClientUtil_ApiResponse<bool>>
+    DeleteUsersFromGroup
+    (
+        Guid groupId,
+        List<ClientDto_UsersGroupDetails> usersOfTheGroup
+    )
+    {
+        try
+        {
+            var httpClient = httpClientFactory.CreateClient(Client);
+
+            var content = new StringContent(JsonSerializer.Serialize(usersOfTheGroup), Encoding.UTF8, "application/json");
+
+            var request = new HttpRequestMessage(HttpMethod.Delete, BaseRoute.RouteGroupManagmentProxy + Route_GroupManagmentRoutes.ProxyDeleteUsersFromGroup.Replace("{groupId}", groupId.ToString()))
             {
                 Content = content
             };

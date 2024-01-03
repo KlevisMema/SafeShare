@@ -11,7 +11,7 @@ namespace SafeShare.MediatR.Handlers.QueriesHandlers.UserManagment;
 public class MediatR_SearchUsersQueryHandler
 (
     IAccountManagment service
-) : MediatR_GenericHandler<IAccountManagment>(service), 
+) : MediatR_GenericHandler<IAccountManagment>(service),
     IRequestHandler<MediatR_SearchUsersQuery, ObjectResult>
 {
     public async Task<ObjectResult>

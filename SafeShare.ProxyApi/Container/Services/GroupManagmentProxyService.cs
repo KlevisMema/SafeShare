@@ -270,7 +270,9 @@ public class GroupManagmentProxyService(IHttpClientFactory httpClientFactory) : 
     {
         var httpClient = httpClientFactory.CreateClient(Client);
 
-        var content = new StringContent(JsonSerializer.Serialize(new { dTO_SendInvitation }), Encoding.UTF8, "application/json");
+        dTO_SendInvitation.InvitingUserId = Guid.Parse(userId);
+
+        var content = new StringContent(JsonSerializer.Serialize(dTO_SendInvitation), Encoding.UTF8, "application/json");
 
         var requestMessage = new HttpRequestMessage(HttpMethod.Post, BaseRoute.RouteGroupManagmentForClient + Route_GroupManagmentRoutes.SendInvitation.Replace("{userId}", userId.ToString()))
         {
@@ -303,7 +305,9 @@ public class GroupManagmentProxyService(IHttpClientFactory httpClientFactory) : 
     {
         var httpClient = httpClientFactory.CreateClient(Client);
 
-        var content = new StringContent(JsonSerializer.Serialize(new { acceptInvitationRequest }), Encoding.UTF8, "application/json");
+        acceptInvitationRequest.InvitedUserId = Guid.Parse(userId);
+
+        var content = new StringContent(JsonSerializer.Serialize(acceptInvitationRequest), Encoding.UTF8, "application/json");
 
         var requestMessage = new HttpRequestMessage(HttpMethod.Post, BaseRoute.RouteGroupManagmentForClient + Route_GroupManagmentRoutes.AcceptInvitation.Replace("{userId}", userId.ToString()))
         {
@@ -336,7 +340,9 @@ public class GroupManagmentProxyService(IHttpClientFactory httpClientFactory) : 
     {
         var httpClient = httpClientFactory.CreateClient(Client);
 
-        var content = new StringContent(JsonSerializer.Serialize(new { rejectInvitationRequest }), Encoding.UTF8, "application/json");
+        rejectInvitationRequest.InvitedUserId = Guid.Parse(userId);
+
+        var content = new StringContent(JsonSerializer.Serialize(rejectInvitationRequest), Encoding.UTF8, "application/json");
 
         var requestMessage = new HttpRequestMessage(HttpMethod.Post, BaseRoute.RouteGroupManagmentForClient + Route_GroupManagmentRoutes.RejectInvitation.Replace("{userId}", userId.ToString()))
         {
@@ -369,9 +375,45 @@ public class GroupManagmentProxyService(IHttpClientFactory httpClientFactory) : 
     {
         var httpClient = httpClientFactory.CreateClient(Client);
 
-        var content = new StringContent(JsonSerializer.Serialize(new { deleteInvitationRequest }), Encoding.UTF8, "application/json");
+        deleteInvitationRequest.InvitingUserId = Guid.Parse(userId);
+
+        var content = new StringContent(JsonSerializer.Serialize(deleteInvitationRequest), Encoding.UTF8, "application/json");
 
         var requestMessage = new HttpRequestMessage(HttpMethod.Delete, BaseRoute.RouteGroupManagmentForClient + Route_GroupManagmentRoutes.DeleteInvitation.Replace("{userId}", userId.ToString()))
+        {
+            Content = content
+        };
+        requestMessage.Headers.Add("X-Api-Key", $"{ApiKey}");
+
+        httpClient.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", jwtToken);
+
+        var response = await httpClient.SendAsync(requestMessage);
+
+        var responseContent = await response.Content.ReadAsStringAsync();
+
+        var readResult = JsonSerializer.Deserialize<Util_GenericResponse<bool>>(responseContent, new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
+
+        return readResult ?? new Util_GenericResponse<bool>();
+    }
+
+    public async Task<Util_GenericResponse<bool>>
+    DeleteUsersFromGroup
+    (
+        string userId,
+        string jwtToken,
+        Guid groupId,
+        List<DTO_UsersGroupDetails> UsersToRemoveFromGroup
+    )
+    {
+        var httpClient = httpClientFactory.CreateClient(Client);
+
+        var content = new StringContent(JsonSerializer.Serialize(UsersToRemoveFromGroup), Encoding.UTF8, "application/json");
+
+        var requestMessage = new HttpRequestMessage(HttpMethod.Delete, BaseRoute.RouteGroupManagmentForClient + Route_GroupManagmentRoutes.DeleteUsersFromGroup.Replace("{userId}", userId.ToString()).Replace("{groupId}", groupId.ToString()))
         {
             Content = content
         };
