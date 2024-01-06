@@ -64,6 +64,8 @@ public class GroupManagment_GroupInvitationsRepository
                                                         .Include(x => x.InvitingUser)
                                                         .Include(x => x.InvitedUser)
                                                         .Where(x => x.InvitedUserId == userId.ToString() && !x.IsDeleted)
+                                                        .GroupBy(x => x.GroupId)
+                                                        .Select(group => group.First())
                                                         .ToListAsync();
 
             return Util_GenericResponse<List<DTO_RecivedInvitations>>.Response
@@ -199,6 +201,80 @@ public class GroupManagment_GroupInvitationsRepository
                 );
             }
 
+            var invitationIsAlreadySent = await _db.GroupInvitations.Include(x => x.InvitingUser)
+                                                                    .Include(x => x.InvitedUser)
+                                                                    .AnyAsync(x => x.GroupId == sendInvitation.GroupId &&
+                                                                                    x.InvitedUserId == sendInvitation.InvitedUserId.ToString() &&
+                                                                                    x.InvitingUserId == sendInvitation.InvitingUserId.ToString() &&
+                                                                                    !x.IsDeleted &&
+                                                                                    x.InvitationStatus == InvitationStatus.Pending &&
+                                                                                    !x.InvitedUser.IsDeleted &&
+                                                                                    !x.InvitingUser.IsDeleted);
+            if (invitationIsAlreadySent)
+            {
+                _logger.Log
+                (
+                    LogLevel.Error,
+                    """
+                        [GroupManagment Module]--[GroupManagment_GroupInvitationsRepository class]--[SendInvitation Method] => 
+                        [RESULT] : [IP] {IP} user with [ID] {ID} invited user with id {InvitedUserId} the group with id {groupId},
+                        but the invitation is already sent!
+                        More details : {@invitationDto}
+                     """,
+                    await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                    sendInvitation.InvitingUserId,
+                    sendInvitation.InvitedUserId,
+                    sendInvitation.GroupId,
+                    sendInvitation
+                );
+
+                return Util_GenericResponse<bool>.Response
+                (
+                   false,
+                   false,
+                   "Your invitation has been already sent before!",
+                   null,
+                   System.Net.HttpStatusCode.Unauthorized
+                );
+            }
+
+            var userIsAlreadyInGroup = await _db.GroupInvitations.Include(x => x.InvitingUser)
+                                                                 .Include(x => x.InvitedUser)
+                                                                 .AnyAsync(x => x.GroupId == sendInvitation.GroupId &&
+                                                                                x.InvitedUserId == sendInvitation.InvitedUserId.ToString() &&
+                                                                                x.InvitingUserId == sendInvitation.InvitingUserId.ToString() &&
+                                                                                !x.IsDeleted &&
+                                                                                x.InvitationStatus == InvitationStatus.Accepted &&
+                                                                                !x.InvitedUser.IsDeleted &&
+                                                                                !x.InvitingUser.IsDeleted);
+            if (userIsAlreadyInGroup)
+            {
+                _logger.Log
+                (
+                    LogLevel.Error,
+                    """
+                        [GroupManagment Module]--[GroupManagment_GroupInvitationsRepository class]--[SendInvitation Method] => 
+                        [RESULT] : [IP] {IP} user with [ID] {ID} invited user with id {InvitedUserId} the group with id {groupId},
+                        but the user is already in the group!
+                        More details : {@invitationDto}
+                     """,
+                    await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                    sendInvitation.InvitingUserId,
+                    sendInvitation.InvitedUserId,
+                    sendInvitation.GroupId,
+                    sendInvitation
+                );
+
+                return Util_GenericResponse<bool>.Response
+                (
+                   false,
+                   false,
+                   "User is already memeber of the group",
+                   null,
+                   System.Net.HttpStatusCode.Unauthorized
+                );
+            }
+
             var invitation = new GroupInvitation
             {
                 InvitingUserId = sendInvitation.InvitingUserId.ToString(),
@@ -280,7 +356,7 @@ public class GroupManagment_GroupInvitationsRepository
                 );
             }
 
-            var invitation = await _db.GroupInvitations.FirstOrDefaultAsync(x => x.Id == accepInvitation.InvitationId);
+            var invitation = await _db.GroupInvitations.FirstOrDefaultAsync(x => x.Id == accepInvitation.InvitationId && !x.IsDeleted);
 
             if
             (

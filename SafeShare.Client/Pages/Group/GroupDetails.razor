@@ -224,10 +224,12 @@
                 <MudTabPanel Text="Edit Group" Icon="@Icons.Material.Outlined.Edit">
                     <div class="editGrDetailsForm">
 
-                        <EditForm @ref="EditGroupForm" Model="EditGroup" OnValidSubmit="OnValidSubmit" OnInvalidSubmit="OnInValidSubmit" class="col-xl-6">
+                        <EditForm @ref="@EditGroupForm" Model="@EditGroup" OnValidSubmit="OnValidSubmit" OnInvalidSubmit="OnInValidSubmit" class="col-xl-6">
                             <DataAnnotationsValidator />
 
-                            <MudTextField Label="Group name" @bind-Value="EditGroup.GroupName" Required="true"
+                            <MudTextField T="string" Label="Group name" 
+                                          @bind-Value="@EditGroup.GroupName"
+                                          Required="true"
                                           Adornment="Adornment.End"
                                           AdornmentIcon="@Icons.Material.Filled.Edit"
                                           AdornmentColor="Color.Primary"
@@ -235,7 +237,7 @@
 
                             <br />
 
-                            <MudTextField InputType="InputType.Text" Label="Group description" @bind-Value="EditGroup.GroupDescription" Required="true"
+                            <MudTextField InputType="InputType.Text" Label="Group description" @bind-Value="@EditGroup.GroupDescription" Required="true"
                                           Adornment="Adornment.End"
                                           AdornmentIcon="@Icons.Material.Filled.Edit"
                                           AdornmentColor="Color.Primary"

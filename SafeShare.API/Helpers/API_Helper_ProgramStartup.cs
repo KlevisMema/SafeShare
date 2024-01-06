@@ -187,7 +187,7 @@ public static class API_Helper_ProgramStartup
                 {
                     options.User.RequireUniqueEmail = true;
                     options.Password.RequiredLength = 6;
-                    options.Lockout.MaxFailedAccessAttempts = 20;
+                    options.Lockout.MaxFailedAccessAttempts = 2;
                     options.Lockout.AllowedForNewUsers = true;
                     options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
                     options.SignIn.RequireConfirmedEmail = true;
@@ -382,7 +382,7 @@ public static class API_Helper_ProgramStartup
         {
             options.AddPolicy(Configuration.GetSection("Cors:Policy:Name").Value!, builder =>
             {
-                builder.WithOrigins("https://localhost:7027", "https://localhost:7038", "http://localhost:5026", "https://127.0.0.1", "https://localhost:7280")
+                builder.WithOrigins("https://localhost:7280")
                        .AllowAnyHeader()
                        .AllowAnyMethod()
                        .AllowCredentials();

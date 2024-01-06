@@ -1,9 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using SafeShare.ClientDTO.Validators;
+using System.ComponentModel.DataAnnotations;
 
 namespace SafeShare.ClientDTO.AccountManagment;
 
 public class ClientDto_ResetPassword
 {
+    [NoXss]
     [Required, EmailAddress]
     public string Email { get; set; } = string.Empty;
     [Required]

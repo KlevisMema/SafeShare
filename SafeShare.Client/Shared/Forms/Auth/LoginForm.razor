@@ -230,17 +230,17 @@
             <DataAnnotationsValidator />
 
             <div class="register-group">
-                <input type="text" @bind-value="@clientDto_Register.FullName" placeholder="Full name" required />
-                <input type="text" @bind-value="@clientDto_Register.Username" placeholder="Username" required />
+                <InputText @bind-Value="@clientDto_Register.FullName" placeholder="Full name" />
+                <InputText @bind-Value="@clientDto_Register.Username" placeholder="Username" />
             </div>
 
             <div class="register-group register-group-date">
-                <input type="text" @bind-value="@clientDto_Register.Email" placeholder="Email address" required />
-                <input type="date" @bind-value="@clientDto_Register.Birthday" placeholder="Birthaday" required style="width:50%" />
+                <InputText @bind-Value="@clientDto_Register.Email" placeholder="Email address" />
+                <InputDate @bind-Value="@clientDto_Register.Birthday" placeholder="Birthaday" style="width:50%" />
             </div>
 
             <div class="register-group">
-                <input type="text" @bind-value="@clientDto_Register.PhoneNumber" placeholder="Phone Number" required />
+                <InputText @bind-Value="@clientDto_Register.PhoneNumber" placeholder="Phone Number" />
 
                 <MudSelect @bind-Value="@clientDto_Register.Gender" Label="Select your gender" Class="SelectGender">
                     <MudSelectItem Value="@(Gender.Male)" Class="SelectGenderItem">Male</MudSelectItem>
@@ -250,16 +250,14 @@
             </div>
 
             <div class="register-group">
-                <input type="password" @bind-value="@clientDto_Register.Password" placeholder="Password" required />
-                <input type="password" @bind-value="@clientDto_Register.ConfirmPassword" placeholder="Confirm Password" required />
+                <InputText type="password" @bind-Value="@clientDto_Register.Password" placeholder="Password" required />
+                <InputText type="password" @bind-Value="@clientDto_Register.ConfirmPassword" placeholder="Confirm Password" required />
             </div>
-
-
 
             <div class="register-group">
 
                 <div class="checkbox">
-                    <input type="checkbox" @bind-value="@clientDto_Register.TwoFA" placeholder="Enable2FA" id="Enable2FA" />
+                    <InputCheckbox @bind-Value="@clientDto_Register.TwoFA" placeholder="Enable2FA" id="Enable2FA" />
                     <label for="Enable2FA">2 Factor Authentication</label>
                 </div>
 

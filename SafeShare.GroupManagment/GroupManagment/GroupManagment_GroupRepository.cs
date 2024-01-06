@@ -173,7 +173,7 @@ public class GroupManagment_GroupRepository
 
             var group = await _db.GroupMembers.Include(gr => gr.Group)
                                               .Include(usr => usr.User)
-                                              .Where(gm => gm.GroupId == groupId && !gm.IsDeleted && !gm.Group.IsDeleted)
+                                              .Where(gm => gm.GroupId == groupId && !gm.IsDeleted && !gm.Group.IsDeleted && gm.UserId == userId.ToString())
                                               .Select(gm => new
                                               {
                                                   Member = gm,
@@ -213,7 +213,7 @@ public class GroupManagment_GroupRepository
                 (
                     null,
                     false,
-                    $"Group with id {groupId} doesn't exist",
+                    $"Group doesn't exist",
                     null,
                     System.Net.HttpStatusCode.NotFound
                 );
@@ -236,7 +236,7 @@ public class GroupManagment_GroupRepository
                 (
                     null,
                     false,
-                    $"Group with id {groupId} doesn't have an admin.",
+                    $"Group doesn't have an admin.",
                     null,
                     System.Net.HttpStatusCode.NotFound
                 );

@@ -6,6 +6,8 @@ using SafeShare.ClientDTO.GroupManagment;
 using SafeShare.Client.Shared.Forms.Group;
 using Microsoft.AspNetCore.Components.Forms;
 using SafeShare.ClientServices.GroupManagment;
+using System.Text;
+using System.Web;
 
 namespace SafeShare.Client.Pages.Group;
 
@@ -17,6 +19,7 @@ public partial class GroupDetails
     [Inject] IClientService_GroupManagment _groupManagmentService { get; set; } = null!;
     [Inject] private ISnackbar _snackbar { get; set; } = null!;
     [Inject] IJSRuntime _jSRuntime { get; set; } = null!;
+    [Inject] NavigationManager _navManager { get; set; } = null!;
     private ClientDto_GroupDetails? GroupDetailsDto { get; set; }
     private List<ClientDto_UsersGroupDetails>? SelectedUsers { get; set; } = [];
     private ClientDto_EditGroup? EditGroup { get; set; } = new();
@@ -50,7 +53,11 @@ public partial class GroupDetails
             EditGroup.GroupName = getGroupDetails.Value.GroupName;
         }
         else
+        {
+            _snackbar.Add(getGroupDetails.Message, Severity.Warning, config => { config.CloseAfterNavigation = false; config.VisibleStateDuration = 2000; });
+            _navManager.NavigateTo("/Dashboard");
             GroupDetailsDto = new();
+        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -80,6 +87,9 @@ public partial class GroupDetails
     {
         _processing = true;
         await Task.Delay(1000);
+
+        EditGroup.GroupName = HttpUtility.HtmlEncode(EditGroup.GroupName);
+        EditGroup.GroupDescription = HttpUtility.HtmlEncode(EditGroup.GroupDescription);
 
         var updateResult = await _groupManagmentService.EditGroup(groupId, EditGroup);
 
@@ -232,5 +242,4 @@ public partial class GroupDetails
             _snackbar.Add(validationMessage, Severity.Warning, config => { config.CloseAfterNavigation = true; config.VisibleStateDuration = 3000; });
         }
     }
-
 }

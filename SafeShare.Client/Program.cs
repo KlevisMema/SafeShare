@@ -11,6 +11,8 @@ using SafeShare.ClientServices.GroupManagment;
 using SafeShare.ClientServices.Authentication;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using SafeShare.ClientServices.ExpenseManagment;
+using System.Text.Encodings.Web;
+using System.Text.Unicode;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -47,6 +49,10 @@ builder.Services.AddScoped<IClientService_UserManagment, ClientService_UserManag
 builder.Services.AddScoped<IClientService_GroupManagment, ClientService_GroupManagment>();
 builder.Services.AddScoped<IClientService_ExpenseManagment, ClientService_ExpenseManagment>();
 builder.Services.AddScoped<IClientAuthentication_TokenRefreshService, ClientAuthentication_TokenRefreshService>();
+
+builder.Services.AddSingleton<HtmlEncoder>(
+     HtmlEncoder.Create(allowedRanges: new[] { UnicodeRanges.BasicLatin,
+                                               UnicodeRanges.CjkUnifiedIdeographs }));
 
 //builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:7046/") });
 //builder.Services.AddBlazoredLocalStorageAsSingleton();

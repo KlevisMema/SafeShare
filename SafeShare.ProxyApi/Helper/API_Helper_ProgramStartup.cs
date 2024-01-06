@@ -187,7 +187,7 @@ public static class API_Helper_ProgramStartup
         {
             options.AddPolicy(Configuration.GetSection("Cors:Policy:Name").Value!, builder =>
             {
-                builder.WithOrigins("https://localhost:7027", "https://localhost:7038", "http://localhost:5026", "https://127.0.0.1")
+                builder.WithOrigins("https://localhost:7027")
                        .AllowAnyHeader()
                        .AllowAnyMethod()
                        .AllowCredentials();

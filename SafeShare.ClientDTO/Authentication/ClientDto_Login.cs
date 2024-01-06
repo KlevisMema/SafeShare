@@ -1,10 +1,12 @@
 ﻿using System.ComponentModel;
+using SafeShare.ClientDTO.Validators;
 using System.ComponentModel.DataAnnotations;
 
 namespace SafeShare.ClientDTO.Authentication;
 
 public class ClientDto_Login
 {
+    [NoXss]
     [Required, EmailAddress]
     public string Email { get; set; } = string.Empty;
 
