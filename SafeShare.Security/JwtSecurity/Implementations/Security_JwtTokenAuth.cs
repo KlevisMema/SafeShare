@@ -106,7 +106,7 @@ public class Security_JwtTokenAuth
                 JwtId = tokenId,
                 CreationDate = DateTime.UtcNow,
                 UserId = userId,
-                ExpiryDate = DateTime.UtcNow.AddDays(jwtOptions.Value.LifeTime),
+                ExpiryDate = DateTime.UtcNow.AddDays(7),
             };
 
             await db.RefreshTokens.AddAsync(refreshToken);
