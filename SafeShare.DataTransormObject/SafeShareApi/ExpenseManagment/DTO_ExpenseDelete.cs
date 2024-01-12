@@ -22,11 +22,15 @@ public class DTO_ExpenseDelete
     /// <summary>
     /// Gets or sets the unique identifier of the user requesting the expense deletion.
     /// </summary>
-    [Required]
     public Guid UserId { get; set; }
     /// <summary>
     /// Gets or sets the amount of the expense, which is required for balance adjustments upon deletion.
     /// </summary>
     [Required]
     public decimal ExpenseAmount { get; set; }
+    /// <summary>
+    /// Gets or sets the unique identifier of the group requesting the expense deletion.
+    /// </summary>
+    [Required]
+    public Guid GroupId { get; set; }
 }

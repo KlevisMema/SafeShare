@@ -6,14 +6,14 @@ public class ClientDto_ExpenseCreate
 {
     [Required]
     public Guid GroupId { get; set; }
+    public string Date { get; set; } = string.Empty;
     [Required]
-    public byte[] Title { get; set; } = null!;
+    [StringLength(50)]
+    public string Title { get; set; } = string.Empty;
     [Required]
-    public byte[] Date { get; set; } = null!;
+    [Range(0, 10000, ErrorMessage = "Invalid amount")]
+    public decimal Amount { get; set; }
     [Required]
-    public byte[] Amount { get; set; } = null!;
-    [Required]
-    public byte[] Description { get; set; } = null!;
-    [Required]
-    public decimal DecryptedAmount { get; set; }
+    [StringLength(200)]
+    public string Description { get; set; } = string.Empty;
 }

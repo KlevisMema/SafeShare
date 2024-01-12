@@ -82,7 +82,7 @@ public partial class NavMenu
         ClientDto_GroupType? group
     )
     {
-        if (group != null)
+        if (group != null && GroupTypes is not null && GroupTypes.GroupsJoined is not null)
         {
             GroupTypes.GroupsJoined.Add(group);
             StateHasChanged();
@@ -94,7 +94,7 @@ public partial class NavMenu
         _appState.OnNewGroupCreated -= HandleNewGroupCreated;
         _appState.OnGroupEdited -= HandleGroupEdited;
         _appState.OnGroupDeleted -= HandleGroupDeleted;
-        _appState.OnGroupInvitationAccepted += HandleGroupInvitationAccepted;
+        _appState.OnGroupInvitationAccepted -= HandleGroupInvitationAccepted;
     }
 
     private async Task
@@ -122,7 +122,9 @@ public partial class NavMenu
         OpenPopUpCreateGroup()
     {
         var dialog = await DialogService.ShowAsync<CreateGroup>("Change Email Dialog", DialogOptions());
-        await dialog.Result;
+        var result = await dialog.Result;
+
+
     }
 
     private static DialogOptions

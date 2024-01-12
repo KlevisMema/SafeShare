@@ -22,35 +22,32 @@ public static class Util_GetIpAddres
     {
         try
         {
-            string? result = httpContextAccessor.HttpContext.Connection.RemoteIpAddress.ToString();
+            string? result = httpContextAccessor.HttpContext.Request.Headers["X-Original-Client-IP"];
 
-            if (result != null)
+            if (string.IsNullOrEmpty(result))
+                result = httpContextAccessor.HttpContext.Connection.RemoteIpAddress?.ToString();
+
+            if (result == "::1")
             {
+                HttpResponseMessage response;
 
-                if (result == ":::1")
+                var request = new HttpRequestMessage(HttpMethod.Get, "https://api.ipify.org/");
+                var client = new HttpClient();
+                response = await client.SendAsync(request);
+
+                if (response.IsSuccessStatusCode)
                 {
-                    HttpResponseMessage response;
-
-                    var request = new HttpRequestMessage(HttpMethod.Get, "https://api.ipify.org/");
-                    var client = new HttpClient();
-                    response = client.Send(request);
-                    if (response.IsSuccessStatusCode)
-                    {
-                        using var responseStream = response.Content.ReadAsStream();
-                        StreamReader reader = new StreamReader(responseStream);
-                        result = reader.ReadToEnd();
-                    }
+                    using var responseStream = await response.Content.ReadAsStreamAsync();
+                    StreamReader reader = new StreamReader(responseStream);
+                    result = await reader.ReadToEndAsync();
                 }
-
-                return result;
             }
 
+            return result;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return "";
         }
-
-        return "";
     }
 }

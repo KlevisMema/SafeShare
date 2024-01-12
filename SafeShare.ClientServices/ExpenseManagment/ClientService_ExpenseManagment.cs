@@ -24,12 +24,9 @@ public class ClientService_ExpenseManagment(IHttpClientFactory httpClientFactory
         {
             var httpClient = httpClientFactory.CreateClient(Client);
 
-            var content = new StringContent(JsonSerializer.Serialize(new { groupId }), Encoding.UTF8, "application/json");
+            var content = new StringContent(JsonSerializer.Serialize(groupId), Encoding.UTF8, "application/json");
 
-            var request = new HttpRequestMessage(HttpMethod.Get, BaseRoute.RouteExpenseManagmentProxy + Route_ExpenseManagment.ProxyGetAllExpensesOfGroup)
-            {
-                Content = content
-            };
+            var request = new HttpRequestMessage(HttpMethod.Get, BaseRoute.RouteExpenseManagmentProxy + Route_ExpenseManagment.ProxyGetAllExpensesOfGroup + $"?groupId={groupId}");
 
             var response = await httpClient.SendAsync(request);
 
@@ -100,8 +97,7 @@ public class ClientService_ExpenseManagment(IHttpClientFactory httpClientFactory
                 { nameof(ClientDto_ExpenseCreate.Title), clientDto_ExpenseCreate.Title.ToString() },
                 { nameof(ClientDto_ExpenseCreate.Date), clientDto_ExpenseCreate.Date.ToString() },
                 { nameof(ClientDto_ExpenseCreate.Amount), clientDto_ExpenseCreate.Amount.ToString() },
-                { nameof(ClientDto_ExpenseCreate.Description), clientDto_ExpenseCreate.Description.ToString() },
-                { nameof(ClientDto_ExpenseCreate.DecryptedAmount), clientDto_ExpenseCreate.DecryptedAmount.ToString() },
+                { nameof(ClientDto_ExpenseCreate.Description), clientDto_ExpenseCreate.Description.ToString() }
             };
 
             var contentForm = new FormUrlEncodedContent(registerData);
@@ -127,6 +123,7 @@ public class ClientService_ExpenseManagment(IHttpClientFactory httpClientFactory
     public async Task<ClientUtil_ApiResponse<ClientDto_Expense>>
     EditExpense
     (
+        Guid expenseId,
         ClientDto_ExpenseCreate clientDto_ExpenseCreate
     )
     {
@@ -140,13 +137,12 @@ public class ClientService_ExpenseManagment(IHttpClientFactory httpClientFactory
                 { nameof(ClientDto_ExpenseCreate.Title), clientDto_ExpenseCreate.Title.ToString() },
                 { nameof(ClientDto_ExpenseCreate.Date), clientDto_ExpenseCreate.Date.ToString() },
                 { nameof(ClientDto_ExpenseCreate.Amount), clientDto_ExpenseCreate.Amount.ToString() },
-                { nameof(ClientDto_ExpenseCreate.Description), clientDto_ExpenseCreate.Description.ToString() },
-                { nameof(ClientDto_ExpenseCreate.DecryptedAmount), clientDto_ExpenseCreate.DecryptedAmount.ToString() },
+                { nameof(ClientDto_ExpenseCreate.Description), clientDto_ExpenseCreate.Description.ToString() }
             };
 
             var contentForm = new FormUrlEncodedContent(registerData);
 
-            var response = await httpClient.PutAsync(BaseRoute.RouteExpenseManagmentProxy + Route_ExpenseManagment.ProxyEditExpense, contentForm);
+            var response = await httpClient.PutAsync(BaseRoute.RouteExpenseManagmentProxy + Route_ExpenseManagment.ProxyEditExpense + $"?expenseId={expenseId}", contentForm);
 
             var responseContent = await response.Content.ReadAsStringAsync();
 
@@ -174,7 +170,7 @@ public class ClientService_ExpenseManagment(IHttpClientFactory httpClientFactory
         {
             var httpClient = httpClientFactory.CreateClient(Client);
 
-            var content = new StringContent(JsonSerializer.Serialize(new { clientDto_ExpenseDelete }), Encoding.UTF8, "application/json");
+            var content = new StringContent(JsonSerializer.Serialize(clientDto_ExpenseDelete), Encoding.UTF8, "application/json");
 
             var request = new HttpRequestMessage(HttpMethod.Delete, BaseRoute.RouteExpenseManagmentProxy + Route_ExpenseManagment.ProxyDeleteExpense)
             {

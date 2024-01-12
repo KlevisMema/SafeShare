@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components;
 using SafeShare.ClientDTO.Authentication;
 using SafeShare.ClientServices.Interfaces;
 
-namespace SafeShare.Client.Pages;
+namespace SafeShare.Client.Pages.Auth;
 
 public partial class ActivateAccount
 {

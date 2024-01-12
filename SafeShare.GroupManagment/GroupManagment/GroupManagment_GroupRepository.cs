@@ -35,7 +35,8 @@ public class GroupManagment_GroupRepository
     ApplicationDbContext db,
     IMapper mapper,
     ILogger<GroupManagment_GroupRepository> logger,
-    IHttpContextAccessor httpContextAccessor
+    IHttpContextAccessor httpContextAccessor,
+    IGroupManagment_GroupKeyRepository groupManagment_GroupKeyRepository
 ) : Util_BaseContextDependencies<ApplicationDbContext, GroupManagment_GroupRepository>(
     db,
     mapper,
@@ -103,8 +104,6 @@ public class GroupManagment_GroupRepository
                                             GroupAdmin = x.GroupOwner,
                                             GroupCreationDate = x.GroupDetails.CreatedAt,
                                             GroupName = x.GroupDetails.Name,
-                                            LatestExpense = "",
-                                            TotalSpent = x.Member.Balance,
                                             NumberOfMembers = x.NumberOfMembers
                                         }).ToList();
 
@@ -248,8 +247,6 @@ public class GroupManagment_GroupRepository
                 GroupAdmin = group.GroupOwner,
                 GroupCreationDate = group.GroupDetails.CreatedAt,
                 GroupName = group.GroupDetails.Name,
-                LatestExpense = "",
-                TotalSpent = group.Member.Balance,
                 NumberOfMembers = group.NumberOfMembers,
                 UsersGroups = group.Members,
                 ImAdmin = group.ImAdmin,
@@ -293,6 +290,7 @@ public class GroupManagment_GroupRepository
         DTO_CreateGroup createGroup
     )
     {
+        using var transaction = await _db.Database.BeginTransactionAsync();
         try
         {
             if (!await UserExists(ownerId))
@@ -323,6 +321,7 @@ public class GroupManagment_GroupRepository
             await _db.Groups.AddAsync(group);
             await _db.SaveChangesAsync();
 
+
             var groupMember = new GroupMember
             {
                 IsOwner = true,
@@ -341,6 +340,22 @@ public class GroupManagment_GroupRepository
                 GroupId = group.Id
             };
 
+            bool result = await groupManagment_GroupKeyRepository.CreateKeyForGroup(group.Id);
+
+            if (!result)
+            {
+                await transaction.RollbackAsync();
+
+                return Util_GenericResponse<DTO_GroupType>.Response
+                (
+                    null,
+                    false,
+                    "Group was not created",
+                    null,
+                    System.Net.HttpStatusCode.BadRequest
+                );
+            }
+
             _logger.Log
             (
                 LogLevel.Information,
@@ -354,6 +369,8 @@ public class GroupManagment_GroupRepository
                 group.Id
             );
 
+            await transaction.CommitAsync();
+
             return Util_GenericResponse<DTO_GroupType>.Response
             (
                 groupType,
@@ -365,15 +382,17 @@ public class GroupManagment_GroupRepository
         }
         catch (Exception ex)
         {
+            await transaction.RollbackAsync();
+
             return
             await Util_LogsHelper<DTO_GroupType, GroupManagment_GroupRepository>.ReturnInternalServerError
             (
                 ex,
                 _logger,
                 $"""
-                    Somewthing went wrong in [GroupManagment Module]--[GroupManagment_GroupRepository class]--[CreateGroup Method], 
-                    user with [ID] {ownerId} tried to create a group.
-                 """,
+                        Somewthing went wrong in [GroupManagment Module]--[GroupManagment_GroupRepository class]--[CreateGroup Method], 
+                        user with [ID] {ownerId} tried to create a group.
+                    """,
                 null,
                 _httpContextAccessor
             );
@@ -517,6 +536,8 @@ public class GroupManagment_GroupRepository
         Guid groupId
     )
     {
+        using var transaction = await _db.Database.BeginTransactionAsync();
+
         try
         {
             if (!await UserExists(ownerId))
@@ -605,6 +626,26 @@ public class GroupManagment_GroupRepository
             _db.GroupMembers.UpdateRange(groupMembers);
             await _db.SaveChangesAsync();
 
+            bool deleteGroupCryptoKey = await groupManagment_GroupKeyRepository.DeleteGroupKey(groupId);
+
+            if (!deleteGroupCryptoKey)
+            {
+                _logger.Log
+                (
+                    LogLevel.Error,
+                    """
+                        [GroupManagment Module]--[GroupManagment_GroupRepository class]--[DeleteGroup Method] => 
+                        [RESULT] : [IP] {IP}, group with [ID] {groupId} was not deleted due to an error.
+                        """,
+                    await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                    groupId
+                );
+
+                await transaction.RollbackAsync();
+            }
+
+            await transaction.CommitAsync();
+
             _logger.Log
             (
                 LogLevel.Information,
@@ -612,7 +653,7 @@ public class GroupManagment_GroupRepository
                     [GroupManagment Module]--[GroupManagment_GroupRepository class]--[DeleteGroup Method] => 
                     [RESULT] : [IP] {IP}, group with [ID] {groupId} 
                     was deleted from the user with [ID] {ownerId} at {deleteTime}.
-                 """,
+                    """,
                 await Util_GetIpAddres.GetLocation(_httpContextAccessor),
                 groupId,
                 ownerId,
@@ -630,6 +671,8 @@ public class GroupManagment_GroupRepository
         }
         catch (Exception ex)
         {
+            await transaction.RollbackAsync();
+
             return
             await Util_LogsHelper<bool, GroupManagment_GroupRepository>.ReturnInternalServerError
             (

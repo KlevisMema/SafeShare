@@ -21,23 +21,24 @@ public class Expense : Base
     /// <summary>
     /// Encrypted title of the expense.
     /// </summary>
-    [Required, StringLength(100)]
-    public byte[] Title { get; set; } = null!;
+    [Required]
+    public string Title { get; set; } = null!;
     /// <summary>
     /// Encrypted date the expense was made.
     /// </summary>
     [Required]
-    public byte[] Date { get; set; } = null!;
+    public string Date { get; set; } = null!;
     /// <summary>
     /// Encrypted amount of the expense.
     /// </summary>
     [Required]
-    public byte[] Amount { get; set; } = null!;
+    [Range(0, 10000, ErrorMessage = "Invalid amount")]
+    public string Amount { get; set; } = null!;
     /// <summary>
     /// Encrypted (optional) description of the expense.
     /// </summary>
     [Required]
-    public byte[] Desc { get; set; } = null!;
+    public string Desc { get; set; } = null!;
     /// <summary>
     /// Gets or sets the Group ID associated with the expense.
     /// </summary>

@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using SafeShare.DataAccessLayer.Models;
 using SafeShare.ClientServerShared.Routes;
+using SafeShare.Security.API.ActionFilters;
 using SafeShare.Utilities.SafeShareApi.Responses;
 using SafeShare.MediatR.Actions.Queries.ExpenseManagment;
 using SafeShare.MediatR.Actions.Commands.ExpenseManagment;
@@ -24,6 +25,7 @@ namespace SafeShare.API.Controllers;
 /// Initializes a new instance of the <see cref="ExpenseManagmentController"/> with the MediatR mediator.
 /// </remarks>
 /// <param name="mediator">The MediatR mediator for sending commands and queries.</param>
+[ServiceFilter(typeof(VerifyUser))]
 public class ExpenseManagmentController(IMediator mediator) : BaseController(mediator)
 {
     /// <summary>
@@ -41,10 +43,10 @@ public class ExpenseManagmentController(IMediator mediator) : BaseController(med
     GetAllExpensesOfGroup
     (
         Guid userId,
-        Guid groupId
+        [FromQuery] Guid groupId
     )
     {
-        return await _mediator.Send(new MediatR_GetAllExpensesForGroupQuery(groupId, userId));
+        return await _mediator.Send(new MediatR_GetAllExpensesForGroupQuery(userId, groupId));
     }
     /// <summary>
     /// Endpoint for retrieving a specific expense by its ID.
@@ -132,7 +134,7 @@ public class ExpenseManagmentController(IMediator mediator) : BaseController(med
     DeleteExpense
     (
         Guid userId,
-        DTO_ExpenseDelete expenseDelete
+        [FromBody] DTO_ExpenseDelete expenseDelete
     )
     {
         if (!ModelState.IsValid)

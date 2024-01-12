@@ -3,9 +3,11 @@
 public class ClientDto_Expense
 {
     public Guid Id { get; set; }
-    public byte[] Title { get; set; } = null!;
-    public byte[] Date { get; set; } = null!;
-    public byte[] Amount { get; set; } = null!;
-    public byte[] Description { get; set; } = null!;
+    public string Title { get; set; } = "N/A";
+    public string Date { get; set; } = "N/A";
+    public string Amount { get; set; } = "N/A";
+    public string Description { get; set; } = "N/A";
     public Guid GroupId { get; set; }
+    public bool CreatedByMe { get; set; } = false;
+    public string CreatorOfExpense { get; set; } = "N/A";
 }

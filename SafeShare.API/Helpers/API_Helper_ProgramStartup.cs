@@ -20,6 +20,7 @@ using Microsoft.EntityFrameworkCore;
 using SafeShare.Authentication.Auth;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Authentication;
+using SafeShare.Security.GroupSecurity;
 using SafeShare.DataAccessLayer.Context;
 using SafeShare.UserManagment.Interfaces;
 using Microsoft.Extensions.Configuration;
@@ -153,11 +154,13 @@ public static class API_Helper_ProgramStartup
         Services.AddScoped<VerifyUser>();
         Services.AddScoped<IAUTH_Login, AUTH_Login>();
         Services.AddScoped<IAUTH_Register, AUTH_Register>();
+        Services.AddScoped<IGroupKeySecurity, GroupKeySecurity>();
         Services.AddScoped<IAccountManagment, AccountManagment>();
         Services.AddScoped<IAUTH_RefreshToken, AUTH_RefreshToken>();
         Services.AddScoped<ISecurity_JwtTokenHash, Security_JwtTokenAuth>();
-        Services.AddScoped<ISecurity_UserDataProtectionService, Security_UserDataProtectionService>();
         Services.AddScoped<IGroupManagment_GroupRepository, GroupManagment_GroupRepository>();
+        Services.AddScoped<IGroupManagment_GroupKeyRepository, GroupManagment_GroupKeyRepository>();
+        Services.AddScoped<ISecurity_UserDataProtectionService, Security_UserDataProtectionService>();
         Services.AddScoped<IExpenseManagment_ExpenseRepository, ExpenseManagment_ExpenseRepository>();
         Services.AddScoped<IGroupManagment_GroupInvitationsRepository, GroupManagment_GroupInvitationsRepository>();
         Services.AddScoped<ISecurity_JwtTokenAuth<Security_JwtTokenAuth, DTO_AuthUser, DTO_Token>, Security_JwtTokenAuth>();
@@ -175,8 +178,8 @@ public static class API_Helper_ProgramStartup
         IConfiguration Configuration
     )
     {
+        Services.AddDbContext<CryptoKeysDb>(options => options.UseSqlServer(Configuration.GetConnectionString("CryptoKeysConnection")));
         Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
-
         Services.AddDbContext<ApiClientDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("AZURE_SQL_CONNECTIONSTRING")));
 
         //Services.AddDbContext<ApiClientDbContext>(options => options.UseSqlServer(Environment.GetEnvironmentVariable("AZURE_SQL_CONNECTIONSTRING")));
@@ -425,7 +428,7 @@ public static class API_Helper_ProgramStartup
     private static void
     AddSerilog
     (
-            IHostBuilder host
+        IHostBuilder host
     )
     {
         host.UseSerilog((context, configuration) => configuration.ReadFrom.Configuration(context.Configuration));

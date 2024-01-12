@@ -21,7 +21,7 @@ public class ExpenseManagmentProxyController(IExpenseManagmentProxyService expen
     public async Task<ActionResult<Util_GenericResponse<List<DTO_Expense>>>>
     GetAllExpensesOfGroup
     (
-        Guid groupId
+       [FromQuery] Guid groupId
     )
     {
         var jwtToken = JwtToken();
@@ -41,11 +41,11 @@ public class ExpenseManagmentProxyController(IExpenseManagmentProxyService expen
         var jwtToken = JwtToken();
 
         var result = await expenseManagmentProxyService.GetExpense(UserId(jwtToken), jwtToken, expenseId);
-        
+
         return Util_GenericControllerResponse<DTO_Expense>.ControllerResponse(result);
     }
 
-    [HttpPost(Route_ExpenseManagment.CreateExpense)]
+    [HttpPost(Route_ExpenseManagment.ProxyCreateExpense)]
     public async Task<ActionResult<Util_GenericResponse<DTO_Expense>>>
     CreateExpense
     (
@@ -84,7 +84,7 @@ public class ExpenseManagmentProxyController(IExpenseManagmentProxyService expen
     public async Task<ActionResult<Util_GenericResponse<bool>>>
     DeleteExpense
     (
-        DTO_ExpenseDelete expenseDelete
+        [FromBody] DTO_ExpenseDelete expenseDelete
     )
     {
         if (!ModelState.IsValid)

@@ -1,8 +1,8 @@
-﻿using SafeShare.Client.Helpers;
+﻿using MudBlazor;
+using SafeShare.Client.Helpers;
 using Microsoft.AspNetCore.Components;
 using SafeShare.ClientDTO.GroupManagment;
 using SafeShare.ClientServices.GroupManagment;
-using MudBlazor;
 
 namespace SafeShare.Client.Pages.Group;
 
@@ -19,6 +19,12 @@ public partial class RecivedInvitation
         _appState.OnGroupInvitationAccepted += HandleGroupInvitationAccepted;
 
         base.OnInitialized();
+    }
+
+    public void
+    Dispose()
+    {
+        _appState.OnGroupInvitationAccepted -= HandleGroupInvitationAccepted;
     }
 
     protected override async Task OnInitializedAsync()

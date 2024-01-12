@@ -63,7 +63,7 @@ public class GroupManagment_GroupInvitationsRepository
             var invitations = await _db.GroupInvitations.Include(x => x.Group)
                                                         .Include(x => x.InvitingUser)
                                                         .Include(x => x.InvitedUser)
-                                                        .Where(x => x.InvitedUserId == userId.ToString() && !x.IsDeleted)
+                                                        .Where(x => x.InvitedUserId == userId.ToString() && !x.IsDeleted && x.InvitationStatus == InvitationStatus.Pending)
                                                         .GroupBy(x => x.GroupId)
                                                         .Select(group => group.First())
                                                         .ToListAsync();
@@ -238,15 +238,13 @@ public class GroupManagment_GroupInvitationsRepository
                 );
             }
 
-            var userIsAlreadyInGroup = await _db.GroupInvitations.Include(x => x.InvitingUser)
-                                                                 .Include(x => x.InvitedUser)
-                                                                 .AnyAsync(x => x.GroupId == sendInvitation.GroupId &&
-                                                                                x.InvitedUserId == sendInvitation.InvitedUserId.ToString() &&
-                                                                                x.InvitingUserId == sendInvitation.InvitingUserId.ToString() &&
-                                                                                !x.IsDeleted &&
-                                                                                x.InvitationStatus == InvitationStatus.Accepted &&
-                                                                                !x.InvitedUser.IsDeleted &&
-                                                                                !x.InvitingUser.IsDeleted);
+            var userIsAlreadyInGroup = await _db.GroupMembers.Include(x => x.Group)
+                                                             .ThenInclude(x => x.Invitations)
+                                                             .AnyAsync(x => x.UserId == sendInvitation.InvitedUserId.ToString() && 
+                                                                                       x.GroupId == sendInvitation.GroupId &&
+                                                                                       !x.IsDeleted &&
+                                                                                       !x.User.IsDeleted);
+
             if (userIsAlreadyInGroup)
             {
                 _logger.Log

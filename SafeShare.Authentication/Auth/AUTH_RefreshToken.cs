@@ -176,10 +176,10 @@ public class AUTH_RefreshToken
                 return Util_GenericResponse<DTO_Token>.Response
                 (
                     null,
-                    false,
+                    true,
                     "Token has not expired yet",
                     null,
-                    System.Net.HttpStatusCode.BadRequest
+                    System.Net.HttpStatusCode.OK
                 );
             }
 

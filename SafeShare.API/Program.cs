@@ -34,5 +34,4 @@ app.UseHsts();
 
 app.UseSerilogRequestLogging();
 
-
 app.Run();

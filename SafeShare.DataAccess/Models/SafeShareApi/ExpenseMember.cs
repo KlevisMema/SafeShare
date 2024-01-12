@@ -15,17 +15,9 @@ namespace SafeShare.DataAccessLayer.Models.SafeShareApi;
 public class ExpenseMember : Base
 {
     /// <summary>
-    /// Gets or sets the amount paid by the member for the expense.
+    /// Gets or sets the creator of the associated expense.
     /// </summary>
-    [Required]
-    [Column(TypeName = "decimal(18,4)")]
-    public decimal PaidShare { get; set; }
-    /// <summary>
-    /// Gets or sets the amount owed by the member for the expense.
-    /// </summary>
-    [Required]
-    [Column(TypeName = "decimal(18,4)")]
-    public decimal OwedShare { get; set; }
+    public bool CreatorOfExpense {  get; set; }
     /// <summary>
     /// Gets or sets the unique identifier of the associated expense.
     /// </summary>

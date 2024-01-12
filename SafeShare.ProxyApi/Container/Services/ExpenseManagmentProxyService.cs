@@ -28,12 +28,11 @@ public class ExpenseManagmentProxyService(IHttpClientFactory httpClientFactory) 
     {
         var httpClient = httpClientFactory.CreateClient(Client);
 
-        var content = new StringContent(JsonSerializer.Serialize(new { userId, groupId }), Encoding.UTF8, "application/json");
-
-        var requestMessage = new HttpRequestMessage(HttpMethod.Get, BaseRoute.RouteExpenseManagmentForClient + Route_ExpenseManagment.GetAllExpensesOfGroup.Replace("{userId}", userId.ToString()))
-        {
-            Content = content
-        };
+        var requestMessage = new HttpRequestMessage
+        (
+            HttpMethod.Get,
+            BaseRoute.RouteExpenseManagmentForClient + Route_ExpenseManagment.GetAllExpensesOfGroup.Replace("{userId}", userId.ToString()) + $"?groupId={groupId}"
+        );
 
         requestMessage.Headers.Add("X-Api-Key", $"{ApiKey}");
 
@@ -103,7 +102,6 @@ public class ExpenseManagmentProxyService(IHttpClientFactory httpClientFactory) 
             { nameof(DTO_ExpenseCreate.Date), expenseDto.Date.ToString() },
             { nameof(DTO_ExpenseCreate.Amount), expenseDto.Amount.ToString() },
             { nameof(DTO_ExpenseCreate.Description), expenseDto.Description.ToString() },
-            { nameof(DTO_ExpenseCreate.DecryptedAmount), expenseDto.DecryptedAmount.ToString() },
         };
 
         var contentForm = new FormUrlEncodedContent(expense);
@@ -148,12 +146,11 @@ public class ExpenseManagmentProxyService(IHttpClientFactory httpClientFactory) 
             { nameof(DTO_ExpenseCreate.Date), expenseCreateDto.Date.ToString() },
             { nameof(DTO_ExpenseCreate.Amount), expenseCreateDto.Amount.ToString() },
             { nameof(DTO_ExpenseCreate.Description), expenseCreateDto.Description.ToString() },
-            { nameof(DTO_ExpenseCreate.DecryptedAmount), expenseCreateDto.DecryptedAmount.ToString() },
         };
 
         var contentForm = new FormUrlEncodedContent(expense);
 
-        var requestMessage = new HttpRequestMessage(HttpMethod.Put, BaseRoute.RouteExpenseManagmentForClient + Route_ExpenseManagment.EditExpense.Replace("{userId}" + $"?expenseId={expenseId}", userId))
+        var requestMessage = new HttpRequestMessage(HttpMethod.Put, BaseRoute.RouteExpenseManagmentForClient + Route_ExpenseManagment.EditExpense.Replace("{userId}", userId) + $"?expenseId={expenseId}")
         {
             Content = contentForm
         };
@@ -185,18 +182,13 @@ public class ExpenseManagmentProxyService(IHttpClientFactory httpClientFactory) 
     {
         var httpClient = httpClientFactory.CreateClient(Client);
 
-        var expense = new Dictionary<string, string>
-        {
-            { nameof(DTO_ExpenseDelete.ExpenseId), expenseDelete.ExpenseId.ToString() },
-            { nameof(DTO_ExpenseDelete.UserId), expenseDelete.UserId.ToString() },
-            { nameof(DTO_ExpenseDelete.ExpenseAmount), expenseDelete.ExpenseAmount.ToString() },
-        };
+        expenseDelete.UserId = Guid.Parse(userId);
 
-        var contentForm = new FormUrlEncodedContent(expense);
+        var content = new StringContent(JsonSerializer.Serialize(expenseDelete), Encoding.UTF8, "application/json");
 
         var requestMessage = new HttpRequestMessage(HttpMethod.Delete, BaseRoute.RouteExpenseManagmentForClient + Route_ExpenseManagment.DeleteExpense.Replace("{userId}", userId))
         {
-            Content = contentForm
+            Content = content
         };
 
         requestMessage.Headers.Add("X-Api-Key", $"{ApiKey}");

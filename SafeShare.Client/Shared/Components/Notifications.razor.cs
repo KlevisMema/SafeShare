@@ -58,7 +58,20 @@ public partial class Notifications
             InvitationId = invitation.InvitationId,
         });
 
-
+        switch (acceptInvitationResult.StatusCode)
+        {
+            case System.Net.HttpStatusCode.OK:
+                _snackbar.Add(acceptInvitationResult.Message, Severity.Success, config => { config.CloseAfterNavigation = true; config.VisibleStateDuration = 3000; });
+                break;
+            case System.Net.HttpStatusCode.BadRequest:
+                _snackbar.Add(acceptInvitationResult.Message, Severity.Warning, config => { config.CloseAfterNavigation = true; config.VisibleStateDuration = 3000; });
+                break;
+            case System.Net.HttpStatusCode.InternalServerError:
+                _snackbar.Add(acceptInvitationResult.Message, Severity.Error, config => { config.CloseAfterNavigation = true; config.VisibleStateDuration = 3000; });
+                break;
+            default:
+                break;
+        }
 
         if (acceptInvitationResult.Succsess)
         {
@@ -74,20 +87,6 @@ public partial class Notifications
 
         }
 
-        switch (acceptInvitationResult.StatusCode)
-        {
-            case System.Net.HttpStatusCode.OK:
-                _snackbar.Add(acceptInvitationResult.Message, Severity.Success, config => { config.CloseAfterNavigation = true; config.VisibleStateDuration = 3000; });
-                break;
-            case System.Net.HttpStatusCode.BadRequest:
-                _snackbar.Add(acceptInvitationResult.Message, Severity.Warning, config => { config.CloseAfterNavigation = true; config.VisibleStateDuration = 3000; });
-                break;
-            case System.Net.HttpStatusCode.InternalServerError:
-                _snackbar.Add(acceptInvitationResult.Message, Severity.Error, config => { config.CloseAfterNavigation = true; config.VisibleStateDuration = 3000; });
-                break;
-            default:
-                break;
-        }
         _isOpen = false;
         _processing = false;
     }

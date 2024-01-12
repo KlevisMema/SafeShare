@@ -43,7 +43,6 @@
         align-items: center;
         flex-wrap: wrap;
         margin-bottom: 50px;
-        gap: 50px;
     }
 
     .box {
@@ -60,7 +59,7 @@
     }
 
         .box:hover {
-            transform: scale(1.08);
+            transform: scale(1.05);
         }
 
         .box:nth-child(1) {
@@ -77,6 +76,10 @@
 
         .box:nth-child(4) {
             background-color: var(--two-use-color);
+        }
+
+        .box:nth-child(5) {
+            background-color: var(--one-use-color);
         }
 
         .box img {
@@ -123,6 +126,10 @@
         max-width: 1160px;
         overflow-x: auto;
         padding: 20px;
+    }
+
+    .text .topic-heading {
+        font-size: 1.6rem;
     }
 
     @@media screen and (max-width: 950px) {
@@ -341,6 +348,19 @@
 
             <div class="box-container">
 
+                <div class="box box1" @onclick="() => RefreshData()">
+                    <div class="text">
+                        @if (playAnimationOfRefeshData)
+                        {
+                            <MudProgressCircular Color="Color.Success" Indeterminate="true" Size="Size.Small" />
+                        }
+                        else
+                        {
+                            <MudIcon Icon="@Icons.Material.Filled.Refresh" Title="Refresh" Color="Color.Info" Size="Size.Large" />
+                        }
+                    </div>
+                </div>
+
                 @if (!DataRetrieved)
                 {
                     <MudSkeleton Animation="Animation.Pulse" SkeletonType="SkeletonType.Rectangle" Class="box box1">
@@ -425,7 +445,19 @@
             }
             else
             {
-                <MudDataGrid Items="@GroupsDetails" SortMode="SortMode.Multiple" Filterable="true" Hideable="true" Groupable="true" QuickFilter="@_quickFilter">
+                <MudDataGrid Virtualize="true"
+                             Height="450px"
+                             Hideable="true"
+                             Groupable="true"
+                             Filterable="true"
+                             FixedHeader="true"
+                             ShowMenuIcon="true"
+                             Items="@GroupsDetails"
+                             QuickFilter="@_quickFilter"
+                             ColumnsPanelReordering=true
+                             SortMode="SortMode.Multiple"
+                             DragDropColumnReordering=true
+                             ColumnResizeMode="ResizeMode.Column">
 
                     <ToolBarContent>
                         <MudText Typo="Typo.h6">Group Details</MudText>
@@ -435,14 +467,11 @@
                     </ToolBarContent>
 
                     <Columns>
-                        <SelectColumn />
                         <PropertyColumn Property="x => x.GroupName" Title="Group Name" Sortable="true" Filterable="true" />
-                        <PropertyColumn Property="x => x.GroupAdmin" Title="Group Admin" />
-                        <PropertyColumn Property="x => x.GroupCreationDate" Title="Group Creation Date" />
-                        <PropertyColumn Property="x => x.LatestExpense" Title="Latest Expense" />
-                        <PropertyColumn Property="x => x.TotalSpent" Title="Total Spent" />
-                        <PropertyColumn Property="x => x.Description" Title="Description" />
-                        <PropertyColumn Property="x => x.NumberOfMembers" Title="Nr Of Members" />
+                        <PropertyColumn Property="x => x.GroupAdmin" Title="Group Admin" Sortable="true" Filterable="true" />
+                        <PropertyColumn Property="x => x.GroupCreationDate" Title="Group Creation Date" Sortable="true" Filterable="true" />
+                        <PropertyColumn Property="x => x.Description" Title="Description" Sortable="true" Filterable="true" />
+                        <PropertyColumn Property="x => x.NumberOfMembers" Title="Nr Of Members" Sortable="true" Filterable="true" />
                     </Columns>
 
                     <PagerContent>

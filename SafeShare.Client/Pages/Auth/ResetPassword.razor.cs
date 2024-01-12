@@ -1,7 +1,7 @@
 ﻿using MudBlazor;
 using Microsoft.AspNetCore.Components;
 
-namespace SafeShare.Client.Pages;
+namespace SafeShare.Client.Pages.Auth;
 
 public partial class ResetPassword
 {
@@ -18,7 +18,7 @@ public partial class ResetPassword
     //{
     //    if (firstRender)
     //    {
-            
+
     //    }
     //}
 

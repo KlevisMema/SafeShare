@@ -22,10 +22,6 @@ public class DTO_GroupDetails
     /// </summary>
     public int NumberOfMembers { get; set; }
     /// <summary>
-    /// Gets or sets the details of the latest expense recorded in the group.
-    /// </summary>
-    public string LatestExpense { get; set; } = string.Empty;
-    /// <summary>
     /// Gets or sets the description of the group.
     /// </summary>
     public string Description { get; set; } = string.Empty;
@@ -37,10 +33,6 @@ public class DTO_GroupDetails
     /// Gets or sets the date when the group was created.
     /// </summary>
     public DateTime GroupCreationDate { get; set; }
-    /// <summary>
-    /// Gets or sets the total amount spent by the group.
-    /// </summary>
-    public decimal TotalSpent { get; set; }
     /// <summary>
     /// Gets or sets the users of the group.
     /// </summary>

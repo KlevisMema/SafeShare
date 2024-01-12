@@ -28,6 +28,8 @@ app.MapControllers();
 
 app.UseHsts();
 
+app.UseMiddleware<API_Helper_ProxyForwardedHeadersMiddleware>();
+
 app.UseSerilogRequestLogging();
 
 app.Run();

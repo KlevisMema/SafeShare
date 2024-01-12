@@ -14,7 +14,7 @@ public partial class MainLayout
     [Inject] private IAuthenticationService authService { get; set; } = null!;
     [Inject] private ILocalStorageService _localStorage { get; set; } = null!;
     [Inject] private NavigationManager _navigationManager { get; set; } = null!;
-    [Inject] private IClientService_GroupManagment _clientService_GroupManagment { get; set; } = null!;
+    [Inject] public IClientService_GroupManagment _clientService_GroupManagment { get; set; } = null!;
 
     private bool _drawerOpen = true;
 
@@ -31,7 +31,6 @@ public partial class MainLayout
     protected override async Task
     OnInitializedAsync()
     {
-
         var getGroupTypes = await _clientService_GroupManagment.GetGroupTypes();
 
         if (getGroupTypes.Succsess && getGroupTypes.Value is not null)
@@ -40,8 +39,6 @@ public partial class MainLayout
             DataRetrieved = true;
         }
     }
-
- 
 
     private async Task
     LogoutUser()

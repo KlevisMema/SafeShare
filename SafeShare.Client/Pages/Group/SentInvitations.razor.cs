@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Components;
-using MudBlazor;
+﻿using MudBlazor;
 using SafeShare.Client.Helpers;
+using Microsoft.AspNetCore.Components;
 using SafeShare.ClientDTO.GroupManagment;
 using SafeShare.ClientServices.GroupManagment;
 
@@ -14,7 +14,6 @@ public partial class SentInvitations
 
     protected override async Task OnInitializedAsync()
     {
-
         var getSentInvitations = await _groupManagmentService.GetSentGroupInvitations();
 
         if (getSentInvitations != null && getSentInvitations.Succsess && getSentInvitations.Value is not null)
