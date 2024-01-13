@@ -13,7 +13,6 @@ public static class API_Helper_AfterAppBuild
 {
     /// <summary>
     /// An extension method to perform operations right after the web application is built.
-    /// One of its primary functions is to seed roles into the application.
     /// </summary>
     /// <param name="app">The web application instance.</param>
     /// <param name="Configuration">Configuration for the application settings.</param>
@@ -24,7 +23,6 @@ public static class API_Helper_AfterAppBuild
         IConfiguration Configuration
     )
     {
-        // Seed roles 
-        await RolesSeeder.SeedRolesAsync(app, Configuration);
+        await Seeder.Seed(app, Configuration);
     }
 }
