@@ -193,7 +193,8 @@ public class GroupManagment_GroupRepository
                                                             {
                                                                 UserImage = x.User.ImageData,
                                                                 UserName = x.User.UserName,
-                                                                IsAdmin = x.IsOwner
+                                                                IsAdmin = x.IsOwner,
+                                                                Balance = x.Balance,
                                                             })
                                                             .ToList()
                                               })

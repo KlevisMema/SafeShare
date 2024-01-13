@@ -169,6 +169,10 @@
         padding: 10px;
         width: 100%;
     }
+
+    .balance{
+        margin: 0;
+    }
 </style>
 
 <body>
@@ -289,6 +293,7 @@
                                         @string.Empty
                                     }
                                 </p>
+                                <p class="balance">Balance: @user.Balance.ToString("0.00") <MudIcon Icon="@Icons.Material.Filled.AttachMoney" /> </p>
                             </div>
 
                             @if (GroupDetailsDto.ImAdmin)
