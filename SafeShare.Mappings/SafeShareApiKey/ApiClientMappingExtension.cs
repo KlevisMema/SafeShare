@@ -19,7 +19,7 @@ public static class ApiClientMappingExtension
             ContactPerson = createDto.ContactPerson,
             SiteYouDevelopingUrl = createDto.SiteYouDevelopingUrl,
             RegisteredOn = DateTime.UtcNow,
-            IsActive = false,
+            IsActive = true,
             Email = createDto.Email,
             PhoneNumber = createDto.PhoneNumber,
             NormalizedEmail = createDto.Email.ToUpper(),
