@@ -3,6 +3,7 @@
  * for managing groups, including creating, editing, deleting, and retrieving group details and types.
  */
 
+using System.Net;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -12,10 +13,12 @@ using SafeShare.GroupManagment.Interfaces;
 using SafeShare.Utilities.SafeShareApi.IP;
 using SafeShare.Utilities.SafeShareApi.Log;
 using SafeShare.Utilities.SafeShareApi.User;
+using SafeShare.ExpenseManagement.Interfaces;
 using SafeShare.Utilities.SafeShareApi.Responses;
 using SafeShare.Utilities.SafeShareApi.Dependencies;
 using SafeShare.DataAccessLayer.Models.SafeShareApi;
 using SafeShare.DataTransormObject.SafeShareApi.GroupManagment;
+using SafeShare.DataTransormObject.SafeShareApi.ExpenseManagment;
 
 namespace SafeShare.GroupManagment.GroupManagment;
 
@@ -36,7 +39,8 @@ public class GroupManagment_GroupRepository
     IMapper mapper,
     ILogger<GroupManagment_GroupRepository> logger,
     IHttpContextAccessor httpContextAccessor,
-    IGroupManagment_GroupKeyRepository groupManagment_GroupKeyRepository
+    IGroupManagment_GroupKeyRepository groupManagment_GroupKeyRepository,
+    IExpenseManagment_SecurityRepository securityExpense
 ) : Util_BaseContextDependencies<ApplicationDbContext, GroupManagment_GroupRepository>(
     db,
     mapper,
@@ -318,9 +322,10 @@ public class GroupManagment_GroupRepository
 
             var group = _mapper.Map<Group>(createGroup);
 
+            group.Tag = Guid.NewGuid();
+
             await _db.Groups.AddAsync(group);
             await _db.SaveChangesAsync();
-
 
             var groupMember = new GroupMember
             {
@@ -340,7 +345,7 @@ public class GroupManagment_GroupRepository
                 GroupId = group.Id
             };
 
-            bool result = await groupManagment_GroupKeyRepository.CreateKeyForGroup(group.Id);
+            bool result = await groupManagment_GroupKeyRepository.CreateKeyForGroup(group.Tag, group.Id);
 
             if (!result)
             {
@@ -617,14 +622,22 @@ public class GroupManagment_GroupRepository
 
             isInTheGroup.Group.IsDeleted = true;
             _db.Groups.Update(isInTheGroup.Group);
-            await _db.SaveChangesAsync();
 
             var groupMembers = await _db.GroupMembers.Where(x => x.GroupId == groupId).ToListAsync();
 
-            groupMembers.ForEach(x => x.IsDeleted = true);
+            _db.GroupMembers.RemoveRange(groupMembers);
 
-            _db.GroupMembers.UpdateRange(groupMembers);
-            await _db.SaveChangesAsync();
+            var group = await _db.Groups.Include(x => x.Invitations).Include(x => x.Expenses!).ThenInclude(x => x.ExpenseMembers).FirstOrDefaultAsync(x => x.Id == groupId);
+
+            _db.GroupInvitations.RemoveRange(group.Invitations);
+
+            foreach (var expense in group.Expenses)
+            {
+                foreach (var expenseMember in expense.ExpenseMembers)
+                    _db.ExpenseMembers.Remove(expenseMember);
+
+                _db.Expenses.Remove(expense);
+            }
 
             bool deleteGroupCryptoKey = await groupManagment_GroupKeyRepository.DeleteGroupKey(groupId);
 
@@ -644,6 +657,7 @@ public class GroupManagment_GroupRepository
                 await transaction.RollbackAsync();
             }
 
+            await _db.SaveChangesAsync();
             await transaction.CommitAsync();
 
             _logger.Log
@@ -702,8 +716,11 @@ public class GroupManagment_GroupRepository
         List<DTO_UsersGroupDetails> usersToRemoveFromGroup
     )
     {
+        using var transaction = await _db.Database.BeginTransactionAsync();
+
         try
         {
+
             if (!await UserExists(ownerId))
             {
                 _logger.Log
@@ -784,19 +801,115 @@ public class GroupManagment_GroupRepository
                 var groupMember = await IsUserInTheGroup(Guid.Empty, groupId, true, item.UserName);
 
                 if (groupMember is not null)
-                {
                     _db.GroupMembers.Remove(groupMember);
-                }
             }
 
+            var group = await _db.Groups.Include(x => x.GroupMembers)
+                                        .ThenInclude(x => x.User)
+                                        .Include(x => x.Expenses!)
+                                        .ThenInclude(x => x.ExpenseMembers)
+                                        .FirstOrDefaultAsync(x => x.Id == groupId && !x.IsDeleted);
+
+
+            CancellationTokenSource cts = new();
+            CancellationToken cancellationToken = cts.Token;
+
+            var groupMembersIds = group.GroupMembers.Where(x => x.GroupId == groupId).Select(x => x.UserId).ToList();
+
+            var getDecryptedExpenses = await securityExpense.DecryptMultipleExpensesData(groupId, groupMembersIds, [.. group.Expenses], group.Tag, cancellationToken);
+
+            if (!getDecryptedExpenses.Succsess || getDecryptedExpenses.Value is null)
+            {
+                return Util_GenericResponse<bool>.Response
+                (
+                    false,
+                    false,
+                    "Error, user was not deleted",
+                    null,
+                    HttpStatusCode.BadRequest
+                );
+            }
+
+            var listOfNewEncryptedExpenses = new List<Expense>();
+            
+            var newTag = Guid.NewGuid();
+
+            group.Tag = newTag;
+            _db.Groups.Update(group);
+
+            bool result = await groupManagment_GroupKeyRepository.UpdateKeyForGroup(newTag, group!.Id);
+
+            if (!result)
+            {
+                return Util_GenericResponse<bool>.Response
+                (
+                    false,
+                    false,
+                    $"Error, user was not removed",
+                    null,
+                    System.Net.HttpStatusCode.BadRequest
+                );
+            }
+
+            foreach (var decryptedExpense in getDecryptedExpenses.Value)
+            {
+                var userId = decryptedExpense.ExpenseMembers.FirstOrDefault(x => x.CreatorOfExpense == true)!.UserId;
+
+                var resultEncryption = await securityExpense.EncryptExpenseData(userId, new DTO_ExpenseCreate
+                {
+                    Amount = decryptedExpense.Amount,
+                    Date = decryptedExpense.Date,
+                    Description = decryptedExpense.Desc,
+                    GroupId = decryptedExpense.GroupId,
+                    Title = decryptedExpense.Title,
+                }, group.Tag);
+
+                if (!resultEncryption.Succsess || resultEncryption.Value is null)
+                {
+                    return Util_GenericResponse<bool>.Response
+                    (
+                        false,
+                        false,
+                        $"Error, user was not deleted",
+                        null,
+                        System.Net.HttpStatusCode.BadRequest
+                    );
+                }
+
+                listOfNewEncryptedExpenses.Add(new Expense
+                {
+                    Title = resultEncryption.Value.Title,
+                    Amount = resultEncryption.Value.Amount,
+                    CreatedAt = decryptedExpense.CreatedAt,
+                    Date = resultEncryption.Value.Date,
+                    DeletedAt = decryptedExpense.DeletedAt,
+                    Desc = resultEncryption.Value.Description,
+                    GroupId = decryptedExpense.GroupId,
+                    Id = decryptedExpense.Id,
+                    IsDeleted = decryptedExpense.IsDeleted,
+                    ModifiedAt = DateTime.UtcNow,
+                });
+
+                var existingExpense = await _db.Expenses.FindAsync(decryptedExpense.Id);
+
+                if (existingExpense != null)
+                    _db.Entry(existingExpense).State = EntityState.Detached;
+            }
+
+            getDecryptedExpenses.Value = null;
+
+            _db.Expenses.UpdateRange(listOfNewEncryptedExpenses);
+
             await _db.SaveChangesAsync();
+
+            await transaction.CommitAsync();
 
             _logger.Log
             (
                LogLevel.Information,
                """
                     [GroupManagment Module]--[GroupManagment_GroupRepository class]--[RemoveUsersFromGroup Method] => 
-                    [RESULT] : [IP] {IP},users {users} in group with [ID] {groupId} 
+                    [RESULT] : [IP] {IP},users {@users} in group with [ID] {groupId} 
                     were deleted from the user with [ID] {ownerId} at {deleteTime}.
                 """,
                await Util_GetIpAddres.GetLocation(_httpContextAccessor),
@@ -818,6 +931,8 @@ public class GroupManagment_GroupRepository
         }
         catch (Exception ex)
         {
+            await transaction.RollbackAsync();
+
             return
             await Util_LogsHelper<bool, GroupManagment_GroupRepository>.ReturnInternalServerError
             (

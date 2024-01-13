@@ -162,6 +162,7 @@ public static class API_Helper_ProgramStartup
         Services.AddScoped<IGroupManagment_GroupKeyRepository, GroupManagment_GroupKeyRepository>();
         Services.AddScoped<ISecurity_UserDataProtectionService, Security_UserDataProtectionService>();
         Services.AddScoped<IExpenseManagment_ExpenseRepository, ExpenseManagment_ExpenseRepository>();
+        Services.AddScoped<IExpenseManagment_SecurityRepository, ExpenseManagment_SecurityRepository>();
         Services.AddScoped<IGroupManagment_GroupInvitationsRepository, GroupManagment_GroupInvitationsRepository>();
         Services.AddScoped<ISecurity_JwtTokenAuth<Security_JwtTokenAuth, DTO_AuthUser, DTO_Token>, Security_JwtTokenAuth>();
         Services.AddScoped<ISecurity_JwtTokenAuth<Security_JwtShortLivedToken, string, string>, Security_JwtShortLivedToken>();

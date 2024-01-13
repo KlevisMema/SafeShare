@@ -9,6 +9,7 @@
     <ItemGroup>
       <ProjectReference Include="..\SafeShare.DataAccess\SafeShare.DataAccess.csproj" />
       <ProjectReference Include="..\SafeShare.DataTransormObject\SafeShare.DataTransormObject.csproj" />
+      <ProjectReference Include="..\SafeShare.ExpenseManagement\SafeShare.ExpenseManagement.csproj" />
       <ProjectReference Include="..\SafeShare.Security\SafeShare.Security.csproj" />
     </ItemGroup>
 

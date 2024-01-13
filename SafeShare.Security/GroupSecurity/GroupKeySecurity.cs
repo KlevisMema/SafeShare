@@ -15,7 +15,8 @@ public class GroupKeySecurity(IDataProtectionProvider dataProtectionProvider, Cr
         int iterations,
         int outputLength,
         string userId,
-        Guid groupId
+        Guid groupId,
+        Guid tag
     )
     {
         string groupMasterKey = "";
@@ -25,7 +26,7 @@ public class GroupKeySecurity(IDataProtectionProvider dataProtectionProvider, Cr
         if (group is null)
             return null;
 
-        groupMasterKey = UnprotectCryptoKey(group.CryptoKey, groupId);
+        groupMasterKey = UnprotectCryptoKey(group.CryptoKey, groupId, tag);
 
         using var pbkdf2 = new Rfc2898DeriveBytes(groupMasterKey, Encoding.UTF8.GetBytes(userId), iterations, HashAlgorithmName.SHA256);
         return pbkdf2.GetBytes(outputLength);
@@ -49,10 +50,11 @@ public class GroupKeySecurity(IDataProtectionProvider dataProtectionProvider, Cr
     public string
     ProtectCryptoKey
     (
+        Guid tag,
         Guid groupId
     )
     {
-        var protector = dataProtectionProvider.CreateProtector($"GroupSpecific-{groupId}");
+        var protector = dataProtectionProvider.CreateProtector($"GroupSpecific-{groupId}-{tag}");
         return protector.Protect(GenerateGroupMasterKey());
     }
 
@@ -60,10 +62,11 @@ public class GroupKeySecurity(IDataProtectionProvider dataProtectionProvider, Cr
     UnprotectCryptoKey
     (
         string cryptoKey,
-        Guid groupId
+        Guid groupId,
+        Guid tag
     )
     {
-        var protector = dataProtectionProvider.CreateProtector($"GroupSpecific-{groupId}");
+        var protector = dataProtectionProvider.CreateProtector($"GroupSpecific-{groupId}-{tag}");
         return protector.Unprotect(cryptoKey);
     }
 }

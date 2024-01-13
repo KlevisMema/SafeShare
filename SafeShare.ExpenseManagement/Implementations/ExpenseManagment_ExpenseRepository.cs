@@ -45,7 +45,7 @@ public class ExpenseManagment_ExpenseRepository
     IMapper mapper,
     ILogger<ExpenseManagment_ExpenseRepository> logger,
     IHttpContextAccessor httpContextAccessor,
-    IGroupKeySecurity groupKeySecurity
+    IExpenseManagment_SecurityRepository securityExpense
 ) : Util_BaseContextDependencies<ApplicationDbContext, ExpenseManagment_ExpenseRepository>(
     db,
     mapper,
@@ -68,9 +68,10 @@ public class ExpenseManagment_ExpenseRepository
     {
         try
         {
-            var isGroupMember = await _db.GroupMembers.AnyAsync(gm => gm.GroupId == groupId && gm.UserId == userId && !gm.User.IsDeleted && !gm.IsDeleted && !gm.Group.IsDeleted);
+            var groupMember = await _db.GroupMembers.Include(x => x.Group)
+                                                    .FirstOrDefaultAsync(gm => gm.GroupId == groupId && gm.UserId == userId && !gm.User.IsDeleted && !gm.IsDeleted && !gm.Group.IsDeleted);
 
-            if (!isGroupMember)
+            if (groupMember is null)
             {
                 _logger.Log
                 (
@@ -105,7 +106,7 @@ public class ExpenseManagment_ExpenseRepository
                 .Where(e => e.GroupId == groupId && !e.Group.IsDeleted && !e.IsDeleted)
                 .ToListAsync();
 
-            var getDecryptedExpenses = await DecryptMultipleExpensesData(groupId, groupMembersIds, expenses, cancellationToken);
+            var getDecryptedExpenses = await securityExpense.DecryptMultipleExpensesData(groupId, groupMembersIds, expenses, groupMember.Group.Tag, cancellationToken);
 
             if (!getDecryptedExpenses.Succsess || getDecryptedExpenses.Value is null)
             {
@@ -175,6 +176,7 @@ public class ExpenseManagment_ExpenseRepository
         {
             var expense = await _db.Expenses
                 .Include(e => e.ExpenseMembers)
+                .Include(x => x.Group)
                 .FirstOrDefaultAsync(e => e.Id == expenseId && !e.IsDeleted);
 
             if (expense == null || expense.IsDeleted)
@@ -224,7 +226,7 @@ public class ExpenseManagment_ExpenseRepository
                 );
             }
 
-            var getExpenseDecrypted = await DecryptExpenseData(userId, expense);
+            var getExpenseDecrypted = await securityExpense.DecryptExpenseData(userId, expense, expense.Group.Tag);
 
             if (!getExpenseDecrypted.Succsess || getExpenseDecrypted.Value is null)
             {
@@ -293,6 +295,29 @@ public class ExpenseManagment_ExpenseRepository
                                                      .Where(gm => gm.GroupId == expenseDto.GroupId)
                                                      .ToListAsync();
 
+            int memberCount = groupMembers.Count;
+
+            if (memberCount <= 1)
+            {
+                _logger.Log
+                (
+                    LogLevel.Error,
+                    """
+                        [ExpenseManagment Module]-[ExpenseManagment_ExpenseRepository class]-[CreateExpense Method] => 
+                        [RESULT] : User with id : {userId} tried to create an expense with no other memebers in the group.
+                    """,
+                    userId
+                );
+
+                return Util_GenericResponse<DTO_Expense>.Response
+                (
+                    null,
+                    false,
+                    "Can not create an expense if no other members are in the group",
+                    null,
+                    HttpStatusCode.BadRequest
+                );
+            }
 
             var isMember = groupMembers.FirstOrDefault(gm => gm.UserId == userId);
 
@@ -320,10 +345,20 @@ public class ExpenseManagment_ExpenseRepository
                 );
             }
 
-            var canParseAmount = int.TryParse(expenseDto.Amount, out int amountParsed);
+            var canParseAmount = decimal.TryParse(expenseDto.Amount, out decimal amountParsed);
 
             if (!canParseAmount)
             {
+                _logger.Log
+                (
+                    LogLevel.Error,
+                    """
+                        [ExpenseManagment Module]-[ExpenseManagment_ExpenseRepository class]-[CreateExpense Method] => 
+                        [RESULT] : The proccess to convert expense amount of {expenseAmount} to a decimal failed.
+                    """,
+                    expenseDto.Amount
+                );
+
                 return Util_GenericResponse<DTO_Expense>.Response
                 (
                     null,
@@ -345,7 +380,7 @@ public class ExpenseManagment_ExpenseRepository
                 CreatorOfExpense = isMember.User.FullName
             };
 
-            var resultEncryption = await EncryptExpenseData(userId, expenseDto);
+            var resultEncryption = await securityExpense.EncryptExpenseData(userId, expenseDto, isMember.Group.Tag);
 
             if (!resultEncryption.Succsess || resultEncryption.Value is null)
             {
@@ -364,20 +399,6 @@ public class ExpenseManagment_ExpenseRepository
             var expense = _mapper.Map<Expense>(expenseDto);
 
             _db.Expenses.Add(expense);
-
-            int memberCount = groupMembers.Count;
-
-            if (memberCount <= 1)
-            {
-                return Util_GenericResponse<DTO_Expense>.Response
-                (
-                    null,
-                    false,
-                    "Can not create an expense if no other members are in the group",
-                    null,
-                    HttpStatusCode.BadRequest
-                );
-            }
 
             decimal shareAmount = amountParsed / (memberCount - 1);
 
@@ -478,6 +499,29 @@ public class ExpenseManagment_ExpenseRepository
                                                    .Where(gm => gm.GroupId == expenseEdit.GroupId)
                                                    .ToListAsync();
 
+            int memberCount = groupMembers.Count;
+
+            if (memberCount <= 1)
+            {
+                _logger.Log
+                (
+                    LogLevel.Error,
+                    """
+                        [ExpenseManagment Module]-[ExpenseManagment_ExpenseRepository class]-[EditExpense Method] => 
+                        [RESULT] : User with id : {userId} tried to edit an expense with no other memebers in the group.
+                    """,
+                    userId
+                );
+
+                return Util_GenericResponse<DTO_Expense>.Response
+                (
+                    null,
+                    false,
+                    "Can not edit an expense if no other members are in the group",
+                    null,
+                    HttpStatusCode.BadRequest
+                );
+            }
 
             var isMember = groupMembers.FirstOrDefault(gm => gm.UserId == userId);
 
@@ -560,10 +604,20 @@ public class ExpenseManagment_ExpenseRepository
                 );
             }
 
-            var canParseAmount = int.TryParse(expenseEdit.Amount, out int amountParsed);
+            var canParseAmount = decimal.TryParse(expenseEdit.Amount, out decimal amountParsed);
 
             if (!canParseAmount)
             {
+                _logger.Log
+                (
+                    LogLevel.Error,
+                    """
+                        [ExpenseManagment Module]-[ExpenseManagment_ExpenseRepository class]-[EditExpense Method] => 
+                        [RESULT] : The proccess to convert expense amount of {expenseAmount} to a decimal failed.
+                    """,
+                    expenseEdit.Amount
+                );
+
                 return Util_GenericResponse<DTO_Expense>.Response
                 (
                     null,
@@ -586,7 +640,7 @@ public class ExpenseManagment_ExpenseRepository
                 Id = expenseId
             };
 
-            var resultEncryption = await EncryptExpenseData(userId, expenseEdit);
+            var resultEncryption = await securityExpense.EncryptExpenseData(userId, expenseEdit, expense.Group.Tag);
 
             if (!resultEncryption.Succsess || resultEncryption.Value is null)
             {
@@ -604,6 +658,16 @@ public class ExpenseManagment_ExpenseRepository
 
             if (!tryParseDate)
             {
+                _logger.Log
+               (
+                   LogLevel.Error,
+                   """
+                        [ExpenseManagment Module]-[ExpenseManagment_ExpenseRepository class]-[EditExpense Method] => 
+                        [RESULT] : The proccess to convert expense date : {cpyOfDtoDate} to a date time failed.
+                    """,
+                   cpyOfDto.Date
+               );
+
                 return Util_GenericResponse<DTO_Expense>.Response
                 (
                     null,
@@ -620,20 +684,6 @@ public class ExpenseManagment_ExpenseRepository
             expense.Amount = resultEncryption.Value.Amount;
 
             _db.Expenses.Update(expense);
-
-            int memberCount = groupMembers.Count;
-
-            if (memberCount <= 1)
-            {
-                return Util_GenericResponse<DTO_Expense>.Response
-                (
-                    null,
-                    false,
-                    "Can not edit an expense if no other members are in the group",
-                    null,
-                    HttpStatusCode.BadRequest
-                );
-            }
 
             decimal shareAmount = amountParsed / (memberCount - 1);
 
@@ -721,8 +771,6 @@ public class ExpenseManagment_ExpenseRepository
 
             if (isMember is null || isMember.IsDeleted)
             {
-                await transaction.DisposeAsync();
-
                 _logger.Log
                 (
                     LogLevel.Error,
@@ -753,8 +801,6 @@ public class ExpenseManagment_ExpenseRepository
 
             if (expense is null || expense.IsDeleted)
             {
-                await transaction.DisposeAsync();
-
                 _logger.Log
                 (
                     LogLevel.Error,
@@ -780,8 +826,6 @@ public class ExpenseManagment_ExpenseRepository
 
             if (!expenseMadeByCreator)
             {
-                await transaction.RollbackAsync();
-
                 _logger.Log
                 (
                     LogLevel.Error,
@@ -805,12 +849,10 @@ public class ExpenseManagment_ExpenseRepository
                 );
             }
 
-            var getExpenseDecrypted = await DecryptExpenseData(expenseDelete.UserId.ToString(), expense);
+            var getExpenseDecrypted = await securityExpense.DecryptExpenseData(expenseDelete.UserId.ToString(), expense, expense.Group.Tag);
 
             if (getExpenseDecrypted is null || !getExpenseDecrypted.Succsess || getExpenseDecrypted.Value is null)
             {
-                await transaction.DisposeAsync();
-
                 return Util_GenericResponse<bool>.Response
                 (
                     false,
@@ -881,293 +923,5 @@ public class ExpenseManagment_ExpenseRepository
                 _httpContextAccessor
             );
         }
-    }
-
-    private async Task<Util_GenericResponse<DTO_ExpenseCreate>>
-    EncryptExpenseData
-    (
-        string userId,
-        DTO_ExpenseCreate expense
-    )
-    {
-        try
-        {
-            byte[]? userKey = await groupKeySecurity.DeriveUserKey(iterations: 10000, outputLength: 32, userId, expense.GroupId);
-
-            if (userKey is null)
-            {
-                _logger.Log
-                (
-                    LogLevel.Error,
-                    """
-                        [ExpenseManagment Module]-[ExpenseManagment_ExpenseRepository class]-[EncryptExpenseData Method] => 
-                        [RESULT] : User key was not generated.
-                     """
-                );
-
-                return Util_GenericResponse<DTO_ExpenseCreate>.Response
-                (
-                    null,
-                    false,
-                    string.Empty,
-                    null,
-                    HttpStatusCode.InternalServerError
-                );
-            }
-
-            expense.Title = EncryptData(expense.Title, userKey);
-            expense.Date = EncryptData(expense.Date.ToString(), userKey);
-            expense.Amount = EncryptData(expense.Amount, userKey);
-            expense.Description = EncryptData(expense.Description, userKey);
-
-            return Util_GenericResponse<DTO_ExpenseCreate>.Response
-            (
-                expense,
-                true,
-                string.Empty,
-                null,
-                HttpStatusCode.OK
-            );
-        }
-        catch (Exception ex)
-        {
-            _logger.Log
-            (
-                LogLevel.Critical,
-                """
-                    [ExpenseManagment Module]-[ExpenseManagment_ExpenseRepository class]-[EncryptExpenseData Method] => 
-                    [RESULT] : User key was not generated. An exception occurred  => {ex}
-                 """,
-                ex
-            );
-
-            return Util_GenericResponse<DTO_ExpenseCreate>.Response
-            (
-                null,
-                false,
-                string.Empty,
-                null,
-                HttpStatusCode.InternalServerError
-            );
-        }
-    }
-
-    private async Task<Util_GenericResponse<List<Expense>>>
-    DecryptMultipleExpensesData
-    (
-        Guid groupId,
-        List<string> userIds,
-        List<Expense> expenses,
-        CancellationToken cancellationToken = default
-    )
-    {
-        try
-        {
-            List<Expense> decryptedExpenses = [];
-
-            foreach (var userId in userIds)
-            {
-                byte[]? userKey = await groupKeySecurity.DeriveUserKey(iterations: 10000, outputLength: 32, userId, groupId);
-
-                foreach (var expense in expenses)
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    try
-                    {
-                        var decryptedExpense = new Expense
-                        {
-                            Id = expense.Id,
-                            Title = DecryptData(expense.Title, userKey),
-                            Date = DecryptData(expense.Date, userKey),
-                            Amount = DecryptData(expense.Amount, userKey),
-                            Desc = DecryptData(expense.Desc, userKey),
-                            GroupId = expense.GroupId,
-                            Group = expense.Group,
-                            ExpenseMembers = expense.ExpenseMembers,
-                            DeletedAt = expense.DeletedAt,
-                            CreatedAt = expense.CreatedAt,
-                            IsDeleted = expense.IsDeleted,
-                            ModifiedAt = expense.ModifiedAt,
-                        };
-                        decryptedExpenses.Add(decryptedExpense);
-                    }
-                    catch (Exception)
-                    {
-                        continue;
-                    }
-
-                }
-            }
-
-            return Util_GenericResponse<List<Expense>>.Response
-            (
-                decryptedExpenses,
-                true,
-                null,
-                null,
-                HttpStatusCode.OK
-            );
-
-        }
-        catch (OperationCanceledException)
-        {
-            _logger.Log
-            (
-                LogLevel.Error,
-                "[ExpenseManagment Module]-[ExpenseManagment_ExpenseRepository class]-[DecryptExpenseDataAsync Method] => Operation was canceled."
-            );
-
-            return Util_GenericResponse<List<Expense>>.Response(
-                null,
-                false,
-                "Operation was canceled.",
-                null,
-                HttpStatusCode.BadRequest
-            );
-        }
-        catch (Exception ex)
-        {
-            _logger.Log
-            (
-                LogLevel.Critical,
-                """
-                    [ExpenseManagment Module]-[ExpenseManagment_ExpenseRepository class]-[DecryptExpenseData Method] => 
-                    [RESULT] : Expense was not encrypted {ex}
-                 """,
-                ex
-            );
-
-            return Util_GenericResponse<List<Expense>>.Response
-            (
-                null,
-                false,
-                string.Empty,
-                null,
-                HttpStatusCode.InternalServerError
-            );
-        }
-    }
-
-    private async Task<Util_GenericResponse<Expense>>
-    DecryptExpenseData
-    (
-        string userId,
-        Expense expense,
-        CancellationToken cancellationToken = default
-    )
-    {
-        try
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            byte[]? userKey = await groupKeySecurity.DeriveUserKey(iterations: 10000, outputLength: 32, userId, expense.GroupId);
-
-            expense.Title = DecryptData(expense.Title, userKey);
-            expense.Date = DecryptData(expense.Date, userKey);
-            expense.Amount = DecryptData(expense.Amount, userKey);
-            expense.Desc = DecryptData(expense.Desc, userKey);
-
-            return Util_GenericResponse<Expense>.Response
-            (
-                expense,
-                true,
-                string.Empty,
-                null,
-                HttpStatusCode.OK
-            );
-
-        }
-        catch (OperationCanceledException)
-        {
-            _logger.Log
-            (
-                LogLevel.Error,
-                "[ExpenseManagment Module]-[ExpenseManagment_ExpenseRepository class]-[DecryptExpenseDataAsync Method] => Operation was canceled."
-            );
-
-            return Util_GenericResponse<Expense>.Response(
-                null,
-                false,
-                "Operation was canceled.",
-                null,
-                HttpStatusCode.BadRequest
-            );
-        }
-        catch (Exception ex)
-        {
-            _logger.Log
-            (
-                LogLevel.Critical,
-                """
-                    [ExpenseManagment Module]-[ExpenseManagment_ExpenseRepository class]-[DecryptExpenseData Method] => 
-                    [RESULT] : Expense was not encrypted {ex}
-                 """,
-                ex
-            );
-
-            return Util_GenericResponse<Expense>.Response
-            (
-                null,
-                false,
-                string.Empty,
-                null,
-                HttpStatusCode.InternalServerError
-            );
-        }
-    }
-
-    private static string
-    EncryptData
-    (
-        string data,
-        byte[] key
-    )
-    {
-        byte[] dataBytes = Encoding.UTF8.GetBytes(data);
-
-#pragma warning disable SYSLIB0053
-        using AesGcm aesGcm = new(key);
-        byte[] nonce = new byte[12];
-        byte[] ciphertext = new byte[dataBytes.Length];
-        byte[] tag = new byte[16];
-        aesGcm.Encrypt(nonce, dataBytes, ciphertext, tag, null);
-#pragma warning restore SYSLIB0053
-
-        byte[] encryptedDataWithTag = new byte[nonce.Length + ciphertext.Length];
-        Buffer.BlockCopy(nonce, 0, encryptedDataWithTag, 0, nonce.Length);
-        Buffer.BlockCopy(ciphertext, 0, encryptedDataWithTag, nonce.Length, ciphertext.Length);
-
-        encryptedDataWithTag = [.. encryptedDataWithTag, .. tag];
-
-        string base64String = Convert.ToBase64String(encryptedDataWithTag);
-
-        return base64String;
-    }
-
-    private static string
-    DecryptData
-    (
-        string encryptedDataWithTag,
-        byte[] key
-    )
-    {
-        byte[] encryptedDataWithTagBytes = Convert.FromBase64String(encryptedDataWithTag);
-
-#pragma warning disable SYSLIB0053
-        using AesGcm aesGcm = new(key);
-        byte[] nonce = new byte[12];
-        Buffer.BlockCopy(encryptedDataWithTagBytes, 0, nonce, 0, nonce.Length);
-
-        byte[] ciphertext = new byte[encryptedDataWithTagBytes.Length - nonce.Length - 16];
-        Buffer.BlockCopy(encryptedDataWithTagBytes, nonce.Length, ciphertext, 0, ciphertext.Length);
-
-        byte[] tag = new byte[16];
-        Buffer.BlockCopy(encryptedDataWithTagBytes, nonce.Length + ciphertext.Length, tag, 0, tag.Length);
-
-        aesGcm.Decrypt(nonce, ciphertext, tag, ciphertext, null);
-
-        return Encoding.UTF8.GetString(ciphertext);
-#pragma warning restore SYSLIB0053
     }
 }

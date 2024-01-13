@@ -171,9 +171,11 @@ public partial class GroupDetails
 
         var deleteResult = await _groupManagmentService.DeleteUsersFromGroup(groupId, SelectedUsers);
 
-        foreach (var item in SelectedUsers)
+        if (deleteResult.Succsess)
         {
-            GroupDetailsDto.UsersGroups.Remove(GroupDetailsDto.UsersGroups.Find(x => x.UserName == item.UserName));
+            foreach (var item in SelectedUsers)
+                GroupDetailsDto.UsersGroups.Remove(GroupDetailsDto.UsersGroups.Find(x => x.UserName == item.UserName));
+
         }
 
         _processingDeleteGroup = false;

@@ -25,6 +25,7 @@ public class GroupManagment_GroupKeyRepository
     public async Task<bool>
     CreateKeyForGroup
     (
+        Guid tag,
         Guid groupId
     )
     {
@@ -35,7 +36,7 @@ public class GroupManagment_GroupKeyRepository
                 GroupId = groupId,
                 KeyCreatedTime = DateTime.UtcNow,
                 KeyUpdatedTime = null,
-                CryptoKey = groupKeySecurity.ProtectCryptoKey(groupId),
+                CryptoKey = groupKeySecurity.ProtectCryptoKey(tag, groupId),
             };
 
             await db.GroupKeys.AddAsync(groupKey);
@@ -61,6 +62,69 @@ public class GroupManagment_GroupKeyRepository
                 LogLevel.Critical,
                 """
                     [GroupManagment Module]--[GroupManagment_GroupKeyRepository class]--[CreateKeyForGroup Method] => 
+                    [RESULT] : A key could not be created for the group with id {groupId}. An excpetion was thrown=>
+                    {ex}
+                 """,
+                groupId,
+                ex
+            );
+
+            return false;
+        }
+    }
+
+    public async Task<bool>
+    UpdateKeyForGroup
+    (
+        Guid tag,
+        Guid groupId
+    )
+    {
+        try
+        {
+            var groupkey = await _db.GroupKeys.FirstOrDefaultAsync(x => x.GroupId == groupId);
+
+            if (groupkey is null)
+            {
+                _logger.Log
+               (
+                   LogLevel.Information,
+                   """
+                        [GroupManagment Module]--[GroupManagment_GroupKeyRepository class]--[UpdateKeyForGroup Method] => 
+                        [RESULT] : A key was not found for group with id {groupId}.
+                     """,
+                   groupId
+               );
+
+                return false;
+            }
+
+            groupkey.KeyUpdatedTime = DateTime.UtcNow;
+            groupkey.CryptoKey = groupKeySecurity.ProtectCryptoKey(tag, groupId);
+
+            db.GroupKeys.Update(groupkey);
+            await db.SaveChangesAsync();
+
+            _logger.Log
+            (
+                LogLevel.Information,
+                """
+                    [GroupManagment Module]--[GroupManagment_GroupKeyRepository class]--[UpdateKeyForGroup Method] => 
+                    [RESULT] : A key was successfully updated for group with id {groupId}.
+                 """,
+                groupId
+            );
+
+            return true;
+
+        }
+        catch (Exception ex)
+        {
+            _logger.Log
+            (
+                LogLevel.Critical,
+                """
+                    [GroupManagment Module]--[GroupManagment_GroupKeyRepository class]--[UpdateKeyForGroup Method] => 
                     [RESULT] : A key could not be created for the group with id {groupId}. An excpetion was thrown=>
                     {ex}
                  """,

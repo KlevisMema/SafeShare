@@ -19,6 +19,10 @@ public class Group : Base
     [Key]
     public Guid Id { get; set; }
     /// <summary>
+    /// Gets or sets the tak of the group
+    /// </summary>
+    public Guid Tag {  get; set; }
+    /// <summary>
     /// Gets or sets the name of the group.
     /// </summary>
     [Required, StringLength(100)]

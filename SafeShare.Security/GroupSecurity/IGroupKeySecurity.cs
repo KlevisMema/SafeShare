@@ -5,6 +5,7 @@ public interface IGroupKeySecurity
     string
     ProtectCryptoKey
     (
+        Guid tag,
         Guid groupId
     );
 
@@ -14,6 +15,7 @@ public interface IGroupKeySecurity
         int iterations,
         int outputLength,
         string userId,
-        Guid groupId
+        Guid groupId,
+        Guid tag
     );
 }
