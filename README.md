@@ -16,8 +16,6 @@ The project aims to implement a secure system for handling common expenses withi
 
 ### Key Points
 - Focus on security protocols and techniques.
-- Freedom in choosing languages and protocols but with responsibility.
-- Penalties for choices that compromise security.
 
 ## 2. System Characteristics
 The system follows a client/server architecture with specific roles for users and the server. Key tasks include user registration, authentication, and various operations for authenticated users.
