@@ -4,27 +4,15 @@ read -p "1. Enter your SendGrid API key: " SENDGRID_KEY
 setx SendGridKey "$SENDGRID_KEY"
 
 echo -e "\n2. Generate SAFE_SHARE_HMAC key."
-(cd SafeShare.InternalCrypto && dotnet run --no-build)
+(cd SafeShare.InternalCrypto && dotnet run)
 read -p "After obtaining the HMAC key, paste it here: " _SAFE_SHARE_HMAC
 setx SAFE_SHARE_HMAC "$_SAFE_SHARE_HMAC"
 
 echo -e "\n3.
 # Step 3: Setup Database for CryptoKeysDb and Api key
-# 
-#
-#
-# Navigate to https://localhost:7261/swagger/index.html and create an account in the endpint
-# [Post] api/Clients/, then after succsess account creation use the 
-# [Post] api/Authentication/Login to login. If succsess login please
-# check the response and copy the token value and in the very top 
-# of the page click the button authorize and paste the token there 
-# it should be in the format : "Bearer your-token" 
-# Now you can use the => [Post] /api/keys run it and it will give you a api key.
+# After some time check if the database is created and 
+# if so cancel with ctrl+c and then close the terminal.
 " 
-(cd API_Client.API && dotnet run --urls=https://localhost:7261 &)
+setx SAFE_SHARE_API_KEY "249f5306cb93c276ef417bd8c8377be293b9489a6ab4ca3ee89740f44b5c03f7"
 
-sleep 5
-
-echo -e "\n4."
-read -p "After obtaining the API key, paste it here: " API_KEY
-setx API_KEY "$API_KEY"
+cd API_Client.API && dotnet run --urls=https://localhost:7261

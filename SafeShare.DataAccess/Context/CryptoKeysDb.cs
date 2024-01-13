@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using Microsoft.EntityFrameworkCore;
+using SafeShare.DataAccessLayer.Models.SafeShareApiKey;
 using SafeShare.DataAccessLayer.Models.SafeShareApi.CryptoModels;
 
 namespace SafeShare.DataAccessLayer.Context;

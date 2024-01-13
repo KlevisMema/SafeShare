@@ -54,7 +54,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Setup", "Setup", "{AC9A286C-3DA1-4337-A952-C2A9A037514C}"
 	ProjectSection(SolutionItems) = preProject
 		ReadMeFirst.txt = ReadMeFirst.txt
-		runall.sh = runall.sh
 		setup1.sh = setup1.sh
 		setup2.sh = setup2.sh
 	EndProjectSection
