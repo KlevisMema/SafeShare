@@ -10,14 +10,35 @@ echo -e "\n1. Running the project.
 # Before navigating to https://localhost:7027/ make sure the SafeShare and SafeShareCryptoKeys databases
 # are created, if not run the script again and if succsessfully go to : https://localhost:7027/ .
 #
+# To quit, please use "CRTL+C".
+#
 "
 
 echo "Running Main Api..."
 (cd SafeShare.API && dotnet run) &
-
+api_pid=$!
 
 echo "Running Blazor Client..."
 (cd SafeShare.Client && dotnet run) &
+client_pid=$!
 
 echo "Running Proxy Api..."
 (cd SafeShare.ProxyApi && dotnet run) &
+proxy_pid=$!
+
+# Function to clean up resources
+cleanup() {
+    echo "Cleaning up..."
+    # Kill the process or processes you want to terminate
+    kill "$api_pid" "$client_pid" "$proxy_pid"
+    taskkill -F -IM dotnet.exe
+    exit 0
+}
+
+# Trap the EXIT signal and execute the cleanup function
+trap cleanup EXIT
+
+# Your script logic goes here (if needed)
+
+# The script will wait here until all background processes are finished
+wait "$api_pid" "$client_pid" "$proxy_pid"

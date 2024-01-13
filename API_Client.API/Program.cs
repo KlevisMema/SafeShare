@@ -197,5 +197,3 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.UseSerilogRequestLogging();
-
-app.Run();
