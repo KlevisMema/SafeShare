@@ -6,68 +6,57 @@
  */
 
 using AutoMapper;
-using SafeShare.Utilities.IP;
-using SafeShare.Utilities.Log;
 using Microsoft.AspNetCore.Http;
-using SafeShare.Utilities.Email;
 using Microsoft.Extensions.Logging;
-using SafeShare.Utilities.Services;
 using Microsoft.Extensions.Options;
 using Microsoft.EntityFrameworkCore;
-using SafeShare.Utilities.Responses;
 using Microsoft.AspNetCore.Identity;
-using SafeShare.Utilities.Dependencies;
-using SafeShare.DataAccessLayer.Models;
 using SafeShare.DataAccessLayer.Context;
 using Microsoft.Extensions.Configuration;
+using SafeShare.Utilities.SafeShareApi.IP;
 using SafeShare.Authentication.Interfaces;
+using SafeShare.Utilities.SafeShareApi.Log;
+using SafeShare.Utilities.SafeShareApi.Email;
 using Microsoft.Extensions.DependencyInjection;
-using SafeShare.Utilities.ConfigurationSettings;
-using SafeShare.DataTransormObject.Authentication;
+using SafeShare.Utilities.SafeShareApi.Responses;
+using SafeShare.DataAccessLayer.Models.SafeShareApi;
+using SafeShare.Utilities.SafeShareApi.Dependencies;
+using SafeShare.Utilities.SafeShareApi.ConfigurationSettings;
+using SafeShare.DataTransormObject.SafeShareApi.Authentication;
 
 namespace SafeShare.Authentication.Auth;
 
 /// <summary>
 /// Handles user registration within the authentication module.
 /// </summary>
-public class AUTH_Register : Util_BaseAuthDependencies<AUTH_Register, ApplicationUser, ApplicationDbContext>, IAUTH_Register
+/// <remarks>
+/// Initializes a new instance of the <see cref="AUTH_Register"/> class.
+/// </remarks>
+/// <param name="logger">The logger instance.</param>
+/// <param name="mapper">The AutoMapper instance.</param>
+/// <param name="configuration"> The configurations </param>
+/// <param name="db">The application's database context.</param>
+/// <param name="userManager">The user manager instance.</param>
+/// <param name="httpContextAccessor">The HttpContext accessor instance.</param>
+/// <param name="confirmRegistrationSettings">The confirm registration settings</param>
+public class AUTH_Register
+(
+    IMapper mapper,
+    ApplicationDbContext db,
+    ILogger<AUTH_Register> logger,
+    IConfiguration configuration,
+    IHttpContextAccessor httpContextAccessor,
+    UserManager<ApplicationUser> userManager,
+    IOptions<Util_ConfirmRegistrationSettings> confirmRegistrationSettings
+) : Util_BaseAuthDependencies<AUTH_Register, ApplicationUser, ApplicationDbContext>(
+    mapper,
+    logger,
+    httpContextAccessor,
+    userManager,
+    configuration,
+    db
+), IAUTH_Register
 {
-    /// <summary>
-    /// The confirm registration settings
-    /// </summary>
-    private readonly IOptions<Util_ConfirmRegistrationSettings> _confirmRegistrationSettings;
-    /// <summary>
-    /// Initializes a new instance of the <see cref="AUTH_Register"/> class.
-    /// </summary>
-    /// <param name="logger">The logger instance.</param>
-    /// <param name="mapper">The AutoMapper instance.</param>
-    /// <param name="configuration"> The configurations </param>
-    /// <param name="db">The application's database context.</param>
-    /// <param name="userManager">The user manager instance.</param>
-    /// <param name="httpContextAccessor">The HttpContext accessor instance.</param>
-    /// <param name="confirmRegistrationSettings">The confirm registration settings</param>
-    public AUTH_Register
-    (
-        IMapper mapper,
-        ApplicationDbContext db,
-        ILogger<AUTH_Register> logger,
-        IConfiguration configuration,
-        IHttpContextAccessor httpContextAccessor,
-        UserManager<ApplicationUser> userManager,
-        IOptions<Util_ConfirmRegistrationSettings> confirmRegistrationSettings
-    )
-    : base
-    (
-        mapper,
-        logger,
-        httpContextAccessor,
-        userManager,
-        configuration,
-        db
-    )
-    {
-        _confirmRegistrationSettings = confirmRegistrationSettings;
-    }
     /// <summary>
     /// Registers a new user to the application.
     /// </summary>
@@ -130,7 +119,9 @@ public class AUTH_Register : Util_BaseAuthDependencies<AUTH_Register, Applicatio
 
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(mappedUser);
 
-            var route = _confirmRegistrationSettings.Value.Route.Replace("{token}", token).Replace("{email}", mappedUser.Email);
+            var encodedToken = System.Net.WebUtility.UrlEncode(token);
+
+            var route = confirmRegistrationSettings.Value.Route.Replace("{token}", encodedToken).Replace("{email}", mappedUser.Email);
 
             var emailResult = await Util_Email.SendEmailForRegistrationConfirmation(mappedUser.Email!, route, mappedUser.FullName);
 
@@ -234,6 +225,29 @@ public class AUTH_Register : Util_BaseAuthDependencies<AUTH_Register, Applicatio
                 );
             }
 
+            if (user.EmailConfirmed)
+            {
+                _logger.Log
+                (
+                  LogLevel.Error,
+                  """
+                        [Authentication Module]-[AUTH_Register Class]-[ConfirmRegistration Method] => 
+                        [IP] {IP}, user with email {Email} is already confirmated.
+                   """,
+                  await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                  confirmRegistrationDto.Email
+                );
+
+                return Util_GenericResponse<bool>.Response
+                (
+                    true,
+                    true,
+                    "Account is already confirmed",
+                    null,
+                    System.Net.HttpStatusCode.OK
+                );
+            }
+
             user.ModifiedAt = DateTime.UtcNow;
 
             var verifyToken = await _userManager.ConfirmEmailAsync(user, confirmRegistrationDto.Token);
@@ -257,7 +271,7 @@ public class AUTH_Register : Util_BaseAuthDependencies<AUTH_Register, Applicatio
                 (
                     false,
                     false,
-                    "Something went wrong, try again.",
+                    "Something went wrong, token not valid.",
                     null,
                     System.Net.HttpStatusCode.NotFound
                 );
@@ -366,7 +380,9 @@ public class AUTH_Register : Util_BaseAuthDependencies<AUTH_Register, Applicatio
 
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
 
-            var route = _confirmRegistrationSettings.Value.Route.Replace("{token}", token).Replace("{email}", user.Email);
+            var encodedToken = System.Net.WebUtility.UrlEncode(token);
+
+            var route = confirmRegistrationSettings.Value.Route.Replace("{token}", encodedToken).Replace("{email}", user.Email);
 
             var emailResult = await Util_Email.SendEmailForRegistrationConfirmation(user.Email!, route, user.FullName);
 

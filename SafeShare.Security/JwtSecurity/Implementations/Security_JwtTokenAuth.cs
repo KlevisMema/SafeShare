@@ -14,44 +14,29 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using SafeShare.DataAccessLayer.Models;
 using SafeShare.DataAccessLayer.Context;
-using SafeShare.DataTransormObject.Security;
-using SafeShare.Utilities.ConfigurationSettings;
+using SafeShare.Security.JwtSecurity.Helpers;
 using SafeShare.Security.JwtSecurity.Interfaces;
-using SafeShare.DataTransormObject.Authentication;
+using SafeShare.DataAccessLayer.Models.SafeShareApi;
+using SafeShare.DataTransormObject.SafeShareApi.Security;
+using SafeShare.Utilities.SafeShareApi.ConfigurationSettings;
+using SafeShare.DataTransormObject.SafeShareApi.Authentication;
 
 namespace SafeShare.Security.JwtSecurity.Implementations;
 
 /// <summary>
 /// Service responsible for creating and validating JWT tokens for authentication.
 /// </summary>
-public class Security_JwtTokenAuth : ISecurity_JwtTokenAuth<Security_JwtTokenAuth, DTO_AuthUser, DTO_Token>, ISecurity_JwtTokenHash
+/// <remarks>
+/// Initializes a new instance of the <see cref="OAuthJwtTokenService"/> class.
+/// </remarks>
+/// <param name="db">The database context</param>
+/// <param name="jwtOptions">The JWT authentication options.</param>
+public class Security_JwtTokenAuth
+(
+    ApplicationDbContext db,
+    IOptions<Util_JwtSettings> jwtOptions
+) : ISecurity_JwtTokenAuth<Security_JwtTokenAuth, DTO_AuthUser, DTO_Token>, ISecurity_JwtTokenHash
 {
-    /// <summary>
-    /// The database context
-    /// </summary>
-    private readonly ApplicationDbContext _db;
-    /// <summary>
-    /// Represents the JWT authentication options.
-    /// </summary>
-    private readonly IOptions<Util_JwtSettings> _jwtOptions;
-    /// <summary>
-    /// A Instance of <see cref="HashAlgorithm"/>
-    /// </summary>
-    private readonly HashAlgorithm _hashAlgorithm = SHA256.Create();
-    /// <summary>
-    /// Initializes a new instance of the <see cref="OAuthJwtTokenService"/> class.
-    /// </summary>
-    /// <param name="db">The database context</param>
-    /// <param name="jwtOptions">The JWT authentication options.</param>
-    public Security_JwtTokenAuth
-    (
-        ApplicationDbContext db,
-        IOptions<Util_JwtSettings> jwtOptions
-    )
-    {
-        _db = db;
-        _jwtOptions = jwtOptions;
-    }
     /// <summary>
     /// Creates a JWT token based on the specified input parameter.
     /// </summary>
@@ -63,13 +48,13 @@ public class Security_JwtTokenAuth : ISecurity_JwtTokenAuth<Security_JwtTokenAut
         DTO_AuthUser user
     )
     {
-        var singinCredentials = Security_JwtTokenGeneratorHelper.GetSinginCredentials(_jwtOptions.Value.Key);
+        var singinCredentials = Security_JwtTokenGeneratorHelper.GetSinginCredentials(jwtOptions.Value.Key);
         var claims = GetClaims(user);
-        var token = Security_JwtTokenGeneratorHelper.GenerateToken(singinCredentials, claims, _jwtOptions.Value.Issuer, Convert.ToDouble(_jwtOptions.Value.LifeTime), true);
+        var token = Security_JwtTokenGeneratorHelper.GenerateToken(singinCredentials, claims, jwtOptions.Value.Issuer, Convert.ToDouble(jwtOptions.Value.LifeTime), true);
 
         var tokenDto = await AddToDb(token.Id, claims.Single(x => x.Type == ClaimTypes.NameIdentifier).Value);
         tokenDto.Token = new JwtSecurityTokenHandler().WriteToken(token);
-
+        tokenDto.ValididtyTime = token.ValidTo;
         return tokenDto;
     }
     /// <summary>
@@ -85,12 +70,13 @@ public class Security_JwtTokenAuth : ISecurity_JwtTokenAuth<Security_JwtTokenAut
         string hashedTokenInDb
     )
     {
-        string hashedTokenToValidate = Convert.ToBase64String(_hashAlgorithm.ComputeHash(Encoding.UTF8.GetBytes(tokenToValidate)));
+        byte[] key = GetKeyFromBase64String();
 
-        if (hashedTokenInDb == hashedTokenToValidate)
-            return Task.FromResult(true);
+        var hmacHelper = new Security_HMACSHA256Helper(key);
 
-        return Task.FromResult(false);
+        string hashedTokenToValidate = hmacHelper.ComputeHash(tokenToValidate);
+
+        return Task.FromResult(hashedTokenInDb == hashedTokenToValidate);
     }
     /// <summary>
     /// Add the refresh token in the database
@@ -108,7 +94,11 @@ public class Security_JwtTokenAuth : ISecurity_JwtTokenAuth<Security_JwtTokenAut
         try
         {
             var randomId = Guid.NewGuid().ToString();
-            var hashedRefreshToken = Convert.ToBase64String(_hashAlgorithm.ComputeHash(Encoding.UTF8.GetBytes(randomId)));
+
+            byte[] key = GetKeyFromBase64String();
+            
+            var hmacHelper = new Security_HMACSHA256Helper(key);
+            var hashedRefreshToken = hmacHelper.ComputeHash(randomId);
 
             var refreshToken = new RefreshToken
             {
@@ -116,12 +106,12 @@ public class Security_JwtTokenAuth : ISecurity_JwtTokenAuth<Security_JwtTokenAut
                 JwtId = tokenId,
                 CreationDate = DateTime.UtcNow,
                 UserId = userId,
-                ExpiryDate = DateTime.UtcNow.AddDays(_jwtOptions.Value.LifeTime),
+                ExpiryDate = DateTime.UtcNow.AddDays(7),
             };
 
-            await _db.RefreshTokens.AddAsync(refreshToken);
+            await db.RefreshTokens.AddAsync(refreshToken);
 
-            await _db.SaveChangesAsync();
+            await db.SaveChangesAsync();
 
             return new DTO_Token { RefreshToken = randomId, RefreshTokenId = refreshToken.Id, CreatedAt = refreshToken.CreationDate };
         }
@@ -144,18 +134,26 @@ public class Security_JwtTokenAuth : ISecurity_JwtTokenAuth<Security_JwtTokenAut
     {
         var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.Name, user.Email),
-            new Claim(ClaimTypes.NameIdentifier, user.Id),
-            new Claim(JwtRegisteredClaimNames.NameId, user.Id!),
-            new Claim(JwtRegisteredClaimNames.Email, user.Email),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim(JwtRegisteredClaimNames.Aud, _jwtOptions.Value.Audience),
-            new Claim(JwtRegisteredClaimNames.Iss, _jwtOptions.Value.Issuer),
-            new Claim(JwtRegisteredClaimNames.FamilyName, user.FullName),
+            new(ClaimTypes.Name, user.Email),
+            new(ClaimTypes.NameIdentifier, user.Id),
+            new(JwtRegisteredClaimNames.NameId, user.Id!),
+            new(JwtRegisteredClaimNames.Email, user.Email),
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new(JwtRegisteredClaimNames.Aud, jwtOptions.Value.Audience),
+            new(JwtRegisteredClaimNames.Iss, jwtOptions.Value.Issuer),
+            new(JwtRegisteredClaimNames.FamilyName, user.FullName),
         };
 
         claims.AddRange(user.Roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
         return claims;
+    }
+
+    private static byte[] 
+    GetKeyFromBase64String
+    ()
+    {
+        string base64Key = Environment.GetEnvironmentVariable("SAFE_SHARE_HMAC");
+        return Convert.FromBase64String(base64Key);
     }
 }

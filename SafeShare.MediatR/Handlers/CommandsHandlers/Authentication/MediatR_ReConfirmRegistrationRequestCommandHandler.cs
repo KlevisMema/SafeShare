@@ -5,33 +5,26 @@
 
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using SafeShare.Utilities.Responses;
 using SafeShare.MediatR.Dependencies;
 using SafeShare.Authentication.Interfaces;
 using SafeShare.MediatR.Actions.Commands.Authentication;
+using SafeShare.Utilities.SafeShareApi.Responses;
 
 namespace SafeShare.MediatR.Handlers.CommandsHandlers.Authentication;
 
 /// <summary>
 /// A MediatR command handler for processing requests to re-send user registration confirmation emails.
 /// </summary>
-public class MediatR_ReConfirmRegistrationRequestCommandHandler :
-    MediatR_GenericHandler<IAUTH_Register>,
+/// <remarks>
+/// Initializes a new instance of the <see cref="MediatR_ReConfirmRegistrationRequestCommandHandler"/> class.
+/// </remarks>
+/// <param name="service">The authentication service used for re-confirming user registration requests.</param>
+public class MediatR_ReConfirmRegistrationRequestCommandHandler
+(
+    IAUTH_Register service
+) : MediatR_GenericHandler<IAUTH_Register>(service),
     IRequestHandler<MediatR_ReConfirmRegistrationRequestCommand, ObjectResult>
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MediatR_ReConfirmRegistrationRequestCommandHandler"/> class.
-    /// </summary>
-    /// <param name="service">The authentication service used for re-confirming user registration requests.</param>
-    public MediatR_ReConfirmRegistrationRequestCommandHandler
-    (
-        IAUTH_Register service
-    )
-    : base
-    (
-        service
-    )
-    { }
     /// <summary>
     /// Handles the reconfirmation of a user registration request.
     /// </summary>
@@ -45,7 +38,7 @@ public class MediatR_ReConfirmRegistrationRequestCommandHandler :
         CancellationToken cancellationToken
     )
     {
-        var reregistrationRequestResult = await _service.ReConfirmRegistrationRequest(request.Email);
+        var reregistrationRequestResult = await _service.ReConfirmRegistrationRequest(request.ReConfirmRegistration.Email);
 
         return Util_GenericControllerResponse<bool>.ControllerResponse(reregistrationRequestResult);
     }

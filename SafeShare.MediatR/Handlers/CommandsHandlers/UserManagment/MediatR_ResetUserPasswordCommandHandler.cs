@@ -5,33 +5,26 @@
 
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using SafeShare.Utilities.Responses;
 using SafeShare.MediatR.Dependencies;
 using SafeShare.UserManagment.Interfaces;
 using SafeShare.MediatR.Actions.Commands.UserManagment;
+using SafeShare.Utilities.SafeShareApi.Responses;
 
 namespace SafeShare.MediatR.Handlers.CommandsHandlers.UserManagment;
 
 /// <summary>
 /// A MediatR command handler for processing user password reset requests.
 /// </summary>
-public class MediatR_ResetUserPasswordCommandHandler :
-    MediatR_GenericHandler<IAccountManagment>,
+/// <remarks>
+/// Initializes a new instance of the <see cref="MediatR_ResetUserPasswordCommandHandler"/> class.
+/// </remarks>
+/// <param name="service">The account management service used for handling user password resets.</param>
+public class MediatR_ResetUserPasswordCommandHandler
+(
+    IAccountManagment service
+) : MediatR_GenericHandler<IAccountManagment>(service),
     IRequestHandler<MediatR_ResetUserPasswordCommand, ObjectResult>
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MediatR_ResetUserPasswordCommandHandler"/> class.
-    /// </summary>
-    /// <param name="service">The account management service used for handling user password resets.</param>
-    public MediatR_ResetUserPasswordCommandHandler
-    (
-        IAccountManagment service
-    )
-    : base
-    (
-        service
-    )
-    { }
     /// <summary>
     /// Handles the process of resetting a user's password.
     /// </summary>

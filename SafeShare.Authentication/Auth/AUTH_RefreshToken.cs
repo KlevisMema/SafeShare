@@ -1,79 +1,72 @@
 ﻿using AutoMapper;
 using System.Security.Claims;
-using SafeShare.Utilities.IP;
-using SafeShare.Utilities.Log;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using SafeShare.Utilities.Responses;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
-using SafeShare.Utilities.Dependencies;
-using SafeShare.DataAccessLayer.Models;
 using SafeShare.DataAccessLayer.Context;
 using Microsoft.Extensions.Configuration;
 using SafeShare.Authentication.Interfaces;
-using SafeShare.DataTransormObject.Security;
 using SafeShare.Security.JwtSecurity.Interfaces;
-using SafeShare.DataTransormObject.Authentication;
 using SafeShare.Security.JwtSecurity.Implementations;
+using SafeShare.DataAccessLayer.Models.SafeShareApi;
+using SafeShare.DataTransormObject.SafeShareApi.Authentication;
+using SafeShare.DataTransormObject.SafeShareApi.Security;
+using SafeShare.Utilities.SafeShareApi.Log;
+using SafeShare.Utilities.SafeShareApi.Dependencies;
+using SafeShare.Utilities.SafeShareApi.IP;
+using SafeShare.Utilities.SafeShareApi.Responses;
 
 namespace SafeShare.Authentication.Auth;
 
-public class AUTH_RefreshToken : Util_BaseAuthDependencies<AUTH_RefreshToken, ApplicationUser, ApplicationDbContext>, IAUTH_RefreshToken
+/// <summary>
+/// IInitializes a new instance of the <see cref="AUTH_RefreshToken"/> class.
+/// </summary>
+/// <param name="logger">The logger used for logging</param>
+/// <param name="db">The instance of <see cref="ApplicationDbContext"/></param>
+/// <param name="mapper">The automapper instance <see cref="IMapper"/> used for mappings</param>
+/// <param name="userManager">The user manager instance <see cref="UserManager{TUser}"/></param>
+/// <param name="configuration">The configurations settings instance <see cref="IConfiguration"/></param>
+/// <param name="tokenValidationParameters">An instance of <see cref="TokenValidationParameters"/></param>
+/// <param name="securityJwtTokenHash">The jwt hash token instance <see cref="ISecurity_JwtTokenHash"/></param>
+/// <param name="httpContextAccessor"> The http context accessor instance <see cref="IHttpContextAccessor"/> used to get user ip address</param>
+/// <param name="jwtTokenService">The jwt token instace service <see cref="ISecurity_JwtTokenAuth{TService, TFuncInputParamType, TReturnType}"/></param>
+public class AUTH_RefreshToken
+(
+    IMapper mapper,
+    ApplicationDbContext db,
+    IConfiguration configuration,
+    ILogger<AUTH_RefreshToken> logger,
+    UserManager<ApplicationUser> userManager,
+    IHttpContextAccessor httpContextAccessor,
+    ISecurity_JwtTokenHash securityJwtTokenHash,
+    TokenValidationParameters tokenValidationParameters,
+    ISecurity_JwtTokenAuth<Security_JwtTokenAuth, DTO_AuthUser, DTO_Token> jwtTokenService
+) : Util_BaseAuthDependencies<AUTH_RefreshToken, ApplicationUser, ApplicationDbContext>(
+    mapper,
+    logger,
+    httpContextAccessor,
+    userManager,
+    configuration,
+    db
+), IAUTH_RefreshToken
 {
     /// <summary>
     /// The <see cref="ISecurity_JwtTokenHash"/> used to validate a token
     /// </summary>
-    private readonly ISecurity_JwtTokenHash _securityJwtTokenHash;
+    private readonly ISecurity_JwtTokenHash _securityJwtTokenHash = securityJwtTokenHash;
     /// <summary>
     /// The <see cref="TokenValidationParameters"/>
     /// </summary>
-    private readonly TokenValidationParameters _tokenValidationParameters;
+    private readonly TokenValidationParameters _tokenValidationParameters = tokenValidationParameters;
     /// <summary>
     /// The <see cref="ISecurity_JwtTokenAuth{TService, TFuncInputParamType, TReturnType}"/>
     /// used for jwt token operations such as generating a new token.
     /// </summary>
-    private readonly ISecurity_JwtTokenAuth<Security_JwtTokenAuth, DTO_AuthUser, DTO_Token> _jwtTokenService;
-    /// <summary>
-    /// IInitializes a new instance of the <see cref="AUTH_RefreshToken"/> class.
-    /// </summary>
-    /// <param name="logger">The logger used for logging</param>
-    /// <param name="db">The instance of <see cref="ApplicationDbContext"/></param>
-    /// <param name="mapper">The automapper instance <see cref="IMapper"/> used for mappings</param>
-    /// <param name="userManager">The user manager instance <see cref="UserManager{TUser}"/></param>
-    /// <param name="configuration">The configurations settings instance <see cref="IConfiguration"/></param>
-    /// <param name="tokenValidationParameters">An instance of <see cref="TokenValidationParameters"/></param>
-    /// <param name="securityJwtTokenHash">The jwt hash token instance <see cref="ISecurity_JwtTokenHash"/></param>
-    /// <param name="httpContextAccessor"> The http context accessor instance <see cref="IHttpContextAccessor"/> used to get user ip address</param>
-    /// <param name="jwtTokenService">The jwt token instace service <see cref="ISecurity_JwtTokenAuth{TService, TFuncInputParamType, TReturnType}"/></param>
-    public AUTH_RefreshToken
-    (
-        IMapper mapper,
-        ApplicationDbContext db,
-        IConfiguration configuration,
-        ILogger<AUTH_RefreshToken> logger,
-        UserManager<ApplicationUser> userManager,
-        IHttpContextAccessor httpContextAccessor,
-        ISecurity_JwtTokenHash securityJwtTokenHash,
-        TokenValidationParameters tokenValidationParameters,
-        ISecurity_JwtTokenAuth<Security_JwtTokenAuth, DTO_AuthUser, DTO_Token> jwtTokenService
-    )
-    : base
-    (
-        mapper,
-        logger,
-        httpContextAccessor,
-        userManager,
-        configuration,
-        db
-    )
-    {
-        _jwtTokenService = jwtTokenService;
-        _securityJwtTokenHash = securityJwtTokenHash;
-        _tokenValidationParameters = tokenValidationParameters;
-    }
+    private readonly ISecurity_JwtTokenAuth<Security_JwtTokenAuth, DTO_AuthUser, DTO_Token> _jwtTokenService = jwtTokenService;
+
     /// <summary>
     /// Refreshes a token of a expired jwt token
     /// </summary>
@@ -183,10 +176,10 @@ public class AUTH_RefreshToken : Util_BaseAuthDependencies<AUTH_RefreshToken, Ap
                 return Util_GenericResponse<DTO_Token>.Response
                 (
                     null,
-                    false,
+                    true,
                     "Token has not expired yet",
                     null,
-                    System.Net.HttpStatusCode.BadRequest
+                    System.Net.HttpStatusCode.OK
                 );
             }
 
@@ -373,7 +366,7 @@ public class AUTH_RefreshToken : Util_BaseAuthDependencies<AUTH_RefreshToken, Ap
 
             var roles = await _userManager.GetRolesAsync(storedRefreshToken.User);
             var userDto = _mapper.Map<DTO_AuthUser>(storedRefreshToken.User);
-            userDto.Roles = roles.ToList();
+            userDto.Roles = [.. roles];
             var token = await _jwtTokenService.CreateToken(userDto);
 
             _logger.Log

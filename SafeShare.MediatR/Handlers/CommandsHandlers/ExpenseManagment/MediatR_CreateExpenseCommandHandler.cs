@@ -7,34 +7,27 @@
 
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using SafeShare.Utilities.Responses;
 using SafeShare.MediatR.Dependencies;
-using SafeShare.DataTransormObject.Expenses;
 using SafeShare.ExpenseManagement.Interfaces;
 using SafeShare.MediatR.Actions.Commands.ExpenseManagment;
+using SafeShare.DataTransormObject.SafeShareApi.ExpenseManagment;
+using SafeShare.Utilities.SafeShareApi.Responses;
 
 namespace SafeShare.MediatR.Handlers.CommandsHandlers.ExpenseManagment;
 
 /// <summary>
 /// MediatR command handler for creating a new expense.
 /// </summary>
-public class MediatR_CreateExpenseCommandHandler :
-    MediatR_GenericHandler<IExpenseManagment_ExpenseRepository>,
+/// <remarks>
+/// Initializes a new instance of the <see cref="MediatR_CreateExpenseCommandHandler"/> class.
+/// </remarks>
+/// <param name="service">The expense management service to be used by the handler.</param>
+public class MediatR_CreateExpenseCommandHandler
+(
+    IExpenseManagment_ExpenseRepository service
+) : MediatR_GenericHandler<IExpenseManagment_ExpenseRepository>(service),
     IRequestHandler<MediatR_CreateExpenseCommand, ObjectResult>
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MediatR_CreateExpenseCommandHandler"/> class.
-    /// </summary>
-    /// <param name="service">The expense management service to be used by the handler.</param>
-    public MediatR_CreateExpenseCommandHandler
-    (
-        IExpenseManagment_ExpenseRepository service
-    )
-    : base
-    (
-        service
-    )
-    { }
     /// <summary>
     /// Handles the processing of a create expense command.
     /// </summary>

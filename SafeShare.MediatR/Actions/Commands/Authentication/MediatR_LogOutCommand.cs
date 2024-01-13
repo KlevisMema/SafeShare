@@ -12,21 +12,17 @@ namespace SafeShare.MediatR.Actions.Commands.Authentication;
 /// Represents a MediatR command for handling user logout.
 /// This command carries the user identifier to process the logout action.
 /// </summary>
-public class MediatR_LogOutCommand : IRequest
+/// <remarks>
+/// Initializes a new instance of the <see cref="MediatR_LogOutCommand"/> class.
+/// </remarks>
+/// <param name="id">The identifier of the user who is logging out.</param>
+public class MediatR_LogOutCommand
+(
+    string id
+) : IRequest
 {
     /// <summary>
     /// The identifier of the user who is logging out.
     /// </summary>
-    public string Id { get; set; }
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MediatR_LogOutCommand"/> class.
-    /// </summary>
-    /// <param name="id">The identifier of the user who is logging out.</param>
-    public MediatR_LogOutCommand
-    (
-        string id
-    )
-    {
-        Id = id;
-    }
+    public string Id { get; set; } = id;
 }

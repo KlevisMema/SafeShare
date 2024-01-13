@@ -1,4 +1,14 @@
-﻿@inherits LayoutComponentBase
+﻿@using SafeShare.Client.Shared.Components
+@inherits LayoutComponentBase
+
+<style>
+    .log-out-animation {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0px 0px 0px 13px;
+    }
+</style>
 
 <MudThemeProvider />
 <MudDialogProvider />
@@ -8,25 +18,29 @@
 
     <MudAppBar Elevation="3">
 
-            <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
-            <MudSpacer />
-            <MudDivider DividerType="DividerType.Inset" />
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+        <MudSpacer />
+        <MudDivider DividerType="MudBlazor.DividerType.Inset" />
 
-            <MudTooltip Text="Notifications" Color="Color.Primary" Placement="Placement.Bottom">
-                <MudBadge Content="3" Overlap="true" Dot="true" Color="Color.Secondary">
-                    <MudIconButton Icon="@Icons.Material.Outlined.Notifications" Color="Color.Inherit" Edge="Edge.End" Title="Notifications" />
-                </MudBadge>
-            </MudTooltip>
+        <MudTooltip Color="Color.Primary">
+            <Notifications />
+        </MudTooltip>
 
-            <MudTooltip Text="Verified" Color="Color.Primary" Placement="Placement.Top">
-                <MudIconButton Icon="@Icons.Material.Filled.VerifiedUser" Color="Color.Inherit" Edge="Edge.End" />
-            </MudTooltip>
+        <MudTooltip Text="@LogOutText" Color="Color.Primary" Placement="MudBlazor.Placement.Top">
+            @if (hideLogOutBtn)
+            {
+                <div class="log-out-animation">
+                    <MudProgressCircular Color="Color.Success" Indeterminate="true" Size="Size.Small" />
+                </div>
+            }
+            else
+            {
+                <MudIconButton ClickPropagation="true" Icon="@Icons.Material.Filled.Logout" Color="Color.Inherit" Edge="Edge.End" OnClick="() => LogoutUser()" />
+            }
+        </MudTooltip>
 
-            <MudTooltip Text="Log Out" Color="Color.Primary" Placement="Placement.Top">
-                <MudIconButton Icon="@Icons.Material.Filled.Logout" Color="Color.Inherit" Edge="Edge.End" />
-            </MudTooltip>
+    </MudAppBar>
 
-        </MudAppBar>
 
     <MudDrawer @bind-Open="_drawerOpen" Elevation="3" Width="350px">
 
@@ -34,21 +48,16 @@
             <MudText Typo="Typo.h5" Class="mt-1">Safe Share</MudText>
         </MudDrawerHeader>
 
-        <NavMenu />
+        <NavMenu GroupTypes="this.GroupTypes" Snackbar="this._snackbar" DataRetrieved="this.DataRetrieved" />
 
     </MudDrawer>
 
-    <MudMainContent>
-        @Body
-    </MudMainContent>
+    <CascadingValue Value="this">
+
+        <MudMainContent>
+            @Body
+        </MudMainContent>
+
+    </CascadingValue>
 
 </MudLayout>
-
-@code {
-    bool _drawerOpen = true;
-
-    void DrawerToggle()
-    {
-        _drawerOpen = !_drawerOpen;
-    }
-}

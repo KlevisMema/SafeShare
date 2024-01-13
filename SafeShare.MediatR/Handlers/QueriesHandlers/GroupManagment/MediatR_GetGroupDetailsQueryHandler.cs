@@ -5,34 +5,27 @@
 
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using SafeShare.Utilities.Responses;
 using SafeShare.MediatR.Dependencies;
 using SafeShare.GroupManagment.Interfaces;
-using SafeShare.DataTransormObject.GroupManagment;
 using SafeShare.MediatR.Actions.Queries.GroupManagment;
+using SafeShare.DataTransormObject.SafeShareApi.GroupManagment;
+using SafeShare.Utilities.SafeShareApi.Responses;
 
 namespace SafeShare.MediatR.Handlers.QueriesHandlers.GroupManagment;
 
 /// <summary>
 /// A MediatR query handler for retrieving detailed information about a specific group.
 /// </summary>
-public class MediatR_GetGroupDetailsQueryHandler : 
-    MediatR_GenericHandler<IGroupManagment_GroupRepository>, 
+/// <remarks>
+/// Initializes a new instance of the <see cref="MediatR_GetGroupDetailsQueryHandler"/> class.
+/// </remarks>
+/// <param name="service">The group management service used for retrieving group details.</param>
+public class MediatR_GetGroupDetailsQueryHandler
+(
+    IGroupManagment_GroupRepository service
+) : MediatR_GenericHandler<IGroupManagment_GroupRepository>(service),
     IRequestHandler<MediatR_GetGroupDetailsQuery, ObjectResult>
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MediatR_GetGroupDetailsQueryHandler"/> class.
-    /// </summary>
-    /// <param name="service">The group management service used for retrieving group details.</param>
-    public MediatR_GetGroupDetailsQueryHandler
-    (
-        IGroupManagment_GroupRepository service
-    )
-    : base
-    (
-        service
-    )
-    { }
     /// <summary>
     /// Handles the process of retrieving detailed information about a specific group.
     /// </summary>

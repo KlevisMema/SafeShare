@@ -5,34 +5,27 @@
 
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using SafeShare.Utilities.Responses;
 using SafeShare.MediatR.Dependencies;
 using SafeShare.GroupManagment.Interfaces;
 using SafeShare.MediatR.Actions.Queries.GroupManagment;
-using SafeShare.DataTransormObject.GroupManagment.GroupInvitations;
+using SafeShare.DataTransormObject.SafeShareApi.GroupManagment.GroupInvitations;
+using SafeShare.Utilities.SafeShareApi.Responses;
 
 namespace SafeShare.MediatR.Handlers.QueriesHandlers.GroupManagment;
 
 /// <summary>
 /// A MediatR query handler for retrieving sent group invitations by a specific user.
 /// </summary>
-public class MediatR_GetSentGroupInvitationsQueryHandler :
-    MediatR_GenericHandler<IGroupManagment_GroupInvitationsRepository>,
+/// <remarks>
+/// Initializes a new instance of the <see cref="MediatR_GetSentGroupInvitationsQueryHandler"/> class.
+/// </remarks>
+/// <param name="service">The group management service used for retrieving sent group invitations.</param>
+public class MediatR_GetSentGroupInvitationsQueryHandler
+(
+    IGroupManagment_GroupInvitationsRepository service
+) : MediatR_GenericHandler<IGroupManagment_GroupInvitationsRepository>(service),
     IRequestHandler<MediatR_GetSentGroupInvitationsQuery, ObjectResult>
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MediatR_GetSentGroupInvitationsQueryHandler"/> class.
-    /// </summary>
-    /// <param name="service">The group management service used for retrieving sent group invitations.</param>
-    public MediatR_GetSentGroupInvitationsQueryHandler
-    (
-        IGroupManagment_GroupInvitationsRepository service
-    )
-    : base
-    (
-        service
-    )
-    { }
     /// <summary>
     /// Handles the process of retrieving a list of group invitations that have been sent out by a specific user.
     /// </summary>

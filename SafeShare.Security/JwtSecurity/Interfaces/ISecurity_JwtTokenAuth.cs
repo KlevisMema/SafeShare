@@ -4,7 +4,7 @@
  */
 
 
-using SafeShare.DataTransormObject.Authentication;
+using SafeShare.DataTransormObject.SafeShareApi.Authentication;
 
 namespace SafeShare.Security.JwtSecurity.Interfaces;
 

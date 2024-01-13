@@ -7,35 +7,27 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
-using SafeShare.Utilities.Responses;
 using SafeShare.DataAccessLayer.Models;
 using SafeShare.ClientServerShared.Routes;
-using SafeShare.DataTransormObject.Expenses;
-using SafeShare.DataTransormObject.GroupManagment;
-using SafeShare.DataTransormObject.ExpenseManagment;
+using SafeShare.Security.API.ActionFilters;
+using SafeShare.Utilities.SafeShareApi.Responses;
 using SafeShare.MediatR.Actions.Queries.ExpenseManagment;
 using SafeShare.MediatR.Actions.Commands.ExpenseManagment;
+using SafeShare.DataTransormObject.SafeShareApi.GroupManagment;
+using SafeShare.DataTransormObject.SafeShareApi.ExpenseManagment;
 
 namespace SafeShare.API.Controllers;
 
 /// <summary>
 /// Controller responsible for providing endpoints related to expense management.
 /// </summary>
-public class ExpenseManagmentController : BaseController
+/// <remarks>
+/// Initializes a new instance of the <see cref="ExpenseManagmentController"/> with the MediatR mediator.
+/// </remarks>
+/// <param name="mediator">The MediatR mediator for sending commands and queries.</param>
+[ServiceFilter(typeof(VerifyUser))]
+public class ExpenseManagmentController(IMediator mediator) : BaseController(mediator)
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ExpenseManagmentController"/> with the MediatR mediator.
-    /// </summary>
-    /// <param name="mediator">The MediatR mediator for sending commands and queries.</param>
-    public ExpenseManagmentController
-    (
-        IMediator mediator
-    )
-    : base
-    (
-        mediator
-    )
-    { }
     /// <summary>
     /// Endpoint for retrieving all expenses of a specific group.
     /// </summary>
@@ -51,10 +43,10 @@ public class ExpenseManagmentController : BaseController
     GetAllExpensesOfGroup
     (
         Guid userId,
-        Guid groupId
+        [FromQuery] Guid groupId
     )
     {
-        return await _mediator.Send(new MediatR_GetAllExpensesForGroupQuery(groupId, userId));
+        return await _mediator.Send(new MediatR_GetAllExpensesForGroupQuery(userId, groupId));
     }
     /// <summary>
     /// Endpoint for retrieving a specific expense by its ID.
@@ -118,7 +110,7 @@ public class ExpenseManagmentController : BaseController
     (
         Guid userId,
         Guid expenseId,
-        DTO_ExpenseCreate expenseCreateDto
+        [FromForm] DTO_ExpenseCreate expenseCreateDto
     )
     {
         if (!ModelState.IsValid)
@@ -142,7 +134,7 @@ public class ExpenseManagmentController : BaseController
     DeleteExpense
     (
         Guid userId,
-        DTO_ExpenseDelete expenseDelete
+        [FromBody] DTO_ExpenseDelete expenseDelete
     )
     {
         if (!ModelState.IsValid)

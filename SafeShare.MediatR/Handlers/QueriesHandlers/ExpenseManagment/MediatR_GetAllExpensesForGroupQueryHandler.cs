@@ -7,34 +7,27 @@
 
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using SafeShare.Utilities.Responses;
 using SafeShare.MediatR.Dependencies;
-using SafeShare.DataTransormObject.Expenses;
 using SafeShare.ExpenseManagement.Interfaces;
 using SafeShare.MediatR.Actions.Queries.ExpenseManagment;
+using SafeShare.DataTransormObject.SafeShareApi.ExpenseManagment;
+using SafeShare.Utilities.SafeShareApi.Responses;
 
 namespace SafeShare.MediatR.Handlers.QueriesHandlers.ExpenseManagment;
 
 /// <summary>
 /// MediatR query handler responsible for retrieving all expenses associated with a specific group.
 /// </summary>
-public class MediatR_GetAllExpensesForGroupQueryHandler :
-    MediatR_GenericHandler<IExpenseManagment_ExpenseRepository>,
+/// <remarks>
+/// Constructs a new instance of the <see cref="MediatR_GetAllExpensesForGroupQueryHandler"/> with the necessary expense management service.
+/// </remarks>
+/// <param name="service">The expense management service to be used within this handler.</param>
+public class MediatR_GetAllExpensesForGroupQueryHandler
+(
+    IExpenseManagment_ExpenseRepository service
+) : MediatR_GenericHandler<IExpenseManagment_ExpenseRepository>(service),
     IRequestHandler<MediatR_GetAllExpensesForGroupQuery, ObjectResult>
 {
-    /// <summary>
-    /// Constructs a new instance of the <see cref="MediatR_GetAllExpensesForGroupQueryHandler"/> with the necessary expense management service.
-    /// </summary>
-    /// <param name="service">The expense management service to be used within this handler.</param>
-    public MediatR_GetAllExpensesForGroupQueryHandler
-    (
-        IExpenseManagment_ExpenseRepository service
-    )
-    : base
-    (
-        service
-    )
-    { }
     /// <summary>
     /// Asynchronously handles the retrieval of all expenses for a group upon receiving the query.
     /// It delegates to the expense management service to perform the actual data fetching.

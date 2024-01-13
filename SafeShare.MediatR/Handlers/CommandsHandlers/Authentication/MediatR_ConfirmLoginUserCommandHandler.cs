@@ -5,41 +5,32 @@
 
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using SafeShare.Utilities.Responses;
 using SafeShare.MediatR.Dependencies;
 using SafeShare.Authentication.Interfaces;
-using SafeShare.DataTransormObject.Authentication;
 using SafeShare.MediatR.Actions.Commands.Authentication;
+using SafeShare.DataTransormObject.SafeShareApi.Authentication;
+using SafeShare.Utilities.SafeShareApi.Responses;
 
 namespace SafeShare.MediatR.Handlers.CommandsHandlers.Authentication;
 
 /// <summary>
 /// A MediatR command handler for confirming a user's login using OTP (One-Time Password).
 /// </summary>
-public class MediatR_ConfirmLoginUserCommandHandler : 
-    MediatR_GenericHandler<IAUTH_Login>, 
-    IRequestHandler<MediatR_ConfirmLoginUserCommand, ObjectResult>
+/// <remarks>
+/// Initializes a new instance of the <see cref="MediatR_ConfirmLoginUserCommandHandler"/> class.
+/// </remarks>
+/// <param name="service">The authentication service used for login confirmation.</param>
+public class MediatR_ConfirmLoginUserCommandHandler(IAUTH_Login service) : 
+    MediatR_GenericHandler<IAUTH_Login>(service),
+    IRequestHandler<MediatR_ConfirmLoginUserCommand, Util_GenericResponse<DTO_LoginResult>>
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MediatR_ConfirmLoginUserCommandHandler"/> class.
-    /// </summary>
-    /// <param name="service">The authentication service used for login confirmation.</param>
-    public MediatR_ConfirmLoginUserCommandHandler
-    (
-        IAUTH_Login service
-    )
-    : base
-    (
-        service
-    )
-    { }
     /// <summary>
     /// Handles the confirmation of a user login via OTP.
     /// </summary>
     /// <param name="request">The command containing user ID and OTP for confirmation.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>An ObjectResult with the outcome of the login confirmation process.</returns>
-    public async Task<ObjectResult>
+    public async Task<Util_GenericResponse<DTO_LoginResult>>
     Handle
     (
         MediatR_ConfirmLoginUserCommand request,
@@ -48,6 +39,6 @@ public class MediatR_ConfirmLoginUserCommandHandler :
     {
         var confirmLoginResult = await _service.ConfirmLogin(request.UserId, request.OTP);
 
-        return Util_GenericControllerResponse<DTO_LoginResult>.ControllerResponse(confirmLoginResult);
+        return confirmLoginResult;
     }
 }

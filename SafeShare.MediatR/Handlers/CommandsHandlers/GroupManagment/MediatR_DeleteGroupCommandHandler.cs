@@ -8,30 +8,23 @@ using Microsoft.AspNetCore.Mvc;
 using SafeShare.MediatR.Dependencies;
 using SafeShare.GroupManagment.Interfaces;
 using SafeShare.MediatR.Actions.Commands.GroupManagment;
-using SafeShare.Utilities.Responses;
+using SafeShare.Utilities.SafeShareApi.Responses;
 
 namespace SafeShare.MediatR.Handlers.CommandsHandlers.GroupManagment;
 
 /// <summary>
 /// A MediatR command handler for processing requests to delete groups within the application.
 /// </summary>
-public class MediatR_DeleteGroupCommandHandler : 
-    MediatR_GenericHandler<IGroupManagment_GroupRepository>, 
+/// <remarks>
+/// Initializes a new instance of the <see cref="MediatR_DeleteGroupCommandHandler"/> class.
+/// </remarks>
+/// <param name="service">The group management service used for deleting groups.</param>
+public class MediatR_DeleteGroupCommandHandler
+(
+    IGroupManagment_GroupRepository service
+) : MediatR_GenericHandler<IGroupManagment_GroupRepository>(service),
     IRequestHandler<MediatR_DeleteGroupCommand, ObjectResult>
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MediatR_DeleteGroupCommandHandler"/> class.
-    /// </summary>
-    /// <param name="service">The group management service used for deleting groups.</param>
-    public MediatR_DeleteGroupCommandHandler
-    (
-        IGroupManagment_GroupRepository service
-    )
-    : base
-    (
-        service
-    )
-    { }
     /// <summary>
     /// Handles the process of deleting a group.
     /// </summary>

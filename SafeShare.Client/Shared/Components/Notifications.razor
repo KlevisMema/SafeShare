@@ -1,0 +1,83 @@
+﻿<style>
+    .notifications-container {
+        max-width: 300px;
+        min-width: 250px;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
+    .notification-item {
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .notification-avatar {
+        margin-right: 10px;
+    }
+
+    .notification-message {
+        flex-grow: 1;
+        margin-right: 10px;
+    }
+
+    .notification-actions {
+        display: flex;
+        align-items: center;
+    }
+
+    .accept-button {
+        margin-left: auto;
+    }
+
+    .no-notifications-message {
+        padding: 10px;
+        text-align: center;
+    }
+</style>
+
+<MudBadge Content="3" Overlap="true" Dot="true" Color="Color.Secondary">
+    <MudIconButton OnClick="ToggleOpenNotifications" Icon="@Icons.Material.Outlined.Notifications" Color="Color.Inherit" Edge="Edge.End" />
+</MudBadge>
+<MudPopover Open="_isOpen" OverflowBehavior="OverflowBehavior.FlipAlways" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.BottomRight" Paper="true">
+    <MudPaper Outlined="true" Class="notifications-container">
+        <ul class="mud-list">
+            @if (Invitations != null && Invitations.Any())
+            {
+                @foreach (var invitation in Invitations)
+                {
+                    <li class="notification-item">
+                        <div class="notification-avatar">
+                            <div class="mud-avatar">
+                                <div class="mud-avatar-child">
+                                    <MudIcon Icon="@Icons.Material.Outlined.Person" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="notification-message">
+                            <div class="mud-text">Invitation from @invitation.InvitingUserName to join group @invitation.GroupName</div>
+                        </div>
+                        <div class="notification-actions">
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="accept-button" OnClick="() => AcceptInvitation(invitation)">
+                                @if (_processing)
+                                {
+                                    <MudProgressCircular Class="ms-n1" Size="MudBlazor.Size.Small" Indeterminate="true" Color="Color.Primary" />
+                                    <MudText Class="ms-2" Color="Color.Primary">Accepting</MudText>
+                                }
+                                else
+                                {
+                                    <MudText>Accept</MudText>
+                                }
+                            </MudButton>
+                        </div>
+                    </li>
+                }
+            }
+            else
+            {
+                <div class="no-notifications-message">No notifications received</div>
+            }
+        </ul>
+    </MudPaper>
+</MudPopover>

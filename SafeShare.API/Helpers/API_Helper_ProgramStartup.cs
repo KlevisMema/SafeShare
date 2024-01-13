@@ -12,6 +12,7 @@ using Serilog;
 using System.Text;
 using System.Reflection;
 using AspNetCoreRateLimit;
+using SafeShare.API.Helpers;
 using SafeShare.Security.API;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Identity;
@@ -19,32 +20,36 @@ using Microsoft.EntityFrameworkCore;
 using SafeShare.Authentication.Auth;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Authentication;
-using SafeShare.DataAccessLayer.Models;
-using SafeShare.Mappings.UserManagment;
-using SafeShare.Mappings.Authentication;
-using SafeShare.Mappings.GroupManagment;
-using SafeShare.Security.API.Interfaces;
+using SafeShare.Security.GroupSecurity;
 using SafeShare.DataAccessLayer.Context;
 using SafeShare.UserManagment.Interfaces;
 using Microsoft.Extensions.Configuration;
+using SafeShare.Security.User.Interfaces;
 using SafeShare.Authentication.Interfaces;
 using SafeShare.GroupManagment.Interfaces;
 using SafeShare.UserManagment.UserAccount;
-using SafeShare.Mappings.ExpenseManagment;
+using Microsoft.AspNetCore.DataProtection;
 using SafeShare.Security.API.ActionFilters;
-using SafeShare.DataTransormObject.Security;
+using SafeShare.Security.User.Implementation;
 using SafeShare.ExpenseManagement.Interfaces;
 using SafeShare.GroupManagment.GroupManagment;
-using SafeShare.Security.API.Imeplementations;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
 using SafeShare.Security.JwtSecurity.Interfaces;
-using SafeShare.Utilities.ConfigurationSettings;
 using SafeShare.ExpenseManagement.Implementations;
-using SafeShare.DataTransormObject.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using SafeShare.Mappings.SafeShareApi.UserManagment;
+using SafeShare.DataAccessLayer.Models.SafeShareApi;
+using SafeShare.Mappings.SafeShareApi.Authentication;
 using SafeShare.Security.JwtSecurity.Implementations;
+using SafeShare.Mappings.SafeShareApi.GroupManagment;
+using SafeShare.Mappings.SafeShareApi.ExpenseManagment;
+using SafeShare.DataTransormObject.SafeShareApi.Security;
+using SafeShare.Utilities.SafeShareApi.ConfigurationSettings;
+using SafeShare.DataTransormObject.SafeShareApi.Authentication;
 using SafeShare.MediatR.Handlers.CommandsHandlers.Authentication;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 
 namespace SafeShare.API.Startup;
 
@@ -67,12 +72,18 @@ public static class API_Helper_ProgramStartup
        IHostBuilder host
     )
     {
-        Services.AddControllers();
         Services.AddMemoryCache();
         Services.AddEndpointsApiExplorer();
         Services.AddSwaggerGen();
         Services.AddHttpContextAccessor();
-
+        Services.AddDataProtection()
+                .SetApplicationName("SafeShare")
+                .SetDefaultKeyLifetime(TimeSpan.FromDays(7))
+                .UseCryptographicAlgorithms(new AuthenticatedEncryptorConfiguration
+                {
+                    EncryptionAlgorithm = EncryptionAlgorithm.AES_256_GCM,
+                    ValidationAlgorithm = ValidationAlgorithm.HMACSHA512
+                });
 
         AddDatabase(Services, Configuration);
         AddConfigurations(Services, Configuration);
@@ -80,6 +91,7 @@ public static class API_Helper_ProgramStartup
         AddSwagger(Services, Configuration);
         AddServices(Services);
         AddCors(Services, Configuration);
+        Services.AddControllers();
         AddAPIRateLimiting(Services);
         AddSerilog(host);
         AddMediatR(Services);
@@ -100,6 +112,7 @@ public static class API_Helper_ProgramStartup
     )
     {
         services.Configure<Util_JwtSettings>(configuration.GetSection(Util_JwtSettings.SectionName));
+        services.Configure<API_Helper_CookieSettings>(configuration.GetSection(API_Helper_CookieSettings.SectionName));
         services.Configure<DataProtectionTokenProviderOptions>
         (
             opt => opt.TokenLifespan = TimeSpan.FromHours(double.Parse(configuration.GetSection("DefaultTokenExpirationTimeInHours").Value!))
@@ -141,21 +154,15 @@ public static class API_Helper_ProgramStartup
         Services.AddScoped<VerifyUser>();
         Services.AddScoped<IAUTH_Login, AUTH_Login>();
         Services.AddScoped<IAUTH_Register, AUTH_Register>();
+        Services.AddScoped<IGroupKeySecurity, GroupKeySecurity>();
         Services.AddScoped<IAccountManagment, AccountManagment>();
         Services.AddScoped<IAUTH_RefreshToken, AUTH_RefreshToken>();
         Services.AddScoped<ISecurity_JwtTokenHash, Security_JwtTokenAuth>();
-        // Add the custom auth filter, a filter that is used by all enpoints
-        Services.AddScoped<IApiKeyAuthorizationFilter>(provider =>
-        {
-            var httpContextAccessor = provider.GetRequiredService<IHttpContextAccessor>();
-            var logger = provider.GetRequiredService<ILogger<ApiKeyAuthorizationFilter>>();
-
-            var config = provider.GetService<IConfiguration>();
-            string apikey = Environment.GetEnvironmentVariable("SAFE_SHARE_API_KEY");
-            return new ApiKeyAuthorizationFilter(apikey, httpContextAccessor, logger);
-        });
         Services.AddScoped<IGroupManagment_GroupRepository, GroupManagment_GroupRepository>();
+        Services.AddScoped<IGroupManagment_GroupKeyRepository, GroupManagment_GroupKeyRepository>();
+        Services.AddScoped<ISecurity_UserDataProtectionService, Security_UserDataProtectionService>();
         Services.AddScoped<IExpenseManagment_ExpenseRepository, ExpenseManagment_ExpenseRepository>();
+        Services.AddScoped<IExpenseManagment_SecurityRepository, ExpenseManagment_SecurityRepository>();
         Services.AddScoped<IGroupManagment_GroupInvitationsRepository, GroupManagment_GroupInvitationsRepository>();
         Services.AddScoped<ISecurity_JwtTokenAuth<Security_JwtTokenAuth, DTO_AuthUser, DTO_Token>, Security_JwtTokenAuth>();
         Services.AddScoped<ISecurity_JwtTokenAuth<Security_JwtShortLivedToken, string, string>, Security_JwtShortLivedToken>();
@@ -172,7 +179,11 @@ public static class API_Helper_ProgramStartup
         IConfiguration Configuration
     )
     {
+        Services.AddDbContext<CryptoKeysDb>(options => options.UseSqlServer(Configuration.GetConnectionString("CryptoKeysConnection")));
         Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+        Services.AddDbContext<ApiClientDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("AZURE_SQL_CONNECTIONSTRING")));
+
+        //Services.AddDbContext<ApiClientDbContext>(options => options.UseSqlServer(Environment.GetEnvironmentVariable("AZURE_SQL_CONNECTIONSTRING")));
 
         Services.AddIdentity<ApplicationUser, IdentityRole>
             (
@@ -180,7 +191,7 @@ public static class API_Helper_ProgramStartup
                 {
                     options.User.RequireUniqueEmail = true;
                     options.Password.RequiredLength = 6;
-                    options.Lockout.MaxFailedAccessAttempts = 20;
+                    options.Lockout.MaxFailedAccessAttempts = 2;
                     options.Lockout.AllowedForNewUsers = true;
                     options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
                     options.SignIn.RequireConfirmedEmail = true;
@@ -227,6 +238,8 @@ public static class API_Helper_ProgramStartup
             ValidateIssuer = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
+            RequireExpirationTime = true,
+            RequireSignedTokens = true,
             ValidIssuer = jwtSetting.GetSection("Issuer").Value,
             ValidAudience = jwtSetting.GetSection("Audience").Value,
             ClockSkew = TimeSpan.Zero,
@@ -274,22 +287,22 @@ public static class API_Helper_ProgramStartup
             });
 
             options.AddSecurityRequirement(new OpenApiSecurityRequirement
+            {
                 {
+                    new OpenApiSecurityScheme
                     {
-                        new OpenApiSecurityScheme
+                        Reference = new OpenApiReference
                         {
-                            Reference = new OpenApiReference
-                            {
-                                Type = ReferenceType.SecurityScheme,
-                                Id = "Default"
-                            },
-                            Scheme = "0auth2",
-                            Name = "Bearer",
-                            In = ParameterLocation.Header,
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Default"
                         },
-                        new List<string>()
-                    }
-                });
+                        Scheme = "0auth2",
+                        Name = "Bearer",
+                        In = ParameterLocation.Header,
+                    },
+                    new List<string>()
+                }
+            });
 
             options.AddSecurityDefinition("ConfirmLogin", new OpenApiSecurityScheme
             {
@@ -373,9 +386,10 @@ public static class API_Helper_ProgramStartup
         {
             options.AddPolicy(Configuration.GetSection("Cors:Policy:Name").Value!, builder =>
             {
-                builder.AllowAnyOrigin()
+                builder.WithOrigins("https://localhost:7280")
                        .AllowAnyHeader()
-                       .AllowAnyMethod();
+                       .AllowAnyMethod()
+                       .AllowCredentials();
             });
         });
     }
@@ -415,7 +429,7 @@ public static class API_Helper_ProgramStartup
     private static void
     AddSerilog
     (
-            IHostBuilder host
+        IHostBuilder host
     )
     {
         host.UseSerilog((context, configuration) => configuration.ReadFrom.Configuration(context.Configuration));

@@ -5,28 +5,24 @@
 
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using SafeShare.DataTransormObject.Authentication;
+using SafeShare.DataTransormObject.SafeShareApi.Authentication;
 
 namespace SafeShare.MediatR.Actions.Commands.Authentication;
 
 /// <summary>
 /// Represents a MediatR command for registering a user.
 /// </summary>
-public class MediatR_RegisterUserCommand : IRequest<ObjectResult>
+/// <remarks>
+/// Initializes a new instance of the <see cref="MediatR_RegisterUserCommand"/> class.
+/// </remarks>
+/// <param name="register">The registration details for the user.</param>
+public class MediatR_RegisterUserCommand
+(
+    DTO_Register register
+) : IRequest<ObjectResult>
 {
     /// <summary>
     /// Gets or sets the registration details for the user.
     /// </summary>
-    public DTO_Register Register { get; set; }
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MediatR_RegisterUserCommand"/> class.
-    /// </summary>
-    /// <param name="register">The registration details for the user.</param>
-    public MediatR_RegisterUserCommand
-    (
-        DTO_Register register
-    )
-    {
-        Register = register;
-    }
+    public DTO_Register Register { get; set; } = register;
 }

@@ -5,6 +5,7 @@
 
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using SafeShare.DataTransormObject.SafeShareApi.Authentication;
 
 namespace SafeShare.MediatR.Actions.Commands.Authentication;
 
@@ -12,21 +13,17 @@ namespace SafeShare.MediatR.Actions.Commands.Authentication;
 /// Represents a MediatR command for re-sending a user registration confirmation request.
 /// This command includes the user's email to facilitate the re-confirmation process.
 /// </summary>
-public class MediatR_ReConfirmRegistrationRequestCommand : IRequest<ObjectResult>
+/// <remarks>
+/// Initializes a new instance of the <see cref="MediatR_ReConfirmRegistrationRequestCommand"/> class.
+/// </remarks>
+/// <param name="reConfirmRegistration">The email address of the user requesting re-confirmation.</param>
+public class MediatR_ReConfirmRegistrationRequestCommand
+(
+    DTO_ReConfirmRegistration reConfirmRegistration
+) : IRequest<ObjectResult>
 {
     /// <summary>
     /// The email address of the user requesting re-confirmation of registration.
     /// </summary> 
-    public string Email { get; set; }
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MediatR_ReConfirmRegistrationRequestCommand"/> class.
-    /// </summary>
-    /// <param name="email">The email address of the user requesting re-confirmation.</param>
-    public MediatR_ReConfirmRegistrationRequestCommand
-    (
-        string email
-    )
-    {
-        Email = email;
-    }
+    public DTO_ReConfirmRegistration ReConfirmRegistration { get; set; } = reConfirmRegistration;
 }

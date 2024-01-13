@@ -5,33 +5,26 @@
 
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using SafeShare.Utilities.Responses;
 using SafeShare.MediatR.Dependencies;
 using SafeShare.UserManagment.Interfaces;
 using SafeShare.MediatR.Actions.Commands.UserManagment;
+using SafeShare.Utilities.SafeShareApi.Responses;
 
 namespace SafeShare.MediatR.Handlers.CommandsHandlers.UserManagment;
 
 /// <summary>
 /// A MediatR command handler for processing requests to initiate the account activation process.
 /// </summary>
-public class MediatR_ActivateAccountRequestCommandHandler : 
-    MediatR_GenericHandler<IAccountManagment>, 
+/// <remarks>
+/// Initializes a new instance of the <see cref="MediatR_ActivateAccountRequestCommandHandler"/> class.
+/// </remarks>
+/// <param name="service">The account management service used for initiating account activations.</param>
+public class MediatR_ActivateAccountRequestCommandHandler
+(
+    IAccountManagment service
+) : MediatR_GenericHandler<IAccountManagment>(service),
     IRequestHandler<MediatR_ActivateAccountRequestCommand, ObjectResult>
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MediatR_ActivateAccountRequestCommandHandler"/> class.
-    /// </summary>
-    /// <param name="service">The account management service used for initiating account activations.</param>
-    public MediatR_ActivateAccountRequestCommandHandler
-    (
-        IAccountManagment service
-    )
-    : base
-    (
-        service
-    )
-    { }
     /// <summary>
     /// Handles the process of initiating the account activation.
     /// </summary>

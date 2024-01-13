@@ -8,35 +8,30 @@
 
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using SafeShare.DataTransormObject.Expenses;
+using SafeShare.DataTransormObject.SafeShareApi.ExpenseManagment;
 
 namespace SafeShare.MediatR.Actions.Commands.ExpenseManagment;
 
 /// <summary>
 /// Represents a command for MediatR to create a new expense entry.
 /// </summary>
-public class MediatR_CreateExpenseCommand : IRequest<ObjectResult>
+/// <remarks>
+/// Initializes a new instance of the <see cref="MediatR_CreateExpenseCommand"/> class.
+/// </remarks>
+/// <param name="userId">The unique identifier for the user creating the expense.</param>
+/// <param name="expenseDto">The DTO containing the expense creation data.</param>
+public class MediatR_CreateExpenseCommand
+(
+    Guid userId,
+    DTO_ExpenseCreate expenseDto
+) : IRequest<ObjectResult>
 {
     /// <summary>
     /// Gets or sets the unique identifier for the user who is creating the expense.
     /// </summary>
-    public Guid UserId { get; set; }
+    public Guid UserId { get; set; } = userId;
     /// <summary>
     /// Gets or sets the Data Transfer Object (DTO) containing the information for the expense to be created.
     /// </summary>
-    public DTO_ExpenseCreate ExpenseDto { get; set; }
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MediatR_CreateExpenseCommand"/> class.
-    /// </summary>
-    /// <param name="userId">The unique identifier for the user creating the expense.</param>
-    /// <param name="expenseDto">The DTO containing the expense creation data.</param>
-    public MediatR_CreateExpenseCommand
-    (
-        Guid userId,
-        DTO_ExpenseCreate expenseDto
-    )
-    {
-        UserId = userId;
-        ExpenseDto = expenseDto;
-    }
+    public DTO_ExpenseCreate ExpenseDto { get; set; } = expenseDto;
 }

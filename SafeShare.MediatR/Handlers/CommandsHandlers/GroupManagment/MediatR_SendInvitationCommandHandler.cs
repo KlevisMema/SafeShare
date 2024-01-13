@@ -5,30 +5,26 @@
 
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using SafeShare.Utilities.Responses;
 using SafeShare.MediatR.Dependencies;
 using SafeShare.GroupManagment.Interfaces;
 using SafeShare.MediatR.Actions.Commands.GroupManagment;
+using SafeShare.Utilities.SafeShareApi.Responses;
 
 namespace SafeShare.MediatR.Handlers.CommandsHandlers.GroupManagment;
 
 /// <summary>
 /// A MediatR command handler for processing requests to send group invitations.
 /// </summary>
-public class MediatR_SendInvitationCommandHandler : 
-    MediatR_GenericHandler<IGroupManagment_GroupInvitationsRepository>,
+/// <remarks>
+/// Initializes a new instance of the <see cref="MediatR_SendInvitationCommandHandler"/> class.
+/// </remarks>
+/// <param name="service">The group management service used for sending group invitations.</param>
+public class MediatR_SendInvitationCommandHandler
+(
+    IGroupManagment_GroupInvitationsRepository service
+) : MediatR_GenericHandler<IGroupManagment_GroupInvitationsRepository>(service),
     IRequestHandler<MediatR_SendInvitationCommand, ObjectResult>
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MediatR_SendInvitationCommandHandler"/> class.
-    /// </summary>
-    /// <param name="service">The group management service used for sending group invitations.</param>
-    public MediatR_SendInvitationCommandHandler
-    (
-        IGroupManagment_GroupInvitationsRepository service
-    )
-    : base(service)
-    { }
     /// <summary>
     /// Handles the process of sending a group invitation.
     /// </summary>

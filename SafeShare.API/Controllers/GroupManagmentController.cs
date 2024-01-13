@@ -8,14 +8,14 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
-using SafeShare.Utilities.Responses;
 using SafeShare.ClientServerShared.Routes;
 using SafeShare.Security.API.ActionFilters;
-using SafeShare.DataTransormObject.UserManagment;
-using SafeShare.DataTransormObject.GroupManagment;
+using SafeShare.Utilities.SafeShareApi.Responses;
 using SafeShare.MediatR.Actions.Queries.GroupManagment;
 using SafeShare.MediatR.Actions.Commands.GroupManagment;
-using SafeShare.DataTransormObject.GroupManagment.GroupInvitations;
+using SafeShare.DataTransormObject.SafeShareApi.UserManagment;
+using SafeShare.DataTransormObject.SafeShareApi.GroupManagment;
+using SafeShare.DataTransormObject.SafeShareApi.GroupManagment.GroupInvitations;
 
 namespace SafeShare.API.Controllers;
 
@@ -25,23 +25,13 @@ namespace SafeShare.API.Controllers;
 /// and retrieval of group details and invitations.
 /// It communicates with the business logic layer using MediatR for a clean, decoupled architecture.
 /// </summary>
-//[ServiceFilter(typeof(VerifyUser))]
-public class GroupManagmentController : BaseController
+/// <remarks>
+/// Initializes a new instance of <see cref="GroupManagmentController"/>
+/// </remarks>
+/// <param name="mediator">The instance of mediator used to send commands and queries</param>
+[ServiceFilter(typeof(VerifyUser))]
+public class GroupManagmentController(IMediator mediator) : BaseController(mediator)
 {
-
-    /// <summary>
-    /// Initializes a new instance of <see cref="GroupManagmentController"/>
-    /// </summary>
-    /// <param name="mediator">The instance of mediator used to send commands and queries</param>
-    public GroupManagmentController
-    (
-        IMediator mediator
-    )
-    : base
-    (
-        mediator
-    )
-    { }
     /// <summary>
     /// Get group types of a user
     /// </summary>
@@ -91,7 +81,7 @@ public class GroupManagmentController : BaseController
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<bool>))]
     [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Util_GenericResponse<bool>))]
-    public async Task<ActionResult<Util_GenericResponse<bool>>>
+    public async Task<ActionResult<Util_GenericResponse<DTO_GroupType>>>
     CreateGroup
     (
         Guid userId,
@@ -278,5 +268,31 @@ public class GroupManagmentController : BaseController
             return BadRequest(ModelState);
 
         return await _mediator.Send(new MediatR_DeleteSentInvitationCommand(deleteInvitationRequest));
+    }
+    /// <summary>
+    /// Deletes users from a group
+    /// </summary>
+    /// <param name="userId">The identifier of the user deleting the invitation.</param>
+    /// <param name="groupId">The id of the group</param>
+    /// <param name="UsersToRemoveFromGroup">A list of users</param>
+    /// <returns>A boolean value indicating whether users were successfully deleted.</returns>
+    [HttpDelete(Route_GroupManagmentRoutes.DeleteUsersFromGroup)]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<bool>))]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<bool>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(Util_GenericResponse<bool>))]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Util_GenericResponse<bool>))]
+    public async Task<ActionResult<Util_GenericResponse<bool>>>
+    DeleteUsersFromGroup
+    (
+        Guid userId,
+        Guid groupId,
+        List<DTO_UsersGroupDetails> UsersToRemoveFromGroup
+    )
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        return await _mediator.Send(new MediatR_RemoveUsersFromGroupCommand(userId, groupId, UsersToRemoveFromGroup));
     }
 }

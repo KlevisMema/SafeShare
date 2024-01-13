@@ -9,95 +9,64 @@
 using AutoMapper;
 using Newtonsoft.Json.Linq;
 using SendGrid.Helpers.Mail;
-using SafeShare.Utilities.IP;
-using SafeShare.Utilities.Log;
-using SafeShare.Utilities.User;
 using Microsoft.AspNetCore.Http;
-using SafeShare.Utilities.Email;
-using SafeShare.Utilities.Services;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
-using SafeShare.Utilities.Responses;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using SafeShare.DataAccessLayer.Models;
-using SafeShare.Utilities.Dependencies;
 using SafeShare.DataAccessLayer.Context;
 using SafeShare.UserManagment.Interfaces;
 using Microsoft.Extensions.Configuration;
-using SafeShare.DataTransormObject.Security;
-using SafeShare.Utilities.ConfigurationSettings;
+using SafeShare.Utilities.SafeShareApi.IP;
+using SafeShare.Utilities.SafeShareApi.Log;
+using SafeShare.Utilities.SafeShareApi.User;
+using SafeShare.Utilities.SafeShareApi.Email;
 using SafeShare.Security.JwtSecurity.Interfaces;
-using SafeShare.DataTransormObject.UserManagment;
-using SafeShare.DataTransormObject.Authentication;
+using SafeShare.Utilities.SafeShareApi.Responses;
+using SafeShare.DataAccessLayer.Models.SafeShareApi;
+using SafeShare.Utilities.SafeShareApi.Dependencies;
 using SafeShare.Security.JwtSecurity.Implementations;
+using SafeShare.DataTransormObject.SafeShareApi.Security;
+using SafeShare.Utilities.SafeShareApi.ConfigurationSettings;
+using SafeShare.DataTransormObject.SafeShareApi.UserManagment;
+using SafeShare.DataTransormObject.SafeShareApi.Authentication;
 
 namespace SafeShare.UserManagment.UserAccount;
 
 /// <summary>
 /// This class encapsulates all the operations related to account management within the SafeShare application
 /// </summary>
-public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContext, AccountManagment>, IAccountManagment
+/// <remarks>
+/// Initializes a new instance of the AccountManagment class.
+/// </remarks>
+/// <param name="resetPasswordSettings">Reset password settings</param>
+/// <param name="logger">Logger instance for logging operations.</param>
+/// <param name="db">The application's database context instance.</param>
+/// <param name="changeEmailAddressSettings">Email change settings</param>
+/// <param name="activateAccountSettings">Activate account settings</param>
+/// <param name="mapper">The AutoMapper instance used for object-object mapping.</param>
+/// <param name="httpContextAccessor">Provides information about the HTTP request.</param>
+/// <param name="jwtTokenService">Provides services to handle jwt token operations.</param>
+/// <param name="userManager">UserManager instance to manage users in the persistence store.</param>
+public class AccountManagment
+(
+    ApplicationDbContext db,
+    IMapper mapper,
+    ILogger<AccountManagment> logger,
+    IHttpContextAccessor httpContextAccessor,
+    UserManager<ApplicationUser> userManager,
+    IOptions<Util_ResetPasswordSettings> resetPasswordSettings,
+    IOptions<Util_ActivateAccountSettings> activateAccountSettings,
+    IOptions<Util_ChangeEmailAddressSettings> changeEmailAddressSettings,
+    ISecurity_JwtTokenAuth<Security_JwtTokenAuth, DTO_AuthUser, DTO_Token> jwtTokenService
+) : Util_BaseContextDependencies<ApplicationDbContext, AccountManagment>
+(
+    db,
+    mapper,
+    logger,
+    httpContextAccessor
+), IAccountManagment
 {
-    /// <summary>
-    /// Provides the APIs for managing user in a persistence store.
-    /// </summary>
-    private readonly UserManager<ApplicationUser> _userManager;
-    /// <summary>
-    /// Provides settings config for reset password
-    /// </summary>
-    private readonly IOptions<Util_ResetPasswordSettings> _resetPasswordSettings;
-    /// <summary>
-    /// Provides settings config for activate account 
-    /// </summary>
-    private readonly IOptions<Util_ActivateAccountSettings> _activateAccountSettings;
-    /// <summary>
-    /// Provides settings config forchanging the email
-    /// </summary>
-    private readonly IOptions<Util_ChangeEmailAddressSettings> _changeEmailAddressSettings;
-    /// <summary>
-    /// Service to handle JWT token operations.
-    /// </summary>
-    private readonly ISecurity_JwtTokenAuth<Security_JwtTokenAuth, DTO_AuthUser, DTO_Token> _jwtTokenService;
-    /// <summary>
-    /// Initializes a new instance of the AccountManagment class.
-    /// </summary>
-    /// <param name="resetPasswordSettings">Reset password settings</param>
-    /// <param name="logger">Logger instance for logging operations.</param>
-    /// <param name="db">The application's database context instance.</param>
-    /// <param name="changeEmailAddressSettings">Email change settings</param>
-    /// <param name="activateAccountSettings">Activate account settings</param>
-    /// <param name="mapper">The AutoMapper instance used for object-object mapping.</param>
-    /// <param name="httpContextAccessor">Provides information about the HTTP request.</param>
-    /// <param name="jwtTokenService">Provides services to handle jwt token operations.</param>
-    /// <param name="userManager">UserManager instance to manage users in the persistence store.</param>
-    public AccountManagment
-    (
-        ApplicationDbContext db,
-        IMapper mapper,
-        ILogger<AccountManagment> logger,
-        IHttpContextAccessor httpContextAccessor,
-        UserManager<ApplicationUser> userManager,
-        IOptions<Util_ResetPasswordSettings> resetPasswordSettings,
-        IOptions<Util_ActivateAccountSettings> activateAccountSettings,
-        IOptions<Util_ChangeEmailAddressSettings> changeEmailAddressSettings,
-        ISecurity_JwtTokenAuth<Security_JwtTokenAuth, DTO_AuthUser, DTO_Token> jwtTokenService
-    )
-    :
-    base
-    (
-        db,
-        mapper,
-        logger,
-        httpContextAccessor
-    )
-    {
-        _userManager = userManager;
-        _resetPasswordSettings = resetPasswordSettings;
-        _activateAccountSettings = activateAccountSettings;
-        _changeEmailAddressSettings = changeEmailAddressSettings;
-        _jwtTokenService = jwtTokenService;
-    }
     /// <summary>
     /// Retrieves the user details based on the provided user ID.
     /// </summary>
@@ -109,7 +78,7 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
         Guid id
     )
     {
-        var getUserResult = await GetUserInfoMapped(id, null);
+        var getUserResult = await GetUserInfoMapped("retrieved", id, null);
 
         return getUserResult;
     }
@@ -165,6 +134,9 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
             getUser.NormalizedUserName = dtoUser.UserName.ToUpper();
             getUser.PhoneNumber = dtoUser.PhoneNumber;
             getUser.RequireOTPDuringLogin = dtoUser.Enable2FA;
+            getUser.Age = DateTime.UtcNow.Year - dtoUser.Birthday.Year;
+
+            //await _db.SaveChangesAsync();
 
             await DeleteUserRefreshTokens(getUser.Id);
 
@@ -186,7 +158,7 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
                 getUser
             );
 
-            return await GetUserInfoMapped(id, token);
+            return await GetUserInfoMapped("updated", id, token);
         }
         catch (Exception ex)
         {
@@ -247,7 +219,7 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
                 );
             }
 
-            var identifyDeletionIsByTheUser = await _userManager.CheckPasswordAsync(user, deactivateAccount.Password);
+            var identifyDeletionIsByTheUser = await userManager.CheckPasswordAsync(user, deactivateAccount.Password);
 
             if (!identifyDeletionIsByTheUser)
             {
@@ -279,7 +251,7 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
             user.IsDeleted = true;
             user.DeletedAt = DateTime.Now;
 
-            var updateResult = await _userManager.UpdateAsync(user);
+            var updateResult = await userManager.UpdateAsync(user);
 
             if (!updateResult.Succeeded)
             {
@@ -417,7 +389,7 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
 
         try
         {
-            var token = await _userManager.GenerateUserTokenAsync(user, "Default", _activateAccountSettings.Value.Reason);
+            var token = await userManager.GenerateUserTokenAsync(user, "Default", activateAccountSettings.Value.Reason);
 
             if (String.IsNullOrEmpty(token))
             {
@@ -445,7 +417,9 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
                 );
             }
 
-            var route = _activateAccountSettings.Value.Route.Replace("{token}", token).Replace("{email}", email);
+            var encodedToken = System.Net.WebUtility.UrlEncode(token);
+
+            var route = activateAccountSettings.Value.Route.Replace("{token}", encodedToken).Replace("{email}", email);
 
             var sendEmailResult = await Util_Email.SendActivateAccountEmail(user.Email, user.FullName, route);
 
@@ -584,11 +558,11 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
 
         try
         {
-            var validToken = await _userManager.VerifyUserTokenAsync
+            var validToken = await userManager.VerifyUserTokenAsync
             (
                 user,
                 "Default",
-                _activateAccountSettings.Value.Reason,
+                activateAccountSettings.Value.Reason,
                 accountConfirmation.Token
             );
 
@@ -625,7 +599,7 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
             user.ModifiedAt = DateTime.Now;
             user.DeletedAt = null;
 
-            var updateUserResult = await _userManager.UpdateAsync(user);
+            var updateUserResult = await userManager.UpdateAsync(user);
 
             if (!updateUserResult.Succeeded)
             {
@@ -737,7 +711,7 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
                 );
             }
 
-            var updatePasswordResult = await _userManager.ChangePasswordAsync(user, updatePassword.OldPassword, updatePassword.ConfirmNewPassword);
+            var updatePasswordResult = await userManager.ChangePasswordAsync(user, updatePassword.OldPassword, updatePassword.ConfirmNewPassword);
 
             if (!updatePasswordResult.Succeeded)
             {
@@ -767,7 +741,7 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
             }
 
             user.ModifiedAt = DateTime.Now;
-            await _userManager.UpdateAsync(user);
+            await userManager.UpdateAsync(user);
 
             _logger.Log
             (
@@ -869,9 +843,11 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
 
         try
         {
-            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var token = await userManager.GeneratePasswordResetTokenAsync(user);
 
-            var route = _resetPasswordSettings.Value.Route.Replace("{token}", token).Replace("{email}", email);
+            var encodedToken = System.Net.WebUtility.UrlEncode(token);
+
+            var route = resetPasswordSettings.Value.Route.Replace("{token}", encodedToken).Replace("{email}", email);
 
             var sendEmailResult = await Util_Email.SendForgotPassordTokenEmail(user.Email, user.FullName, route);
 
@@ -1003,7 +979,7 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
 
         try
         {
-            var changePasswordResult = await _userManager.ResetPasswordAsync(user, resetPassword.Token, resetPassword.NewPassword);
+            var changePasswordResult = await userManager.ResetPasswordAsync(user, resetPassword.Token, resetPassword.NewPassword);
 
             if (!changePasswordResult.Succeeded)
             {
@@ -1131,13 +1107,13 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
                 (
                     false,
                     false,
-                    "Your old email address is incorrect",
+                    "Your current email address is incorrect",
                     null,
                     System.Net.HttpStatusCode.BadRequest
                 );
             }
 
-            if (_userManager.Users.Any(x => x.Email == newEmailAddressDto.ConfirmNewEmailAddress))
+            if (userManager.Users.Any(x => x.Email == newEmailAddressDto.ConfirmNewEmailAddress))
             {
                 _logger.Log
                 (
@@ -1164,9 +1140,11 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
                 );
             }
 
-            var tokenForEmailConfirmation = await _userManager.GenerateChangeEmailTokenAsync(user, newEmailAddressDto.ConfirmNewEmailAddress);
+            var tokenForEmailConfirmation = await userManager.GenerateChangeEmailTokenAsync(user, newEmailAddressDto.ConfirmNewEmailAddress);
 
-            var route = _changeEmailAddressSettings.Value.Route.Replace("{token}", tokenForEmailConfirmation).Replace("{email}", newEmailAddressDto.ConfirmNewEmailAddress);
+            var encodedToken = System.Net.WebUtility.UrlEncode(tokenForEmailConfirmation);
+
+            var route = changeEmailAddressSettings.Value.Route.Replace("{token}", encodedToken).Replace("{email}", newEmailAddressDto.ConfirmNewEmailAddress);
 
             var sendEmailResult = await Util_Email.SendEmailForEmailConfirmation(newEmailAddressDto.ConfirmNewEmailAddress, route, user.FullName);
 
@@ -1284,7 +1262,7 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
 
             user.ModifiedAt = DateTime.Now;
 
-            var confirmTokenResult = await _userManager.ChangeEmailAsync(user, changeEmailAddressConfirmDto.EmailAddress, changeEmailAddressConfirmDto.Token);
+            var confirmTokenResult = await userManager.ChangeEmailAsync(user, changeEmailAddressConfirmDto.EmailAddress, changeEmailAddressConfirmDto.Token);
 
             if (!confirmTokenResult.Succeeded)
             {
@@ -1360,6 +1338,207 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
         }
     }
     /// <summary>
+    /// Search usesr by their username
+    /// </summary>
+    /// <param name="userName">The username of the user</param>
+    /// <param name="userId">The id of the user</param>
+    /// <returns>A generic response indicating the result of the operation</returns>
+    public async Task<Util_GenericResponse<List<DTO_UserSearched>>>
+    SearchUserByUserName
+    (
+        string userName,
+        string userId
+    )
+    {
+        try
+        {
+            var users = await _db.Users.Include(x => x.GroupMembers)
+                                       .Where(x => x.UserName!.Contains(userName) && !x.IsDeleted && x.EmailConfirmed && !x.GroupMembers.Any(x => x.UserId == userId))
+                                       .ToListAsync();
+
+            return Util_GenericResponse<List<DTO_UserSearched>>.Response
+            (
+                users.Select(_mapper.Map<DTO_UserSearched>).ToList(),
+                true,
+                "User retrieved successfully",
+                null,
+                System.Net.HttpStatusCode.OK
+            );
+        }
+        catch (Exception ex)
+        {
+            return await Util_LogsHelper<List<DTO_UserSearched>, AccountManagment>.ReturnInternalServerError
+            (
+                ex,
+                _logger,
+                $"""
+                    Somewthing went wrong in [UserManagment Module]-[ChangeEmailAddress Class]-[ConfirmChangeEmailAddressRequest Method],
+                    user with [ID] {userId} tried to search user by username.
+                 """,
+                null,
+                _httpContextAccessor
+            );
+        }
+    }
+    /// <summary>
+    /// Uploads an image for a user
+    /// </summary>
+    /// <param name="userId">The id of the user</param>
+    /// <param name="image"> The image of the user</param>
+    /// <returns>A generic response indicating the result of the operation</returns>
+    public async Task<Util_GenericResponse<byte[]>>
+    UploadProfilePicture
+    (
+        Guid userId,
+        IFormFile? image
+    )
+    {
+        try
+        {
+            if (image is null)
+            {
+                _logger.Log
+                (
+                    LogLevel.Error,
+                    """
+                        [UserManagment Module]-[AccountManagment Class]-[UploadProfilePicture Method] => 
+                        [IP] {IP} user with email {Id} tried to upload a profile picture. Null img obj => {imgobj}
+                     """,
+                    await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                    userId,
+                    image
+                );
+
+                return Util_GenericResponse<byte[]>.Response
+                (
+                    null,
+                    false,
+                    "Something went wrong, please upload again.",
+                    null,
+                    System.Net.HttpStatusCode.BadRequest
+                );
+            }
+
+            var user = await GetApplicationUser(userId);
+
+            if (user == null || user.IsDeleted)
+            {
+                _logger.Log
+                (
+                    LogLevel.Error,
+                    """
+                        [UserManagment Module]-[AccountManagment Class]-[UploadProfilePicture Method] => 
+                        [IP] {IP} user with email {Id}  tried to upload a profile picture.
+                     """,
+                    await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                    userId
+                );
+
+                return Util_GenericResponse<byte[]>.Response
+                (
+                    null,
+                    false,
+                    "Something went wrong, please log in and try again.",
+                    null,
+                    System.Net.HttpStatusCode.BadRequest
+                );
+            }
+
+            if (!IsImageFile(image.ContentType))
+            {
+                _logger.Log
+               (
+                   LogLevel.Error,
+                   """
+                        [UserManagment Module]-[AccountManagment Class]-[UploadProfilePicture Method] => 
+                        [IP] {IP} user with email {Id} tried to upload a wrong format profile picture.
+                        Image obj {imgObj}
+                    """,
+                   await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                   userId,
+                   image
+               );
+
+                return Util_GenericResponse<byte[]>.Response
+                (
+                    null,
+                    false,
+                    "Unsupported file format!",
+                    [
+                        "Unsupported file format!"
+                    ],
+                    System.Net.HttpStatusCode.BadRequest
+                );
+            }
+
+            using (var memoryStream = new MemoryStream())
+            {
+                await image.CopyToAsync(memoryStream);
+                var imageData = memoryStream.ToArray();
+
+                var hexImageData = BitConverter.ToString(imageData).Replace("-", "");
+
+                var convertedImageData = StringToByteArray(hexImageData);
+
+                user.ImageData = convertedImageData;
+
+                await _db.SaveChangesAsync();
+            }
+
+            return Util_GenericResponse<byte[]>.Response
+            (
+                user.ImageData,
+                true,
+                "User profile picture uploaded succsessfully",
+                null,
+                System.Net.HttpStatusCode.OK
+            );
+        }
+        catch (Exception ex)
+        {
+            return await Util_LogsHelper<byte[], AccountManagment>.ReturnInternalServerError
+            (
+                ex,
+                _logger,
+                $"""
+                Somewthing went wrong in [UserManagment Module]-[ChangeEmailAddress Class]-[UploadProfilePicture Method],
+                user with [ID] {userId} tried to upload a profile picture.
+                """,
+                null,
+                _httpContextAccessor
+            );
+        }
+    }
+    /// <summary>
+    /// Checks if the image is of allowed formats
+    /// </summary>
+    /// <param name="contentType"> The file content of the image</param>
+    /// <returns> True or false </returns>
+    private static bool IsImageFile
+    (
+        string contentType
+    )
+    {
+        var allowedTypes = new[] { "image/jpeg", "image/jpg", "image/png" };
+        return allowedTypes.Contains(contentType);
+    }
+    /// <summary>
+    /// convert hexadecimal string to byte array
+    /// </summary>
+    /// <param name="hex">The hex value</param>
+    /// <returns>String representation of the hex</returns>
+    public static byte[] 
+    StringToByteArray
+    (
+        string hex
+    )
+    {
+        return Enumerable.Range(0, hex.Length)
+                         .Where(x => x % 2 == 0)
+                         .Select(x => Convert.ToByte(hex.Substring(x, 2), 16))
+                         .ToArray();
+    }
+    /// <summary>
     /// Retrieves the user details mapped to DTO based on the provided user ID.
     /// </summary>
     /// <param name="id">The ID of the user to be retrieved.</param>
@@ -1367,6 +1546,7 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
     private async Task<Util_GenericResponse<DTO_UserUpdatedInfo>>
     GetUserInfoMapped
     (
+        string purpose,
         Guid id,
         DTO_Token? userToken
     )
@@ -1406,7 +1586,7 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
             (
                 userInfoMapped,
                 true,
-                "User retrieved succsessfully",
+                $"User {purpose} succsessfully",
                 null,
                 System.Net.HttpStatusCode.OK
             );
@@ -1437,7 +1617,7 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
         Guid id
     )
     {
-        var user = await _userManager.FindByIdAsync(id.ToString());
+        var user = await userManager.FindByIdAsync(id.ToString());
         return user;
     }
     /// <summary>
@@ -1451,7 +1631,7 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
         string email
     )
     {
-        var user = await _userManager.FindByEmailAsync(email);
+        var user = await userManager.FindByEmailAsync(email);
 
         return user;
     }
@@ -1466,10 +1646,10 @@ public class AccountManagment : Util_BaseContextDependencies<ApplicationDbContex
         ApplicationUser user
     )
     {
-        var roles = await _userManager.GetRolesAsync(user);
+        var roles = await userManager.GetRolesAsync(user);
         var userDto = _mapper.Map<DTO_AuthUser>(user);
         userDto.Roles = roles.ToList();
-        var token = await _jwtTokenService.CreateToken(userDto);
+        var token = await jwtTokenService.CreateToken(userDto);
 
         return token;
     }

@@ -14,21 +14,17 @@ namespace SafeShare.MediatR.Actions.Commands.UserManagment;
 /// Represents a MediatR command for initiating an account activation request.
 /// This command carries the email address associated with the account to be activated.
 /// </summary>
-public class MediatR_ActivateAccountRequestCommand : IRequest<ObjectResult>
+/// <remarks>
+/// Initializes a new instance of the <see cref="MediatR_ActivateAccountRequestCommand"/> class.
+/// </remarks>
+/// <param name="email">The email address associated with the account to be activated.</param>
+public class MediatR_ActivateAccountRequestCommand
+(
+    string email
+) : IRequest<ObjectResult>
 {
     /// <summary>
     /// The email address associated with the user account to be activated.
     /// </summary>
-    public string Email { get; set; }
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MediatR_ActivateAccountRequestCommand"/> class.
-    /// </summary>
-    /// <param name="email">The email address associated with the account to be activated.</param>
-    public MediatR_ActivateAccountRequestCommand
-    (
-        string email
-    )
-    {
-        Email = email;
-    }
+    public string Email { get; set; } = email;
 }

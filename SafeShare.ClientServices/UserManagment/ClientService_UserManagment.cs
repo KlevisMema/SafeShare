@@ -1,39 +1,417 @@
-﻿using System.Net.Http;
-using SafeShare.ClientServerShared.Routes;
-using SafeShare.ClientDTO.AccountManagment;
-using SafeShare.ClientServices.Interfaces;
-using SafeShare.ClientUtilities.Responses;
+﻿using System.Text;
+using System.Net.Http;
 using System.Text.Json;
+using Newtonsoft.Json.Linq;
+using System.Net.Http.Headers;
+using Microsoft.AspNetCore.Http;
+using SafeShare.ClientServerShared.Routes;
+using SafeShare.ClientUtilities.Responses;
+using SafeShare.ClientServices.Interfaces;
+using SafeShare.ClientDTO.AccountManagment;
 
 namespace SafeShare.ClientServices.UserManagment;
 
-public class ClientService_UserManagment : IClientService_UserManagment
+public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) : IClientService_UserManagment
 {
-    private readonly HttpClient _httpClient;
+    private const string Client = "MyHttpClient";
 
-    public ClientService_UserManagment(HttpClient httpClient)
-    {
-        _httpClient = httpClient;
-    }
-
-    public async Task<ClientUtil_ApiResponse<bool>> CallTheApi()
+    public async Task<ClientUtil_ApiResponse<ClientDto_UserInfo>>
+    GetUser()
     {
         try
         {
+            var httpClient = httpClientFactory.CreateClient(Client);
+
+            var response = await httpClient.GetAsync(BaseRoute.RouteAccountManagmentProxy + Route_AccountManagmentRoute.ProxyGetUser);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            var readResult = JsonSerializer.Deserialize<ClientUtil_ApiResponse<ClientDto_UserInfo>>(responseContent, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            return readResult!;
+        }
+        catch (Exception)
+        {
+
+            return new ClientUtil_ApiResponse<ClientDto_UserInfo>
+            {
+                Succsess = false
+            };
+        }
+    }
+
+    public async Task<ClientUtil_ApiResponse<ClientDto_UserInfo>>
+    UpdateUser
+    (
+        ClientDto_UpdateUser clientDto_UpdateUser
+    )
+    {
+        try
+        {
+            var httpClient = httpClientFactory.CreateClient(Client);
+
+            var updateUserData = new Dictionary<string, string>
+            {
+                { nameof(ClientDto_UpdateUser.FullName), clientDto_UpdateUser.FullName },
+                { nameof(ClientDto_UpdateUser.Birthday), clientDto_UpdateUser.Birthday.ToString() },
+                { nameof(ClientDto_UpdateUser.Gender), clientDto_UpdateUser.Gender.ToString() },
+                { nameof(ClientDto_UpdateUser.UserName), clientDto_UpdateUser.UserName },
+                { nameof(ClientDto_UpdateUser.PhoneNumber), clientDto_UpdateUser.PhoneNumber },
+                { nameof(ClientDto_UpdateUser.Enable2FA), clientDto_UpdateUser.Enable2FA.ToString() }
+            };
+
+            var content = new FormUrlEncodedContent(updateUserData);
+
+            var response = await httpClient.PutAsync(BaseRoute.RouteAccountManagmentProxy + Route_AccountManagmentRoute.ProxyUpdateUser, content);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            var readResult = JsonSerializer.Deserialize<ClientUtil_ApiResponse<ClientDto_UserInfo>>(responseContent, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            return readResult!;
+        }
+        catch (Exception)
+        {
+
+            throw;
+        }
+    }
+
+    public async Task<ClientUtil_ApiResponse<bool>>
+    ChangePassword
+    (
+        ClientDto_UserChangePassword userChangePassword
+    )
+    {
+        try
+        {
+            var httpClient = httpClientFactory.CreateClient(Client);
+
+            var changePasswordData = new Dictionary<string, string>
+            {
+                { nameof(ClientDto_UserChangePassword.OldPassword), userChangePassword.OldPassword },
+                { nameof(ClientDto_UserChangePassword.NewPassword), userChangePassword.NewPassword},
+                { nameof(ClientDto_UserChangePassword.ConfirmNewPassword), userChangePassword.ConfirmNewPassword},
+            };
+
+            var content = new FormUrlEncodedContent(changePasswordData);
+
+            var response = await httpClient.PutAsync(BaseRoute.RouteAccountManagmentProxy + Route_AccountManagmentRoute.ProxyChangePassword, content);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            var readResult = JsonSerializer.Deserialize<ClientUtil_ApiResponse<bool>>(responseContent, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            return readResult!;
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
+
+    public async Task<ClientUtil_ApiResponse<bool>>
+    DeactivateAccount
+    (
+        ClientDto_DeactivateAccount deactivateAccount
+    )
+    {
+        try
+        {
+            var httpClient = httpClientFactory.CreateClient(Client);
 
             var deactivateAccountData = new Dictionary<string, string>
             {
-                { nameof(ClientDto_DeactivateAccount.Email), "memaklevis2@gmail.com" },
-                { nameof(ClientDto_DeactivateAccount.Password), "Pa$$w0rd" }
+                { nameof(ClientDto_DeactivateAccount.Email), deactivateAccount.Email },
+                { nameof(ClientDto_DeactivateAccount.Password), deactivateAccount.Password}
             };
 
             var content = new FormUrlEncodedContent(deactivateAccountData);
 
-            var response = await _httpClient.PostAsync(BaseRoute.RouteAccountManagmentForClient + Route_AccountManagmentRoute.DeactivateAccount.Replace("{userId}", "f995febb-58b1-40b8-a2fb-a5ea6fe774e1"), content);
+            var response = await httpClient.PostAsync(BaseRoute.RouteAccountManagmentProxy + Route_AccountManagmentRoute.ProxyDeactivateAccount, content);
 
             var responseContent = await response.Content.ReadAsStringAsync();
 
-            var readResult = System.Text.Json.JsonSerializer.Deserialize<ClientUtil_ApiResponse<bool>>(responseContent, new JsonSerializerOptions
+            var readResult = JsonSerializer.Deserialize<ClientUtil_ApiResponse<bool>>(responseContent, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            return readResult!;
+
+        }
+        catch (Exception)
+        {
+
+            throw;
+        }
+    }
+
+    public async Task<ClientUtil_ApiResponse<bool>>
+    ActivateAccountRequest
+    (
+         ClienDto_ActivateAccountRequest ActivateAccountRequest
+    )
+    {
+        try
+        {
+            var httpClient = httpClientFactory.CreateClient(Client);
+
+            var json = JsonSerializer.Serialize(ActivateAccountRequest.Email);
+
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await httpClient.PostAsync(BaseRoute.RouteAccountManagmentProxy + Route_AccountManagmentRoute.ActivateAccountRequest + $"?email={ActivateAccountRequest.Email}", content);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            var readResult = JsonSerializer.Deserialize<ClientUtil_ApiResponse<bool>>(responseContent, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            return readResult!;
+        }
+        catch (Exception)
+        {
+            return new ClientUtil_ApiResponse<bool>();
+        }
+    }
+
+    public async Task<ClientUtil_ApiResponse<bool>>
+    ActivateAccountRequestConfirmation
+    (
+        ClientDto_ActivateAccountConfirmation activateAccountConfirmation
+    )
+    {
+        try
+        {
+            var httpClient = httpClientFactory.CreateClient(Client);
+
+            var json = JsonSerializer.Serialize(activateAccountConfirmation);
+
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await httpClient.PostAsync(BaseRoute.RouteAccountManagmentProxy + Route_AccountManagmentRoute.ActivateAccountRequestConfirmation, content);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            var readResult = JsonSerializer.Deserialize<ClientUtil_ApiResponse<bool>>(responseContent, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            return readResult!;
+        }
+        catch (Exception)
+        {
+
+            throw;
+        }
+    }
+
+    public async Task<ClientUtil_ApiResponse<bool>>
+    ForgotPassword
+    (
+        ClientDto_ForgotPassword forgotPassword
+    )
+    {
+        try
+        {
+            var requestMessage = new HttpRequestMessage();
+            var httpClient = httpClientFactory.CreateClient(Client);
+
+            var forgotPasswordData = new Dictionary<string, string>
+            {
+                { nameof(ClientDto_ForgotPassword.Email), forgotPassword.Email }
+            };
+
+            var content = new FormUrlEncodedContent(forgotPasswordData);
+
+            var response = await httpClient.PostAsync(BaseRoute.RouteAccountManagmentProxy + Route_AccountManagmentRoute.ForgotPassword, content);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            var readResult = JsonSerializer.Deserialize<ClientUtil_ApiResponse<bool>>(responseContent, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            return readResult!;
+        }
+        catch (Exception)
+        {
+
+            throw;
+        }
+    }
+
+    public async Task<ClientUtil_ApiResponse<bool>>
+    ResetPassword
+    (
+        ClientDto_ResetPassword resetPassword
+    )
+    {
+        try
+        {
+            var requestMessage = new HttpRequestMessage();
+            var httpClient = httpClientFactory.CreateClient(Client);
+
+            var forgotPasswordData = new Dictionary<string, string>
+            {
+                { nameof(ClientDto_ResetPassword.Email), resetPassword.Email },
+                { nameof(ClientDto_ResetPassword.Token), resetPassword.Token },
+                { nameof(ClientDto_ResetPassword.NewPassword), resetPassword.NewPassword },
+                { nameof(ClientDto_ResetPassword.ConfirmNewPassword), resetPassword.ConfirmNewPassword }
+            };
+
+            var content = new FormUrlEncodedContent(forgotPasswordData);
+
+            var response = await httpClient.PostAsync(BaseRoute.RouteAccountManagmentProxy + Route_AccountManagmentRoute.ResetPassword, content);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            var readResult = JsonSerializer.Deserialize<ClientUtil_ApiResponse<bool>>(responseContent, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            return readResult!;
+        }
+        catch (Exception)
+        {
+
+            throw;
+        }
+    }
+
+    public async Task<ClientUtil_ApiResponse<bool>>
+    RequestChangeEmail
+    (
+        ClientDto_ChangeEmailAddressRequest changeEmailAddressRequest
+    )
+    {
+        try
+        {
+            var httpClient = httpClientFactory.CreateClient(Client);
+
+            var requestChangeEmailData = new Dictionary<string, string>
+            {
+                { nameof(ClientDto_ChangeEmailAddressRequest.ConfirmNewEmailAddress), changeEmailAddressRequest.ConfirmNewEmailAddress },
+                { nameof(ClientDto_ChangeEmailAddressRequest.NewEmailAddress), changeEmailAddressRequest.NewEmailAddress },
+                { nameof(ClientDto_ChangeEmailAddressRequest.CurrentEmailAddress), changeEmailAddressRequest.CurrentEmailAddress },
+            };
+
+            var content = new FormUrlEncodedContent(requestChangeEmailData);
+
+            var response = await httpClient.PostAsync(BaseRoute.RouteAccountManagmentProxy + Route_AccountManagmentRoute.ProxyRequestChangeEmail, content);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            var readResult = JsonSerializer.Deserialize<ClientUtil_ApiResponse<bool>>(responseContent, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            return readResult!;
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
+
+    public async Task<ClientUtil_ApiResponse<bool>>
+    ConfirmChangeEmailAddressRequest
+    (
+        ClientDto_ChangeEmailAddressRequestConfirm changeEmailAddressRequestConfirm
+    )
+    {
+        try
+        {
+            var httpClient = httpClientFactory.CreateClient(Client);
+
+            var json = JsonSerializer.Serialize(changeEmailAddressRequestConfirm);
+
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await httpClient.PostAsync(BaseRoute.RouteAccountManagmentProxy + Route_AccountManagmentRoute.ProxyConfirmChangeEmailRequest, content);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            var readResult = JsonSerializer.Deserialize<ClientUtil_ApiResponse<bool>>(responseContent, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            return readResult!;
+        }
+        catch (Exception)
+        {
+
+            throw;
+        }
+    }
+
+    public async Task<ClientUtil_ApiResponse<List<ClientDto_UserSearched>>>
+    SearchUserByUserName
+    (
+        string userName,
+        CancellationToken cancellationToken
+    )
+    {
+        try
+        {
+            var httpClient = httpClientFactory.CreateClient(Client);
+
+            var response = await httpClient.GetAsync(BaseRoute.RouteAccountManagmentProxy + Route_AccountManagmentRoute.ProxySearchUserByUserName + $"?username={userName}", cancellationToken);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            var readResult = JsonSerializer.Deserialize<ClientUtil_ApiResponse<List<ClientDto_UserSearched>>>(responseContent, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            return readResult!;
+        }
+        catch (Exception)
+        {
+
+            throw;
+        }
+    }
+
+    public async Task<ClientUtil_ApiResponse<byte[]>>
+    UploadProfilePicture
+    (
+        string fileName,
+        StreamContent streamContent
+    )
+    {
+        try
+        {
+            var httpClient = httpClientFactory.CreateClient(Client);
+
+            var formData = new MultipartFormDataContent
+            {
+                {streamContent, "image", fileName }
+            };
+
+            var response = await httpClient.PostAsync(BaseRoute.RouteAccountManagmentProxy + Route_AccountManagmentRoute.ProxyUploadProfilePicture, formData);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            var readResult = JsonSerializer.Deserialize<ClientUtil_ApiResponse<byte[]>>(responseContent, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             });
@@ -42,10 +420,8 @@ public class ClientService_UserManagment : IClientService_UserManagment
         }
         catch (Exception ex)
         {
-
+            Console.WriteLine(ex.ToString());
+            throw;
         }
-
-        return null!;
-
     }
 }

@@ -7,33 +7,26 @@
 
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using SafeShare.Utilities.Responses;
 using SafeShare.MediatR.Dependencies;
 using SafeShare.ExpenseManagement.Interfaces;
 using SafeShare.MediatR.Actions.Commands.ExpenseManagment;
+using SafeShare.Utilities.SafeShareApi.Responses;
 
 namespace SafeShare.MediatR.Handlers.CommandsHandlers.ExpenseManagment;
 
 /// <summary>
 /// MediatR command handler for deleting an expense.
 /// </summary>
-public class MediatR_DeleteExpenseCommandHandler :
-    MediatR_GenericHandler<IExpenseManagment_ExpenseRepository>,
+/// <remarks>
+/// Constructs a new instance of the <see cref="MediatR_DeleteExpenseCommandHandler"/> with the necessary expense management service.
+/// </remarks>
+/// <param name="service">The expense management service to be used within this handler.</param>
+public class MediatR_DeleteExpenseCommandHandler
+(
+    IExpenseManagment_ExpenseRepository service
+) : MediatR_GenericHandler<IExpenseManagment_ExpenseRepository>(service),
     IRequestHandler<MediatR_DeleteExpenseCommand, ObjectResult>
 {
-    /// <summary>
-    /// Constructs a new instance of the <see cref="MediatR_DeleteExpenseCommandHandler"/> with the necessary expense management service.
-    /// </summary>
-    /// <param name="service">The expense management service to be used within this handler.</param>
-    public MediatR_DeleteExpenseCommandHandler
-    (
-        IExpenseManagment_ExpenseRepository service
-    )
-    : base
-    (
-        service
-    )
-    { }
     /// <summary>
     /// Processes the incoming delete expense command, utilizing the expense management service to perform the deletion.
     /// </summary>

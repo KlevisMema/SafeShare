@@ -4,9 +4,10 @@
  * deleting users, and changing user passwords.
 */
 
-using SafeShare.Utilities.Responses;
-using SafeShare.DataTransormObject.UserManagment;
-using SafeShare.DataTransormObject.Security;
+using SafeShare.DataTransormObject.SafeShareApi.UserManagment;
+using SafeShare.DataTransormObject.SafeShareApi.Security;
+using SafeShare.Utilities.SafeShareApi.Responses;
+using Microsoft.AspNetCore.Http;
 
 namespace SafeShare.UserManagment.Interfaces;
 
@@ -121,5 +122,30 @@ public interface IAccountManagment
     (
         Guid userId,
         DTO_ChangeEmailAddressRequestConfirm changeEmailAddressConfirmDto
+    );
+    /// <summary>
+    /// Search usesr by their username
+    /// </summary>
+    /// <param name="userName">The username of the user</param>
+    /// <param name="userId">The id of the user</param>
+    /// <param name="cancellationToken">A cancellation token</param>
+    /// <returns>A generic response indicating the result of the operation</returns>
+    Task<Util_GenericResponse<List<DTO_UserSearched>>>
+    SearchUserByUserName
+    (
+        string userName,
+        string userId
+    );
+    /// <summary>
+    /// Uploads an image for a user
+    /// </summary>
+    /// <param name="userId">The id of the user</param>
+    /// <param name="image"> The image of the user</param>
+    /// <returns>A generic response indicating the result of the operation</returns>
+    Task<Util_GenericResponse<byte[]>>
+    UploadProfilePicture
+    (
+        Guid userId,
+        IFormFile? image
     );
 }

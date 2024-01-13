@@ -12,21 +12,17 @@ namespace SafeShare.MediatR.Actions.Commands.UserManagment;
 /// Represents a MediatR command for handling a forgot password request.
 /// This command includes the user's email address to initiate the password reset process.
 /// </summary>
-public class MediatR_ForgotPasswordCommand : IRequest<ObjectResult>
+/// <remarks>
+/// Initializes a new instance of the <see cref="MediatR_ForgotPasswordCommand"/> class.
+/// </remarks>
+/// <param name="email">The email address associated with the user's account for the password reset.</param>
+public class MediatR_ForgotPasswordCommand
+(
+    string email
+) : IRequest<ObjectResult>
 {
     /// <summary>
     /// The email address of the user who has forgotten their password.
     /// </summary>
-    public string Email { get; set; }
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MediatR_ForgotPasswordCommand"/> class.
-    /// </summary>
-    /// <param name="email">The email address associated with the user's account for the password reset.</param>
-    public MediatR_ForgotPasswordCommand
-    (
-        string email
-    )
-    {
-        Email = email;
-    }
+    public string Email { get; set; } = email;
 }

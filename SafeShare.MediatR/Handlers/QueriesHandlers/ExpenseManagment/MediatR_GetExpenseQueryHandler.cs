@@ -7,34 +7,27 @@
 
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using SafeShare.Utilities.Responses;
 using SafeShare.MediatR.Dependencies;
-using SafeShare.DataTransormObject.Expenses;
 using SafeShare.ExpenseManagement.Interfaces;
 using SafeShare.MediatR.Actions.Queries.ExpenseManagment;
+using SafeShare.DataTransormObject.SafeShareApi.ExpenseManagment;
+using SafeShare.Utilities.SafeShareApi.Responses;
 
 namespace SafeShare.MediatR.Handlers.QueriesHandlers.ExpenseManagment;
 
 /// <summary>
 /// MediatR query handler responsible for processing requests to retrieve a single expense.
 /// </summary>
-public class MediatR_GetExpenseQueryHandler :
-    MediatR_GenericHandler<IExpenseManagment_ExpenseRepository>,
+/// <remarks>
+/// Initializes a new instance of the <see cref="MediatR_GetExpenseQueryHandler"/> class with the provided expense management service.
+/// </remarks>
+/// <param name="service">The expense management service used to fetch expense data.</param>
+public class MediatR_GetExpenseQueryHandler
+(
+    IExpenseManagment_ExpenseRepository service
+) : MediatR_GenericHandler<IExpenseManagment_ExpenseRepository>(service),
     IRequestHandler<MediatR_GetExpenseQuery, ObjectResult>
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MediatR_GetExpenseQueryHandler"/> class with the provided expense management service.
-    /// </summary>
-    /// <param name="service">The expense management service used to fetch expense data.</param>
-    public MediatR_GetExpenseQueryHandler
-    (
-        IExpenseManagment_ExpenseRepository service
-    )
-    : base
-    (
-        service
-    )
-    { }
     /// <summary>
     /// Handles the operation of retrieving a specific expense based on the provided query.
     /// </summary>

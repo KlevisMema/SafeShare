@@ -1,0 +1,486 @@
+﻿<style>
+    :root {
+        --background-color1: #fafaff;
+        --background-color2: #ffffff;
+        --background-color3: #ededed;
+        --background-color4: #cad7fda4;
+        --primary-color: #4b49ac;
+        --secondary-color: #0c007d;
+        --Border-color: #3f0097;
+        --one-use-color: #3f0097;
+        --two-use-color: #5500cb;
+    }
+
+    body {
+        background-color: var(--background-color4);
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    .main {
+        height: calc(100vh - 70px);
+        width: 100%;
+        overflow-y: scroll;
+        overflow-x: hidden;
+        padding: 40px 30px 30px 30px;
+    }
+
+        .main::-webkit-scrollbar-thumb {
+            background-image: linear-gradient(to bottom, rgb(0, 0, 85), rgb(0, 0, 50));
+        }
+
+        .main::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .main::-webkit-scrollbar-track {
+            background-color: #9e9e9eb2;
+        }
+
+    .box-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 50px;
+    }
+
+    .box {
+        height: 130px;
+        width: 230px;
+        border-radius: 20px;
+        box-shadow: 3px 3px 10px rgba(0, 30, 87, 0.751);
+        padding: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+        cursor: pointer;
+        transition: transform 0.3s ease-in-out;
+    }
+
+        .box:hover {
+            transform: scale(1.05);
+        }
+
+        .box:nth-child(1) {
+            background-color: var(--one-use-color);
+        }
+
+        .box:nth-child(2) {
+            background-color: var(--two-use-color);
+        }
+
+        .box:nth-child(3) {
+            background-color: var(--one-use-color);
+        }
+
+        .box:nth-child(4) {
+            background-color: var(--two-use-color);
+        }
+
+        .box:nth-child(5) {
+            background-color: var(--one-use-color);
+        }
+
+        .box img {
+            height: 50px;
+        }
+
+        .box .text {
+            color: white;
+        }
+
+    .topic {
+        font-size: 13px;
+        font-weight: 400;
+        letter-spacing: 1px;
+    }
+
+    .report-container {
+        min-height: 300px;
+        max-width: 1200px;
+        margin: 70px auto 0px auto;
+        background-color: #ffffff;
+        border-radius: 30px;
+        box-shadow: 3px 3px 10px rgb(188, 188, 188);
+        padding: 0px 20px 20px 20px;
+    }
+
+    .report-header {
+        height: 80px;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 20px 20px 10px 20px;
+        border-bottom: 2px solid rgba(0, 20, 151, 0.59);
+    }
+
+    .recent-Articles {
+        font-size: 30px;
+        font-weight: 600;
+        color: #5500cb;
+    }
+
+    .report-body {
+        max-width: 1160px;
+        overflow-x: auto;
+        padding: 20px;
+    }
+
+    .text .topic-heading {
+        font-size: 1.6rem;
+    }
+
+    @@media screen and (max-width: 950px) {
+        .nav-img {
+            height: 25px;
+        }
+
+        .nav-option {
+            gap: 30px;
+        }
+
+            .nav-option h3 {
+                font-size: 15px;
+            }
+
+        .report-topic-heading,
+        .item1,
+        .items {
+            width: 800px;
+        }
+    }
+
+    @@media screen and (max-width: 850px) {
+        .nav-img {
+            height: 30px;
+        }
+
+        .nav-option {
+            gap: 30px;
+        }
+
+            .nav-option h3 {
+                font-size: 20px;
+            }
+
+        .report-topic-heading,
+        .item1,
+        .items {
+            width: 700px;
+        }
+
+        .navcontainer {
+            width: 100vw;
+            position: absolute;
+            transition: all 0.6s ease-in-out;
+            top: 0;
+            left: -100vw;
+        }
+
+        .nav {
+            width: 100%;
+            position: absolute;
+        }
+
+        .navclose {
+            left: 00px;
+        }
+
+        .searchbar {
+            display: none;
+        }
+
+        .main {
+            padding: 40px 30px 30px 30px;
+        }
+
+        .searchbar2 {
+            width: 100%;
+            display: flex;
+            margin: 0 0 40px 0;
+            justify-content: center;
+        }
+
+            .searchbar2 input {
+                width: 250px;
+                height: 42px;
+                border-radius: 50px 0 0 50px;
+                background-color: var(--background-color3);
+                padding: 0 20px;
+                font-size: 15px;
+                border: 2px solid var(--secondary-color);
+            }
+    }
+
+    @@media screen and (max-width: 574px) {
+        .box-container {
+            justify-content: center;
+        }
+
+            .box-container .box {
+                width: 100%;
+            }
+    }
+
+    @@media screen and (max-width: 490px) {
+        .message {
+            display: none;
+        }
+
+        .logosec {
+            width: 100%;
+            justify-content: space-between;
+        }
+
+        .logo {
+            font-size: 20px;
+        }
+
+        .menuicn {
+            height: 25px;
+        }
+
+        .nav-img {
+            height: 25px;
+        }
+
+        .nav-option {
+            gap: 25px;
+        }
+
+            .nav-option h3 {
+                font-size: 12px;
+            }
+
+        .nav-upper-options {
+            gap: 15px;
+        }
+
+        .recent-Articles {
+            font-size: 20px;
+        }
+
+        .report-topic-heading,
+        .item1,
+        .items {
+            width: 550px;
+        }
+    }
+
+    @@media screen and (max-width: 400px) {
+        .recent-Articles {
+            font-size: 17px;
+        }
+
+        .view {
+            width: 60px;
+            font-size: 10px;
+            height: 27px;
+        }
+
+        .report-header {
+            height: 60px;
+            padding: 10px 10px 5px 10px;
+        }
+
+        .searchbtn img {
+            height: 20px;
+        }
+    }
+
+    @@media screen and (max-width: 320px) {
+        .recent-Articles {
+            font-size: 12px;
+        }
+
+        .view {
+            width: 50px;
+            font-size: 8px;
+            height: 27px;
+        }
+
+        .report-header {
+            height: 60px;
+            padding: 10px 5px 5px 5px;
+        }
+
+        .t-op {
+            font-size: 12px;
+        }
+
+        .t-op-nextlvl {
+            font-size: 10px;
+        }
+
+        .report-topic-heading,
+        .item1,
+        .items {
+            width: 300px;
+        }
+
+        .report-body {
+            padding: 10px;
+        }
+
+        .label-tag {
+            width: 70px;
+        }
+
+        .searchbtn {
+            width: 40px;
+        }
+
+        .searchbar2 input {
+            width: 180px;
+        }
+    }
+
+    .mud-icon-size-large {
+        font-size: 3.40rem !important;
+    }
+</style>
+
+<body>
+    <div class="main-container">
+        <div class="main">
+
+            <div class="box-container">
+
+                <div class="box box1" @onclick="() => RefreshData()">
+                    <div class="text">
+                        @if (playAnimationOfRefeshData)
+                        {
+                            <MudProgressCircular Color="Color.Success" Indeterminate="true" Size="Size.Small" />
+                        }
+                        else
+                        {
+                            <MudIcon Icon="@Icons.Material.Filled.Refresh" Title="Refresh" Color="Color.Info" Size="Size.Large" />
+                        }
+                    </div>
+                </div>
+
+                @if (!DataRetrieved)
+                {
+                    <MudSkeleton Animation="Animation.Pulse" SkeletonType="SkeletonType.Rectangle" Class="box box1">
+                        <div class="text">
+                            <MudSkeleton SkeletonType="SkeletonType.Text" class="topic-heading" />
+                            <MudSkeleton SkeletonType="SkeletonType.Text" class="topic" />
+                        </div>
+
+                    </MudSkeleton>
+
+                    <MudSkeleton Animation="Animation.Pulse" SkeletonType="SkeletonType.Rectangle" Class="box box2">
+                        <div class="text">
+                            <MudSkeleton SkeletonType="SkeletonType.Text" class="topic-heading" />
+                            <MudSkeleton SkeletonType="SkeletonType.Text" class="topic" />
+                        </div>
+
+                    </MudSkeleton>
+
+                    <MudSkeleton Animation="Animation.Pulse" SkeletonType="SkeletonType.Rectangle" Class="box box3">
+                        <div class="text">
+                            <MudSkeleton SkeletonType="SkeletonType.Text" class="topic-heading" />
+                            <MudSkeleton SkeletonType="SkeletonType.Text" class="topic" />
+                        </div>
+
+                    </MudSkeleton>
+
+                    <MudSkeleton Animation="Animation.Pulse" SkeletonType="SkeletonType.Rectangle" Class="box box4">
+                        <div class="text">
+                            <MudSkeleton SkeletonType="SkeletonType.Text" class="topic-heading" />
+                            <MudSkeleton SkeletonType="SkeletonType.Text" class="topic" />
+                        </div>
+
+                    </MudSkeleton>
+                }
+                else
+                {
+                    <div class="box box1">
+                        <div class="text">
+                            <h2 class="topic-heading">@NrGroupsCreated</h2>
+                            <h2 class="topic">Nr. Group Created</h2>
+                        </div>
+
+                        <MudIcon Icon="@Icons.Material.Filled.GroupAdd" Title="Favorite" Color="Color.Info" Size="Size.Large" />
+                    </div>
+
+                    <div class="box box2">
+                        <div class="text">
+                            <h2 class="topic-heading">@NrGroupsJoined</h2>
+                            <h2 class="topic">Nr. Groups Joined</h2>
+                        </div>
+
+                        <MudIcon Icon="@Icons.Material.Filled.Groups" Title="Favorite" Color="Color.Info" Size="Size.Large" />
+                    </div>
+
+
+
+                    <div class="box box3">
+                        <div class="text">
+                            <h2 class="topic-heading">@BalanceGroupsCreated.ToString("0.00") $</h2>
+                            <h2 class="topic">Balance In Groups Created</h2>
+                        </div>
+
+                        <MudIcon Icon="@Icons.Material.Filled.AccountBalanceWallet" Title="Favorite" Color="Color.Info" Size="Size.Large" />
+                    </div>
+
+                    <div class="box box4">
+                        <div class="text">
+                            <h2 class="topic-heading">@BalanceGroupsJoined.ToString("0.00") $</h2>
+                            <h2 class="topic">Balance In Groups Joined</h2>
+                        </div>
+
+                        <MudIcon Icon="@Icons.Material.Filled.AccountBalanceWallet" Title="Favorite" Color="Color.Info" Size="Size.Large" />
+                    </div>
+
+                }
+
+            </div>
+
+            @if (!DataRetrieved)
+            {
+                <MudSkeleton Animation="Animation.Wave" SkeletonType="SkeletonType.Rectangle" Width="100%" Height="300px" />
+            }
+            else
+            {
+                <MudDataGrid Virtualize="true"
+                             Height="450px"
+                             Hideable="true"
+                             Groupable="true"
+                             Filterable="true"
+                             FixedHeader="true"
+                             ShowMenuIcon="true"
+                             Items="@GroupsDetails"
+                             QuickFilter="@_quickFilter"
+                             ColumnsPanelReordering=true
+                             SortMode="SortMode.Multiple"
+                             DragDropColumnReordering=true
+                             ColumnResizeMode="ResizeMode.Column">
+
+                    <ToolBarContent>
+                        <MudText Typo="Typo.h6">Group Details</MudText>
+                        <MudSpacer />
+                        <MudTextField @bind-Value="@_searchString" Placeholder="Search" Adornment="Adornment.Start" Immediate="true"
+                                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                    </ToolBarContent>
+
+                    <Columns>
+                        <PropertyColumn Property="x => x.GroupName" Title="Group Name" Sortable="true" Filterable="true" />
+                        <PropertyColumn Property="x => x.GroupAdmin" Title="Group Admin" Sortable="true" Filterable="true" />
+                        <PropertyColumn Property="x => x.GroupCreationDate" Title="Group Creation Date" Sortable="true" Filterable="true" />
+                        <PropertyColumn Property="x => x.Description" Title="Description" Sortable="true" Filterable="true" />
+                        <PropertyColumn Property="x => x.NumberOfMembers" Title="Nr Of Members" Sortable="true" Filterable="true" />
+                    </Columns>
+
+                    <PagerContent>
+                        <MudDataGridPager />
+                    </PagerContent>
+
+                </MudDataGrid>
+            }
+
+        </div>
+    </div>
+</body>

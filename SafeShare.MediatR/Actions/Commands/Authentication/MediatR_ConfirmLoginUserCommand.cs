@@ -5,6 +5,8 @@
 
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using SafeShare.DataTransormObject.SafeShareApi.Authentication;
+using SafeShare.Utilities.SafeShareApi.Responses;
 
 namespace SafeShare.MediatR.Actions.Commands.Authentication;
 
@@ -12,28 +14,23 @@ namespace SafeShare.MediatR.Actions.Commands.Authentication;
 /// Represents a MediatR command for confirming a user's login using a one-time password (OTP).
 /// This command encapsulates the data required for the login confirmation process.
 /// </summary>
-public class MediatR_ConfirmLoginUserCommand : IRequest<ObjectResult>
+/// <remarks>
+/// Initializes a new instance of the <see cref="MediatR_ConfirmLoginUserCommand"/> class.
+/// </remarks>
+/// <param name="oTP">The one-time password for login confirmation.</param>
+/// <param name="userId">The unique identifier of the user attempting to log in.</param>    
+public class MediatR_ConfirmLoginUserCommand
+(
+    string oTP,
+    Guid userId
+) : IRequest<Util_GenericResponse<DTO_LoginResult>>
 {
     /// <summary>
     /// The unique identifier of the user.
     /// </summary>
-    public Guid UserId { get; set; }
+    public Guid UserId { get; set; } = userId;
     /// <summary>
     /// The OTP (One-Time Password) provided by the user.
     /// </summary>
-    public string OTP { get; set; }
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MediatR_ConfirmLoginUserCommand"/> class.
-    /// </summary>
-    /// <param name="oTP">The one-time password for login confirmation.</param>
-    /// <param name="userId">The unique identifier of the user attempting to log in.</param>    
-    public MediatR_ConfirmLoginUserCommand
-    (
-        string oTP, 
-        Guid userId
-    )
-    {
-        OTP = oTP;
-        UserId = userId;
-    }
+    public string OTP { get; set; } = oTP;
 }

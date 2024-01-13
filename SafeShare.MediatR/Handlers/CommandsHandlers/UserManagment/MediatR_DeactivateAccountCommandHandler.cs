@@ -4,32 +4,27 @@
 
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using SafeShare.Utilities.Responses;
 using SafeShare.MediatR.Dependencies;
 using SafeShare.UserManagment.Interfaces;
 using SafeShare.MediatR.Actions.Commands.UserManagment;
 using SafeShare.MediatR.Actions.Queries.UserManagment;
+using SafeShare.Utilities.SafeShareApi.Responses;
 
 namespace SafeShare.MediatR.Handlers.CommandsHandlers.UserManagment;
 
 /// <summary>
 /// Represents a MediatR handler that processes commands to deactivate users.
 /// </summary>
-public class MediatR_DeactivateAccountCommandHandler : MediatR_GenericHandler<IAccountManagment>, IRequestHandler<MediatR_DeactivateAccountCommand, ObjectResult>
+/// <remarks>
+/// Initializes a new instance of the <see cref="MediatR_DeactivateAccountCommandHandler"/> class with the specified account management service.
+/// </remarks>
+/// <param name="service">The account management service.</param>
+public class MediatR_DeactivateAccountCommandHandler
+(
+    IAccountManagment service
+) : MediatR_GenericHandler<IAccountManagment>(service),
+    IRequestHandler<MediatR_DeactivateAccountCommand, ObjectResult>
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MediatR_DeactivateAccountCommandHandler"/> class with the specified account management service.
-    /// </summary>
-    /// <param name="service">The account management service.</param>
-    public MediatR_DeactivateAccountCommandHandler
-    (
-        IAccountManagment service
-    )
-    : base
-    (
-        service
-    )
-    { }
 
     /// <summary>
     /// Processes the provided command to deactivate a user.

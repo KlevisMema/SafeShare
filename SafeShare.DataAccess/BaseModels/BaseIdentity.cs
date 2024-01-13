@@ -3,9 +3,9 @@
  * This base class provides common properties to be used across various identity models in the application.
 */
 
-using SafeShare.Utilities.Enums;
 using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
+using SafeShare.Utilities.SafeShareApi.Enums;
 
 namespace SafeShare.DataAccessLayer.BaseModels;
 

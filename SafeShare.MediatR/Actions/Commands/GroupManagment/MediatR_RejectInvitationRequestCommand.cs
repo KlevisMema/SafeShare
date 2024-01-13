@@ -5,7 +5,7 @@
 
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using SafeShare.DataTransormObject.GroupManagment.GroupInvitations;
+using SafeShare.DataTransormObject.SafeShareApi.GroupManagment.GroupInvitations;
 
 namespace SafeShare.MediatR.Actions.Commands.GroupManagment;
 
@@ -13,21 +13,17 @@ namespace SafeShare.MediatR.Actions.Commands.GroupManagment;
 /// Represents a MediatR command for rejecting a group invitation.
 /// This command carries the necessary data for processing the rejection of an invitation.
 /// </summary>
-public class MediatR_RejectInvitationRequestCommand : IRequest<ObjectResult>
+/// <remarks>
+/// Initializes a new instance of the <see cref="MediatR_RejectInvitationRequestCommand"/> class.
+/// </remarks>
+/// <param name="rejectInvitationRequest">The DTO containing data for the invitation rejection request.</param>
+public class MediatR_RejectInvitationRequestCommand
+(
+    DTO_InvitationRequestActions rejectInvitationRequest
+) : IRequest<ObjectResult>
 {
     /// <summary>
     /// Data transfer object containing the information required for rejecting a group invitation.
     /// </summary>
-    public DTO_InvitationRequestActions RejectInvitationRequest { get; set; }
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MediatR_RejectInvitationRequestCommand"/> class.
-    /// </summary>
-    /// <param name="rejectInvitationRequest">The DTO containing data for the invitation rejection request.</param>
-    public MediatR_RejectInvitationRequestCommand
-    (
-        DTO_InvitationRequestActions rejectInvitationRequest
-    )
-    {
-        RejectInvitationRequest = rejectInvitationRequest;
-    }
+    public DTO_InvitationRequestActions RejectInvitationRequest { get; set; } = rejectInvitationRequest;
 }

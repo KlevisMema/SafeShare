@@ -18,6 +18,8 @@ if (app.Environment.IsDevelopment())
 }
 app.UseHttpsRedirection();
 
+app.UseMiddleware<API_HELPER_ApiKeyMiddleware>();
+
 app.UseCors(builder.Configuration.GetSection("Cors:Policy:Name").Value!);
 
 app.UseAuthentication();

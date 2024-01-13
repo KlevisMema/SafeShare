@@ -1,48 +1,142 @@
 ﻿using MudBlazor;
 using System.Net;
+using SafeShare.Client.Helpers;
+using Microsoft.Extensions.Options;
 using SafeShare.Client.Shared.Forms;
 using Microsoft.AspNetCore.Components;
-using System.ComponentModel.DataAnnotations;
-using SafeShare.ClientDTO.AccountManagment;
+using SafeShare.ClientDTO.GroupManagment;
 using SafeShare.ClientUtilities.Responses;
 using SafeShare.ClientServerShared.Routes;
 using SafeShare.ClientServices.Interfaces;
+using SafeShare.Client.Shared.Forms.Group;
+using Microsoft.AspNetCore.Hosting.Server;
+using SafeShare.ClientDTO.AccountManagment;
+using System.ComponentModel.DataAnnotations;
+using SafeShare.Client.Shared.Forms.Account;
 
 namespace SafeShare.Client.Shared;
 
 public partial class NavMenu
 {
-    [Inject] ISnackbar Snackbar { get; set; }
-    [Inject] private HttpClient httpClient { get; set; }
-    [Inject] IDialogService DialogService { get; set; }
-    [Inject] IClientService_UserManagment _userManagment { get; set; }
+    [Parameter] public ClientDto_GroupTypes? GroupTypes { get; set; }
+    [Parameter] public ISnackbar Snackbar { get; set; } = null!;
+    [Parameter] public bool DataRetrieved { get; set; }
+    [Inject] private AppState _appState { get; set; } = null!;
+    [Inject] IDialogService DialogService { get; set; } = null!;
+    [Inject] NavigationManager _navigationManager { get; set; } = null!;
 
-    MudMessageBox mbox { get; set; }
-
-    protected override Task OnInitializedAsync()
+    protected override Task
+    OnInitializedAsync()
     {
-        Snackbar.Add("Reactor meltdown is imminent", Severity.Error);
-
+        _appState.OnNewGroupCreated += HandleNewGroupCreated;
+        _appState.OnGroupEdited += HandleGroupEdited;
+        _appState.OnGroupDeleted += HandleGroupDeleted;
+        _appState.OnGroupInvitationAccepted += HandleGroupInvitationAccepted;
         return base.OnInitializedAsync();
     }
 
-    private void OpenDialog()
+    private void
+    HandleNewGroupCreated
+    (
+        ClientDto_GroupType? newGroup
+    )
     {
-        DialogOptions closeOnEscapeKey = new DialogOptions() { CloseOnEscapeKey = false };
-
-        DialogService.Show<Test1>("Simple Dialog", closeOnEscapeKey);
+        if (newGroup != null)
+        {
+            GroupTypes.GroupsCreated.Add(newGroup);
+            StateHasChanged();
+        }
     }
 
-    private async Task OnButtonClicked()
+    private void
+    HandleGroupEdited
+    (
+        ClientDto_GroupType? editedGroup
+    )
     {
-        await mbox.Show();
-        StateHasChanged();
+        if (editedGroup != null)
+        {
+            GroupTypes.GroupsCreated.Find(x => x.GroupId == editedGroup.GroupId).GroupName = editedGroup.GroupName;
+            StateHasChanged();
+        }
     }
 
-    private async Task CallTheApi()
+    private void
+    HandleGroupDeleted
+    (
+        Guid groupId
+    )
     {
-        var result = await _userManagment.CallTheApi();
+        var deletedGroup = GroupTypes.GroupsCreated.Find(x => x.GroupId == groupId);
 
-        
+        if (deletedGroup is not null)
+        {
+            GroupTypes.GroupsCreated.Remove(deletedGroup);
+        }
+        _navigationManager.NavigateTo("/Dashboard");
+    }
+
+    private void
+    HandleGroupInvitationAccepted
+    (
+        ClientDto_GroupType? group
+    )
+    {
+        if (group != null && GroupTypes is not null && GroupTypes.GroupsJoined is not null)
+        {
+            GroupTypes.GroupsJoined.Add(group);
+            StateHasChanged();
+        }
+    }
+
+    public void Dispose()
+    {
+        _appState.OnNewGroupCreated -= HandleNewGroupCreated;
+        _appState.OnGroupEdited -= HandleGroupEdited;
+        _appState.OnGroupDeleted -= HandleGroupDeleted;
+        _appState.OnGroupInvitationAccepted -= HandleGroupInvitationAccepted;
+    }
+
+    private async Task
+    OpenPopUpDeactivateAccountForm()
+    {
+        var dialog = await DialogService.ShowAsync<DeactivateAccount>("Deactivate Account Dialog", DialogOptions());
+        await dialog.Result;
+    }
+
+    private async Task
+    OpenPopUpChangeEmailForm()
+    {
+        var dialog = await DialogService.ShowAsync<RequestChangeEmailAddress>("Change Email Dialog", DialogOptions());
+        await dialog.Result;
+    }
+
+    private async Task
+    OpenPopUpChangePasswordForm()
+    {
+        var dialog = await DialogService.ShowAsync<ChangePassword>("Change Password Dialog", DialogOptions());
+        await dialog.Result;
+    }
+
+    private async Task
+        OpenPopUpCreateGroup()
+    {
+        var dialog = await DialogService.ShowAsync<CreateGroup>("Change Email Dialog", DialogOptions());
+        var result = await dialog.Result;
+
+
+    }
+
+    private static DialogOptions
+    DialogOptions()
+    {
+        return new()
+        {
+            ClassBackground = "my-custom-class",
+            CloseOnEscapeKey = false,
+            DisableBackdropClick = true,
+            CloseButton = true,
+            Position = DialogPosition.Center
+        };
     }
 }

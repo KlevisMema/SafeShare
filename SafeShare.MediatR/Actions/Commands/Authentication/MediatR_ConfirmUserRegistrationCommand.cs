@@ -5,7 +5,7 @@
 
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using SafeShare.DataTransormObject.Authentication;
+using SafeShare.DataTransormObject.SafeShareApi.Authentication;
 
 namespace SafeShare.MediatR.Actions.Commands.Authentication;
 
@@ -13,21 +13,17 @@ namespace SafeShare.MediatR.Actions.Commands.Authentication;
 /// Represents a MediatR command for confirming a user's registration.
 /// This command carries the necessary data for the registration confirmation process.
 /// </summary>
-public class MediatR_ConfirmUserRegistrationCommand : IRequest<ObjectResult>
+/// <remarks>
+/// Initializes a new instance of the <see cref="MediatR_ConfirmUserRegistrationCommand"/> class.
+/// </remarks>
+/// <param name="confirmRegistration">The DTO containing registration confirmation data.</param>
+public class MediatR_ConfirmUserRegistrationCommand
+(
+    DTO_ConfirmRegistration confirmRegistration
+) : IRequest<ObjectResult>
 {
     /// <summary>
     /// Data transfer object containing the information required for confirming user registration.
     /// </summary>
-    public DTO_ConfirmRegistration ConfirmRegistration { get; set; }
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MediatR_ConfirmUserRegistrationCommand"/> class.
-    /// </summary>
-    /// <param name="confirmRegistration">The DTO containing registration confirmation data.</param>
-    public MediatR_ConfirmUserRegistrationCommand
-    (
-        DTO_ConfirmRegistration confirmRegistration
-    )
-    {
-        ConfirmRegistration = confirmRegistration;
-    }
+    public DTO_ConfirmRegistration ConfirmRegistration { get; set; } = confirmRegistration;
 }

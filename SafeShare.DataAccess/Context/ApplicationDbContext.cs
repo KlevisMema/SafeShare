@@ -4,29 +4,23 @@
 */
 
 using Microsoft.EntityFrameworkCore;
-using SafeShare.DataAccessLayer.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using SafeShare.DataAccessLayer.Models.SafeShareApi;
 
 namespace SafeShare.DataAccessLayer.Context;
 
 /// <summary>
 /// Represents the database context for the Safe Share.
 /// </summary>
-public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
+/// <remarks>
+/// Initializes a new instance of the <see cref="ApplicationDbContext"/> class.
+/// </remarks>
+/// <param name="options">The options for configuring the database context.</param>
+public class ApplicationDbContext
+(
+    DbContextOptions<ApplicationDbContext> options
+) : IdentityDbContext<ApplicationUser>(options)
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ApplicationDbContext"/> class.
-    /// </summary>
-    /// <param name="options">The options for configuring the database context.</param>
-    public ApplicationDbContext
-    (
-        DbContextOptions<ApplicationDbContext> options
-    )
-    : base
-    (
-        options
-    )
-    { }
     /// <summary>
     /// Gets or sets the database table for labels.
     /// </summary>

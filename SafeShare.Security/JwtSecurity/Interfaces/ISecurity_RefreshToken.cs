@@ -3,8 +3,8 @@
  * This interface provides a method for refreshing tokens based on specific token validation information.
  */
 
-using SafeShare.Utilities.Responses;
-using SafeShare.DataTransormObject.Security;
+using SafeShare.DataTransormObject.SafeShareApi.Security;
+using SafeShare.Utilities.SafeShareApi.Responses;
 
 namespace SafeShare.Security.JwtSecurity.Interfaces;
 

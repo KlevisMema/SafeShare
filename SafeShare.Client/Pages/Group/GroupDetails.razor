@@ -1,0 +1,560 @@
+﻿@page "/Group/{groupId:guid}"
+@using SafeShare.ClientDTO.Expense
+
+<style>
+    :root {
+        --background-color1: #fafaff;
+        --background-color2: #ffffff;
+        --background-color3: #ededed;
+        --background-color4: #cad7fda4;
+        --primary-color: #4b49ac;
+        --secondary-color: rgba(89,74,226,1);
+        --Border-color: #3f0097;
+        --one-use-color: #3f0097;
+        --two-use-color: #5500cb;
+    }
+
+    body {
+        background-color: var(--background-color4);
+        max-width: 100%;
+    }
+
+    .tabs {
+        padding: 20px;
+    }
+
+    .card {
+        background-color: #fff;
+        padding: 20px;
+        width: 100%;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+
+    .data-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .data-item {
+        margin: 10px;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s;
+    }
+
+        .data-item:hover {
+            transform: translateY(-5px);
+        }
+
+    .data-label {
+        font-weight: bold;
+        margin-left: 5px;
+    }
+
+    #groupDetails {
+        display: flex;
+        justify-content: flex-start;
+        width: 100%;
+    }
+
+    .users-container {
+        border-radius: 4px;
+        background: white;
+        width: 100%;
+        padding: 20px 20px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .user-card {
+        padding: 15px 10px;
+        flex-basis: calc(25% - 20px);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        overflow: hidden;
+        transition: transform 0.2s ease-in-out;
+    }
+
+        .user-card:hover {
+            transform: scale(1.05);
+        }
+
+    .user-image {
+        width: 100px;
+        height: 100px;
+        overflow: hidden;
+        border-radius: 50%;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+        .user-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+    .avatar-circle {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background-color: #3498db;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        font-weight: bold;
+        color: #fff;
+    }
+
+    .user-details {
+        padding: 20px;
+    }
+
+    .user-email, .user-username {
+        margin: 0;
+        font-size: 16px;
+        font-weight: bold;
+    }
+
+    .user-email {
+        color: #3498db;
+    }
+
+    .user-username {
+        color: rgba(89,74,226,1);
+    }
+
+    .group-details-users-toolbar {
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        background: rgba(89,74,226,1) !important;
+    }
+
+        .group-details-users-toolbar svg {
+            color: white !important;
+        }
+
+    .mud-switch {
+        margin: 0 !important;
+        color: white;
+        flex-direction: column !important;
+    }
+
+    .mud-typography-body1,
+    .user-username {
+        text-align: center
+    }
+
+    .editGrDetailsForm,
+    .createExpenseForm {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        padding: 20px 0px;
+        background: white;
+    }
+
+    .subTabExpenses {
+        padding: 10px;
+        width: 100%;
+    }
+</style>
+
+<body>
+
+    <div class="tabs">
+
+        <MudTabs ApplyEffectsToContainer=true
+                 Outlined=true
+                 Elevation="4"
+                 Rounded="true"
+                 Centered="true"
+                 Color="@Color.Primary"
+                 Position="@TabPosition"
+                 HeaderPosition="TabHeaderPosition.Before">
+
+            <MudTabPanel Text="Group Details" Icon="@Icons.Material.Outlined.Details">
+                <div id="groupDetails" class="tab-content active">
+
+                    <div class="card">
+                        <div class="data-item">
+                            <MudIcon Icon="@Icons.Material.Filled.Label" Color="Color.Primary" /> <span class="data-label">Group Name:</span> @GroupDetailsDto.GroupName
+                        </div>
+                        <div class="data-item">
+                            <MudIcon Icon="@Icons.Material.Filled.Numbers" Color="Color.Primary" /> <span class="data-label">Number of Members:</span> @GroupDetailsDto.NumberOfMembers
+                        </div>
+                        <div class="data-item">
+                            <MudIcon Icon="@Icons.Material.Filled.Info" Color="Color.Primary" /> <span class="data-label">Description:</span> @GroupDetailsDto.Description
+                        </div>
+
+                    </div>
+
+                    <div class="card">
+                        <div class="data-item">
+                            <MudIcon Icon="@Icons.Material.Filled.AdminPanelSettings" Color="Color.Primary" /> <span class="data-label">Group Admin:</span> @GroupDetailsDto.GroupAdmin
+                        </div>
+                        <div class="data-item">
+                            <MudIcon Icon="@Icons.Material.Filled.DateRange" Color="Color.Primary" /> <span class="data-label">Group Creation Date:</span> @GroupDetailsDto.GroupCreationDate
+                        </div>
+                        @if (GroupDetailsDto.ImAdmin)
+                        {
+                            <div class="data-item">
+                                <MudButton StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="OpenPopUpDeleteConfirmation" Variant="Variant.Filled">
+                                    Delete
+                                </MudButton>
+                            </div>
+                        }
+                    </div>
+
+                </div>
+            </MudTabPanel>
+
+            @if (GroupDetailsDto.ImAdmin)
+            {
+                <MudTabPanel Text="Edit Group" Icon="@Icons.Material.Outlined.Edit">
+                    <div class="editGrDetailsForm">
+
+                        <EditForm @ref="@EditGroupForm" Model="@EditGroup" OnValidSubmit="OnValidSubmit" OnInvalidSubmit="OnInValidSubmit" class="col-xl-6">
+                            <DataAnnotationsValidator />
+
+                            <MudTextField T="string" Label="Group name"
+                                          @bind-Value="@EditGroup.GroupName"
+                                          Required="true"
+                                          Adornment="Adornment.End"
+                                          AdornmentIcon="@Icons.Material.Filled.Edit"
+                                          AdornmentColor="Color.Primary"
+                                          Variant="Variant.Outlined" />
+
+                            <br />
+
+                            <MudTextField InputType="InputType.Text" Label="Group description" @bind-Value="@EditGroup.GroupDescription" Required="true"
+                                          Adornment="Adornment.End"
+                                          AdornmentIcon="@Icons.Material.Filled.Edit"
+                                          AdornmentColor="Color.Primary"
+                                          Variant="Variant.Outlined" />
+
+                            <br />
+
+                            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Outlined" Color="Color.Primary">
+                                @if (_processing)
+                                {
+                                    <MudProgressCircular Class="ms-n1" Size="MudBlazor.Size.Small" Indeterminate="true" Color="Color.Primary" />
+                                    <MudText Class="ms-2" Color="Color.Primary">SAVING</MudText>
+                                }
+                                else
+                                {
+                                    <MudText>SAVE</MudText>
+                                }
+                            </MudButton>
+                        </EditForm>
+                    </div>
+                </MudTabPanel>
+            }
+
+            <MudTabPanel Text="Members" Icon="@Icons.Material.Outlined.Groups">
+                <div class="users-container">
+                    @foreach (var user in GroupDetailsDto.UsersGroups)
+                    {
+                        <div class="user-card">
+                            <div class="user-image">
+                                @if (user.UserImage != null && user.UserImage.Length > 0)
+                                {
+                                    <img src="data:image/png;base64,@Convert.ToBase64String(user.UserImage)" alt="User Image" />
+                                }
+                                else
+                                {
+                                    <div class="avatar-circle">@user.UserName[0]</div>
+                                }
+                            </div>
+                            <div class="user-details">
+                                <p class="user-username">
+                                    @user.UserName
+                                    @if (user.IsAdmin)
+                                    {
+                                        <MudIcon Icon="@Icons.Material.Filled.AdminPanelSettings" Color="Color.Primary" Title="Is Admin" />
+                                    }
+                                    else
+                                    {
+                                        @string.Empty
+                                    }
+                                </p>
+                            </div>
+
+                            @if (GroupDetailsDto.ImAdmin)
+                            {
+                                @if (!user.IsAdmin)
+                                {
+                                    <MudButton OnClick="() => UserChecked(user)" Disabled="@(!ReadOnly)" Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined" EndIcon="@iconSelected">
+                                        <MudText>@selectedUserBtnText</MudText>
+                                        </MudButton>
+                                }
+                            }
+                        </div>
+                    }
+                </div>
+
+                @if (GroupDetailsDto.ImAdmin)
+                {
+                    <MudToolBar WrapContent="true" Class="group-details-users-toolbar">
+                        <MudSwitch @bind-Value="@ReadOnly" Label="@(ReadOnly ? "Edit Mode" : "Read Mode")" LabelPosition="LabelPosition.Start" Color="Color.Info" />
+
+                        <MudIconButton Disabled="@(!ReadOnly)" Icon="@Icons.Material.Outlined.GroupAdd" Title="Invite User" OnClick="InviteUserToGroup" />
+
+                        <MudBadge Content="@SelectedUsers.Count" Color="Color.Primary" Overlap="true" Bordered=true Elevation="5" Origin="Origin.BottomRight">
+                            <MudIconButton Disabled="@(!ReadOnly)" Icon="@Icons.Material.Outlined.Delete" Title="Remove Users" OnClick="RemoveUsersFromGroup" Variant="Variant.Filled" />
+                        </MudBadge>
+
+                    </MudToolBar>
+                }
+            </MudTabPanel>
+
+            <MudTabPanel Text="Expenses" Icon="@Icons.Material.Outlined.AttachMoney">
+
+                <div class="subTabExpenses">
+
+                    <MudTabs Position="Position.Top"
+                             Color="@Color.Primary"
+                             Elevation="2"
+                             Centered="true">
+
+                        <MudTabPanel Text="Create Expense"
+                                     Icon="@Icons.Material.Outlined.Create">
+
+                            <div class="createExpenseForm">
+
+                                <EditForm @ref="@CreateExpenseForm" Model="@CreateExpenseModel" OnValidSubmit="OnValidExpenseSubmit" OnInvalidSubmit="OnInValidExpenseSubmit" class="col-xl-6">
+                                    <DataAnnotationsValidator />
+
+                                    <MudTextField T="string" Label="Title"
+                                                  @bind-Value="@CreateExpenseModel.Title"
+                                                  Required="true"
+                                                  Adornment="Adornment.End"
+                                                  AdornmentIcon="@Icons.Material.Filled.Title"
+                                                  AdornmentColor="Color.Primary"
+                                                  Variant="Variant.Outlined" />
+
+                                    <br />
+
+                                    <MudTextField T="decimal" Label="Amount"
+                                                  @bind-Value="@CreateExpenseModel.Amount"
+                                                  Required="true"
+                                                  Adornment="Adornment.End"
+                                                  AdornmentIcon="@Icons.Material.Filled.Money"
+                                                  AdornmentColor="Color.Primary"
+                                                  Variant="Variant.Outlined" />
+
+                                    <br />
+
+                                    <MudTextField T="string" Label="Description"
+                                                  @bind-Value="@CreateExpenseModel.Description"
+                                                  Required="true"
+                                                  Adornment="Adornment.End"
+                                                  AdornmentIcon="@Icons.Material.Filled.Description"
+                                                  AdornmentColor="Color.Primary"
+                                                  Variant="Variant.Outlined" />
+
+                                    <br />
+
+                                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Outlined" Color="Color.Primary">
+                                        @if (_processingCreateExpense)
+                                        {
+                                            <MudProgressCircular Class="ms-n1" Size="MudBlazor.Size.Small" Indeterminate="true" Color="Color.Primary" />
+                                            <MudText Class="ms-2" Color="Color.Primary">CREATING</MudText>
+                                        }
+                                        else
+                                        {
+                                            <MudText>CREATE</MudText>
+                                        }
+                                    </MudButton>
+                                </EditForm>
+                            </div>
+                        </MudTabPanel>
+
+                        <MudTabPanel Text="All Expenses"
+                                     Icon="@Icons.Material.Outlined.TableRows">
+
+                            <MudDataGrid T="ClientDto_Expense"
+                                         @ref="@dataGrid"
+                                         Context="text"
+                                         Items="@Expenses"
+                                         Height="430px"
+                                         Hideable="true"
+                                         Groupable="true"
+                                         Filterable="true"
+                                         RowsPerPage=200
+                                         Virtualize="true"
+                                         FixedHeader="true"
+                                         ShowMenuIcon="true"
+                                         CanCancelEdit="true"
+                                         MultiSelection="false"
+                                         SelectOnRowClick="true"
+                                         ShowFilterIcons="false"
+                                         ShowColumnOptions="true"
+                                         QuickFilter="@_quickFilter"
+                                         ColumnsPanelReordering=true
+                                         SortMode="SortMode.Multiple"
+                                         DragDropColumnReordering=true
+                                         EditMode=DataGridEditMode.Form
+                                         GroupClassFunc="GroupClassFunc"
+                                         EditTrigger=DataGridEditTrigger.OnRowClick
+                                         SelectedItemChanged="(ClientDto_Expense selectedExpense) => ExpenseSelected(selectedExpense)">
+
+                                <ToolBarContent>
+                                    <MudText Typo="Typo.h6">All Expenses</MudText>
+                                    <MudSpacer />
+                                    <MudTextField @bind-Value="@_searchString" Placeholder="Search" Adornment="Adornment.Start" Immediate="true"
+                                                  AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                                </ToolBarContent>
+
+                                <Columns>
+                                    <SelectColumn ShowInHeader="false" ShowInFooter="false" Size="Size.Medium" />
+                                    <PropertyColumn Property="x => x.Title" Title="Title" Sortable="true" Filterable="true" IsEditable="true" />
+                                    <PropertyColumn Property="x => x.Date" Title="Created at" IsEditable="false" />
+                                    <PropertyColumn Property="x => x.Amount" Title="Amount" Sortable="true" Filterable="true" IsEditable="true" />
+                                    <PropertyColumn Property="x => x.CreatorOfExpense" Title="By" Grouping GroupBy="@_groupBy">
+                                         <GroupTemplate>
+                                             <span style="font-weight:bold">Expenses by: @context.Grouping.Key <MudChip Variant="Variant.Outlined" Color="Color.Info" Size="Size.Small">total @context.Grouping.Count()</MudChip></span>
+                                            </GroupTemplate>
+                                        </PropertyColumn>
+                                        <PropertyColumn Property="x => x.Description" Title="Description" Sortable="true" Filterable="true" IsEditable="true" />
+                                        <TemplateColumn CellClass="d-flex justify-center" Sortable="false" Filterable="false" DragAndDropEnabled="false" Groupable="false" ShowColumnOptions="false">
+                                            <CellTemplate>
+                                                @if (context.Item.CreatedByMe)
+                                            {
+                                                <MudIconButton Color="@Color.Primary" Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" OnClick="() => OpenFormToEditExpense(context.Item)" />
+                                            }
+                                            else
+                                            {
+                                                <MudIconButton Disabled=true Size="@Size.Small" Icon="@Icons.Material.Outlined.Edit" />
+                                            }
+                                        </CellTemplate>
+                                    </TemplateColumn>
+                                    <TemplateColumn CellClass="d-flex justify-center" Sortable="false" Filterable="false" DragAndDropEnabled="false" Groupable="false" ShowColumnOptions="false">
+                                        <CellTemplate>
+                                            @if (context.Item.CreatedByMe)
+                                            {
+                                                <MudIconButton Color="@Color.Primary" Size="@Size.Small" Icon="@Icons.Material.Outlined.Delete" OnClick="() => OpenPopUpDeleteExpenseConfirmation(context.Item)" />
+                                            }
+                                            else
+                                            {
+                                                <MudIconButton Disabled=true Size="@Size.Small" Icon="@Icons.Material.Outlined.Delete" />
+                                            }
+                                        </CellTemplate>
+                                    </TemplateColumn>
+                                </Columns>
+
+                                <PagerContent>
+                                    <MudDataGridPager />
+                                </PagerContent>
+
+                            </MudDataGrid>
+
+                        </MudTabPanel>
+
+                        <MudTabPanel Text="Selected Expense"
+                                     Icon="@Icons.Material.Outlined.SelectAll">
+
+                            <div class="card">
+                                <div class="data-item">
+                                    <MudIcon Icon="@Icons.Material.Filled.Label" Color="Color.Primary" /> <span class="data-label">Expense Name:</span> @SelectedExpense.Title
+                                </div>
+                                <div class="data-item">
+                                    <MudIcon Icon="@Icons.Material.Filled.DateRange" Color="Color.Primary" /> <span class="data-label">Expense Date creation:</span> @SelectedExpense.Date
+                                </div>
+                                <div class="data-item">
+                                    <MudIcon Icon="@Icons.Material.Filled.Numbers" Color="Color.Primary" /> <span class="data-label">Expense Amount:</span> @SelectedExpense.Amount
+                                </div>
+                                <div class="data-item">
+                                    <MudIcon Icon="@Icons.Material.Filled.Info" Color="Color.Primary" /> <span class="data-label">Expense Description:</span> @SelectedExpense.Description
+                                </div>
+
+                            </div>
+
+                        </MudTabPanel>
+
+                    </MudTabs>
+
+                </div>
+
+            </MudTabPanel>
+
+        </MudTabs>
+
+    </div>
+
+</body>
+
+<MudMessageBox @ref="mbox" Title="Warning" CancelText="Cancel">
+    <MessageContent>
+        Deleting can <b><i>not</i></b> be undone!
+    </MessageContent>
+    <YesButton>
+        <MudButton OnClick="DeleteGroup" Variant="Variant.Outlined" Color="Color.Error" StartIcon="@Icons.Material.Filled.DeleteForever">
+            @if (_processingDeleteGroup)
+            {
+                <MudProgressCircular Class="ms-n1" Size="MudBlazor.Size.Small" Indeterminate="true" Color="Color.Error" />
+                <MudText Class="ms-2" Color="Color.Error">Deleting</MudText>
+            }
+            else
+            {
+                <MudText>Delete Group</MudText>
+            }
+        </MudButton>
+    </YesButton>
+</MudMessageBox>
+
+<MudMessageBox @ref="mbox2" Title="Warning" CancelText="Cancel">
+    <MessageContent>
+        Deleting can <b><i>not</i></b> be undone!
+    </MessageContent>
+    <YesButton>
+        <MudButton OnClick="RemoveUsers" Variant="Variant.Outlined" Color="Color.Error" StartIcon="@Icons.Material.Filled.DeleteForever">
+            @if (_processingDeleteGroup)
+            {
+                <MudProgressCircular Class="ms-n1" Size="MudBlazor.Size.Small" Indeterminate="true" Color="Color.Error" />
+                <MudText Class="ms-2" Color="Color.Error">Removing</MudText>
+            }
+            else
+            {
+                <MudText>Remove users</MudText>
+            }
+        </MudButton>
+    </YesButton>
+</MudMessageBox>
+
+<MudMessageBox @ref="mbox3" CancelText="Cancel" OnCancel="CancelingDeletion">
+    <TitleContent>
+        <MudIcon Size="Size.Medium" Icon="@Icons.Material.Filled.Warning" Title="Warning" Color="Color.Error" /> Warning
+    </TitleContent>
+    <MessageContent>
+        Deleting can <b><i>not</i></b> be undone!
+        <MudDivider>
+
+        </MudDivider>
+        Are you sure you want to delete this expense ?
+    </MessageContent>
+    <YesButton>
+        <MudButton OnClick="PopUpDeleteExpenseConfirmation" Variant="Variant.Outlined" Color="Color.Error" StartIcon="@Icons.Material.Filled.DeleteForever">
+            @if (_processingDeleteExpense)
+            {
+                <MudProgressCircular Class="ms-n1" Size="MudBlazor.Size.Small" Indeterminate="true" Color="Color.Error" />
+                <MudText Class="ms-2" Color="Color.Error">Deleting</MudText>
+            }
+            else
+            {
+                <MudText>Delete</MudText>
+            }
+        </MudButton>
+    </YesButton>
+</MudMessageBox>

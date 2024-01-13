@@ -3,20 +3,22 @@
  * for managing groups, including creating, editing, deleting, and retrieving group details and types.
  */
 
+using System.Net;
 using AutoMapper;
-using SafeShare.Utilities.IP;
-using SafeShare.Utilities.Log;
-using SafeShare.Utilities.User;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using SafeShare.Utilities.Services;
-using SafeShare.Utilities.Responses;
 using Microsoft.EntityFrameworkCore;
-using SafeShare.DataAccessLayer.Models;
-using SafeShare.Utilities.Dependencies;
 using SafeShare.DataAccessLayer.Context;
 using SafeShare.GroupManagment.Interfaces;
-using SafeShare.DataTransormObject.GroupManagment;
+using SafeShare.Utilities.SafeShareApi.IP;
+using SafeShare.Utilities.SafeShareApi.Log;
+using SafeShare.Utilities.SafeShareApi.User;
+using SafeShare.ExpenseManagement.Interfaces;
+using SafeShare.Utilities.SafeShareApi.Responses;
+using SafeShare.Utilities.SafeShareApi.Dependencies;
+using SafeShare.DataAccessLayer.Models.SafeShareApi;
+using SafeShare.DataTransormObject.SafeShareApi.GroupManagment;
+using SafeShare.DataTransormObject.SafeShareApi.ExpenseManagment;
 
 namespace SafeShare.GroupManagment.GroupManagment;
 
@@ -24,32 +26,28 @@ namespace SafeShare.GroupManagment.GroupManagment;
 /// Manages group operations in the Group Management module, handling tasks like creating, 
 /// editing, deleting groups, and retrieving group details and types.
 /// </summary>
-public class GroupManagment_GroupRepository : 
-    Util_BaseContextDependencies<ApplicationDbContext, GroupManagment_GroupRepository>, 
-    IGroupManagment_GroupRepository
+/// <remarks>
+/// Initializes a new instance of the <see cref="GroupManagment_GroupRepository"/> class.
+/// </remarks>
+/// <param name="db">The application database context.</param>
+/// <param name="mapper">The AutoMapper instance for object mapping.</param>
+/// <param name="logger">The logger instance for logging activities.</param>
+/// <param name="httpContextAccessor">The HTTP context accessor for accessing current HTTP context.</param>
+public class GroupManagment_GroupRepository
+(
+    ApplicationDbContext db,
+    IMapper mapper,
+    ILogger<GroupManagment_GroupRepository> logger,
+    IHttpContextAccessor httpContextAccessor,
+    IGroupManagment_GroupKeyRepository groupManagment_GroupKeyRepository,
+    IExpenseManagment_SecurityRepository securityExpense
+) : Util_BaseContextDependencies<ApplicationDbContext, GroupManagment_GroupRepository>(
+    db,
+    mapper,
+    logger,
+    httpContextAccessor
+), IGroupManagment_GroupRepository
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="GroupManagment_GroupRepository"/> class.
-    /// </summary>
-    /// <param name="db">The application database context.</param>
-    /// <param name="mapper">The AutoMapper instance for object mapping.</param>
-    /// <param name="logger">The logger instance for logging activities.</param>
-    /// <param name="httpContextAccessor">The HTTP context accessor for accessing current HTTP context.</param>
-    public GroupManagment_GroupRepository
-    (
-        ApplicationDbContext db,
-        IMapper mapper,
-        ILogger<GroupManagment_GroupRepository> logger,
-        IHttpContextAccessor httpContextAccessor
-    )
-    : base
-    (
-        db,
-        mapper,
-        logger,
-        httpContextAccessor
-    )
-    { }
     /// <summary>
     /// Retrieves the types of groups associated with a specific user.
     /// </summary>
@@ -91,6 +89,27 @@ public class GroupManagment_GroupRepository :
                                       .ToListAsync();
 
             var groupTypes = _mapper.Map<DTO_GroupsTypes>(allGroups);
+
+            groupTypes.AllGroupsDetails = allGroups.Where(gm => !gm.IsDeleted && !gm.Group.IsDeleted)
+                                        .Select(gm => new
+                                        {
+                                            Member = gm,
+                                            GroupOwner = _db.GroupMembers
+                                                            .Where(owner => owner.GroupId == gm.GroupId && owner.IsOwner)
+                                                            .Select(owner => owner.User.FullName)
+                                                            .FirstOrDefault(),
+                                            GroupDetails = gm.Group,
+                                            NumberOfMembers = _db.GroupMembers.Count(m => m.GroupId == gm.GroupId)
+                                        })
+                                        .ToList()
+                                        .Select(x => new DTO_GroupDetails
+                                        {
+                                            Description = x.GroupDetails.Description,
+                                            GroupAdmin = x.GroupOwner,
+                                            GroupCreationDate = x.GroupDetails.CreatedAt,
+                                            GroupName = x.GroupDetails.Name,
+                                            NumberOfMembers = x.NumberOfMembers
+                                        }).ToList();
 
             return Util_GenericResponse<DTO_GroupsTypes>.Response
             (
@@ -156,7 +175,8 @@ public class GroupManagment_GroupRepository :
             }
 
             var group = await _db.GroupMembers.Include(gr => gr.Group)
-                                              .Where(gm => gm.GroupId == groupId && !gm.IsDeleted && !gm.Group.IsDeleted)
+                                              .Include(usr => usr.User)
+                                              .Where(gm => gm.GroupId == groupId && !gm.IsDeleted && !gm.Group.IsDeleted && gm.UserId == userId.ToString())
                                               .Select(gm => new
                                               {
                                                   Member = gm,
@@ -165,9 +185,19 @@ public class GroupManagment_GroupRepository :
                                                                  .Select(owner => owner.User.FullName)
                                                                  .FirstOrDefault(),
                                                   GroupDetails = gm.Group,
-                                                  NumberOfMembers = _db.GroupMembers.Count(m => m.GroupId == gm.GroupId)
+                                                  NumberOfMembers = _db.GroupMembers.Count(m => m.GroupId == gm.GroupId),
+                                                  ImAdmin = _db.GroupMembers.Any(owner => owner.GroupId == gm.GroupId && owner.UserId == userId.ToString() && owner.IsOwner),
+                                                  Members = _db.GroupMembers
+                                                            .Where(x => x.GroupId == gm.GroupId && !x.IsDeleted)
+                                                            .Select(x => new DTO_UsersGroupDetails
+                                                            {
+                                                                UserImage = x.User.ImageData,
+                                                                UserName = x.User.UserName,
+                                                                IsAdmin = x.IsOwner
+                                                            })
+                                                            .ToList()
                                               })
-                                              .FirstOrDefaultAsync(gm => gm.Member.UserId == userId.ToString());
+                                              .FirstOrDefaultAsync();
 
             if (group is null)
             {
@@ -186,7 +216,7 @@ public class GroupManagment_GroupRepository :
                 (
                     null,
                     false,
-                    $"Group with id {groupId} doesn't exist",
+                    $"Group doesn't exist",
                     null,
                     System.Net.HttpStatusCode.NotFound
                 );
@@ -209,7 +239,7 @@ public class GroupManagment_GroupRepository :
                 (
                     null,
                     false,
-                    $"Group with id {groupId} doesn't have an admin.",
+                    $"Group doesn't have an admin.",
                     null,
                     System.Net.HttpStatusCode.NotFound
                 );
@@ -221,9 +251,9 @@ public class GroupManagment_GroupRepository :
                 GroupAdmin = group.GroupOwner,
                 GroupCreationDate = group.GroupDetails.CreatedAt,
                 GroupName = group.GroupDetails.Name,
-                LatestExpense = "",
-                TotalSpent = group.Member.Balance,
-                NumberOfMembers = group.NumberOfMembers
+                NumberOfMembers = group.NumberOfMembers,
+                UsersGroups = group.Members,
+                ImAdmin = group.ImAdmin,
             };
 
             return Util_GenericResponse<DTO_GroupDetails>.Response
@@ -264,6 +294,7 @@ public class GroupManagment_GroupRepository :
         DTO_CreateGroup createGroup
     )
     {
+        using var transaction = await _db.Database.BeginTransactionAsync();
         try
         {
             if (!await UserExists(ownerId))
@@ -291,6 +322,8 @@ public class GroupManagment_GroupRepository :
 
             var group = _mapper.Map<Group>(createGroup);
 
+            group.Tag = Guid.NewGuid();
+
             await _db.Groups.AddAsync(group);
             await _db.SaveChangesAsync();
 
@@ -312,6 +345,22 @@ public class GroupManagment_GroupRepository :
                 GroupId = group.Id
             };
 
+            bool result = await groupManagment_GroupKeyRepository.CreateKeyForGroup(group.Tag, group.Id);
+
+            if (!result)
+            {
+                await transaction.RollbackAsync();
+
+                return Util_GenericResponse<DTO_GroupType>.Response
+                (
+                    null,
+                    false,
+                    "Group was not created",
+                    null,
+                    System.Net.HttpStatusCode.BadRequest
+                );
+            }
+
             _logger.Log
             (
                 LogLevel.Information,
@@ -325,6 +374,8 @@ public class GroupManagment_GroupRepository :
                 group.Id
             );
 
+            await transaction.CommitAsync();
+
             return Util_GenericResponse<DTO_GroupType>.Response
             (
                 groupType,
@@ -336,15 +387,17 @@ public class GroupManagment_GroupRepository :
         }
         catch (Exception ex)
         {
+            await transaction.RollbackAsync();
+
             return
             await Util_LogsHelper<DTO_GroupType, GroupManagment_GroupRepository>.ReturnInternalServerError
             (
                 ex,
                 _logger,
                 $"""
-                    Somewthing went wrong in [GroupManagment Module]--[GroupManagment_GroupRepository class]--[CreateGroup Method], 
-                    user with [ID] {ownerId} tried to create a group.
-                 """,
+                        Somewthing went wrong in [GroupManagment Module]--[GroupManagment_GroupRepository class]--[CreateGroup Method], 
+                        user with [ID] {ownerId} tried to create a group.
+                    """,
                 null,
                 _httpContextAccessor
             );
@@ -391,7 +444,7 @@ public class GroupManagment_GroupRepository :
                 );
             }
 
-            var isInTheGroup = await IsUserInTheGroup(userId, groupId);
+            var isInTheGroup = await IsUserInTheGroup(userId, groupId, false, null);
 
             if (isInTheGroup is null)
             {
@@ -488,6 +541,8 @@ public class GroupManagment_GroupRepository :
         Guid groupId
     )
     {
+        using var transaction = await _db.Database.BeginTransactionAsync();
+
         try
         {
             if (!await UserExists(ownerId))
@@ -514,7 +569,7 @@ public class GroupManagment_GroupRepository :
                 );
             }
 
-            var isInTheGroup = await IsUserInTheGroup(ownerId, groupId);
+            var isInTheGroup = await IsUserInTheGroup(ownerId, groupId, false, null);
 
             if (isInTheGroup is null)
             {
@@ -534,7 +589,7 @@ public class GroupManagment_GroupRepository :
                 (
                     false,
                     false,
-                    $"Group with id {groupId} doesn't exists.",
+                    $"Group doesn't exists.",
                     null,
                     System.Net.HttpStatusCode.NotFound
                 );
@@ -559,7 +614,7 @@ public class GroupManagment_GroupRepository :
                 (
                     false,
                     false,
-                    $"Group with id {groupId} can't be deleted because you are not the owner.",
+                    $"Unauthorized",
                     null,
                     System.Net.HttpStatusCode.BadRequest
                 );
@@ -567,14 +622,43 @@ public class GroupManagment_GroupRepository :
 
             isInTheGroup.Group.IsDeleted = true;
             _db.Groups.Update(isInTheGroup.Group);
-            await _db.SaveChangesAsync();
 
             var groupMembers = await _db.GroupMembers.Where(x => x.GroupId == groupId).ToListAsync();
 
-            groupMembers.ForEach(x => x.IsDeleted = true);
+            _db.GroupMembers.RemoveRange(groupMembers);
 
-            _db.GroupMembers.UpdateRange(groupMembers);
+            var group = await _db.Groups.Include(x => x.Invitations).Include(x => x.Expenses!).ThenInclude(x => x.ExpenseMembers).FirstOrDefaultAsync(x => x.Id == groupId);
+
+            _db.GroupInvitations.RemoveRange(group.Invitations);
+
+            foreach (var expense in group.Expenses)
+            {
+                foreach (var expenseMember in expense.ExpenseMembers)
+                    _db.ExpenseMembers.Remove(expenseMember);
+
+                _db.Expenses.Remove(expense);
+            }
+
+            bool deleteGroupCryptoKey = await groupManagment_GroupKeyRepository.DeleteGroupKey(groupId);
+
+            if (!deleteGroupCryptoKey)
+            {
+                _logger.Log
+                (
+                    LogLevel.Error,
+                    """
+                        [GroupManagment Module]--[GroupManagment_GroupRepository class]--[DeleteGroup Method] => 
+                        [RESULT] : [IP] {IP}, group with [ID] {groupId} was not deleted due to an error.
+                        """,
+                    await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                    groupId
+                );
+
+                await transaction.RollbackAsync();
+            }
+
             await _db.SaveChangesAsync();
+            await transaction.CommitAsync();
 
             _logger.Log
             (
@@ -583,7 +667,7 @@ public class GroupManagment_GroupRepository :
                     [GroupManagment Module]--[GroupManagment_GroupRepository class]--[DeleteGroup Method] => 
                     [RESULT] : [IP] {IP}, group with [ID] {groupId} 
                     was deleted from the user with [ID] {ownerId} at {deleteTime}.
-                 """,
+                    """,
                 await Util_GetIpAddres.GetLocation(_httpContextAccessor),
                 groupId,
                 ownerId,
@@ -601,6 +685,8 @@ public class GroupManagment_GroupRepository :
         }
         catch (Exception ex)
         {
+            await transaction.RollbackAsync();
+
             return
             await Util_LogsHelper<bool, GroupManagment_GroupRepository>.ReturnInternalServerError
             (
@@ -615,6 +701,253 @@ public class GroupManagment_GroupRepository :
             );
         }
     }
+    /// <summary>
+    /// Removes users from a group
+    /// </summary>
+    /// <param name="userId">The id of the owner of the group</param>
+    /// <param name="groupId">The id of the group</param>
+    /// <param name="usersToRemoveFromGroup">A list of members of the group</param>
+    /// <returns></returns>
+    public async Task<Util_GenericResponse<bool>>
+    RemoveUsersFromGroup
+    (
+        Guid ownerId,
+        Guid groupId,
+        List<DTO_UsersGroupDetails> usersToRemoveFromGroup
+    )
+    {
+        using var transaction = await _db.Database.BeginTransactionAsync();
+
+        try
+        {
+
+            if (!await UserExists(ownerId))
+            {
+                _logger.Log
+                (
+                    LogLevel.Error,
+                    """
+                        [GroupManagment Module]--[GroupManagment_GroupRepository class]--[RemoveUsersFromGroup Method] => 
+                        [RESULT] : [IP] {IP},
+                        user with [ID] {ownerId} doesnt exists.
+                     """,
+                    await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                    ownerId
+                );
+
+                return Util_GenericResponse<bool>.Response
+                (
+                    false,
+                    false,
+                    $"User doesn't exist",
+                    null,
+                    System.Net.HttpStatusCode.NotFound
+                );
+            }
+
+            var isInTheGroup = await IsUserInTheGroup(ownerId, groupId, false, null);
+
+            if (isInTheGroup is null)
+            {
+                _logger.Log
+                (
+                    LogLevel.Error,
+                    """
+                        [GroupManagment Module]--[GroupManagment_GroupRepository class]--[RemoveUsersFromGroup Method] => 
+                        [RESULT] : [IP] {IP}, group with id {groupId} created by user with id {ownerId} doesn't exists.
+                     """,
+                    await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                    groupId,
+                    ownerId
+                );
+
+                return Util_GenericResponse<bool>.Response
+                (
+                    false,
+                    false,
+                    $"Group doesn't exists.",
+                    null,
+                    System.Net.HttpStatusCode.NotFound
+                );
+            }
+
+            if (!isInTheGroup.IsOwner)
+            {
+                _logger.Log
+                (
+                    LogLevel.Error,
+                    """
+                        [GroupManagment Module]--[GroupManagment_GroupRepository class]--[RemoveUsersFromGroup Method] => 
+                        [RESULT] : [IP] {IP},users in group with [ID] {groupId} 
+                        cant be deleted from the user with [ID] {ownerId}. Not the owner of the group.
+                     """,
+                    await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                    groupId,
+                    ownerId
+                );
+
+                return Util_GenericResponse<bool>.Response
+                (
+                    false,
+                    false,
+                    $"Unauthorized",
+                    null,
+                    System.Net.HttpStatusCode.BadRequest
+                );
+            }
+
+            foreach (var item in usersToRemoveFromGroup)
+            {
+                var groupMember = await IsUserInTheGroup(Guid.Empty, groupId, true, item.UserName);
+
+                if (groupMember is not null)
+                    _db.GroupMembers.Remove(groupMember);
+            }
+
+            var group = await _db.Groups.Include(x => x.GroupMembers)
+                                        .ThenInclude(x => x.User)
+                                        .Include(x => x.Expenses!)
+                                        .ThenInclude(x => x.ExpenseMembers)
+                                        .FirstOrDefaultAsync(x => x.Id == groupId && !x.IsDeleted);
+
+
+            CancellationTokenSource cts = new();
+            CancellationToken cancellationToken = cts.Token;
+
+            var groupMembersIds = group.GroupMembers.Where(x => x.GroupId == groupId).Select(x => x.UserId).ToList();
+
+            var getDecryptedExpenses = await securityExpense.DecryptMultipleExpensesData(groupId, groupMembersIds, [.. group.Expenses], group.Tag, cancellationToken);
+
+            if (!getDecryptedExpenses.Succsess || getDecryptedExpenses.Value is null)
+            {
+                return Util_GenericResponse<bool>.Response
+                (
+                    false,
+                    false,
+                    "Error, user was not deleted",
+                    null,
+                    HttpStatusCode.BadRequest
+                );
+            }
+
+            var listOfNewEncryptedExpenses = new List<Expense>();
+            
+            var newTag = Guid.NewGuid();
+
+            group.Tag = newTag;
+            _db.Groups.Update(group);
+
+            bool result = await groupManagment_GroupKeyRepository.UpdateKeyForGroup(newTag, group!.Id);
+
+            if (!result)
+            {
+                return Util_GenericResponse<bool>.Response
+                (
+                    false,
+                    false,
+                    $"Error, user was not removed",
+                    null,
+                    System.Net.HttpStatusCode.BadRequest
+                );
+            }
+
+            foreach (var decryptedExpense in getDecryptedExpenses.Value)
+            {
+                var userId = decryptedExpense.ExpenseMembers.FirstOrDefault(x => x.CreatorOfExpense == true)!.UserId;
+
+                var resultEncryption = await securityExpense.EncryptExpenseData(userId, new DTO_ExpenseCreate
+                {
+                    Amount = decryptedExpense.Amount,
+                    Date = decryptedExpense.Date,
+                    Description = decryptedExpense.Desc,
+                    GroupId = decryptedExpense.GroupId,
+                    Title = decryptedExpense.Title,
+                }, group.Tag);
+
+                if (!resultEncryption.Succsess || resultEncryption.Value is null)
+                {
+                    return Util_GenericResponse<bool>.Response
+                    (
+                        false,
+                        false,
+                        $"Error, user was not deleted",
+                        null,
+                        System.Net.HttpStatusCode.BadRequest
+                    );
+                }
+
+                listOfNewEncryptedExpenses.Add(new Expense
+                {
+                    Title = resultEncryption.Value.Title,
+                    Amount = resultEncryption.Value.Amount,
+                    CreatedAt = decryptedExpense.CreatedAt,
+                    Date = resultEncryption.Value.Date,
+                    DeletedAt = decryptedExpense.DeletedAt,
+                    Desc = resultEncryption.Value.Description,
+                    GroupId = decryptedExpense.GroupId,
+                    Id = decryptedExpense.Id,
+                    IsDeleted = decryptedExpense.IsDeleted,
+                    ModifiedAt = DateTime.UtcNow,
+                });
+
+                var existingExpense = await _db.Expenses.FindAsync(decryptedExpense.Id);
+
+                if (existingExpense != null)
+                    _db.Entry(existingExpense).State = EntityState.Detached;
+            }
+
+            getDecryptedExpenses.Value = null;
+
+            _db.Expenses.UpdateRange(listOfNewEncryptedExpenses);
+
+            await _db.SaveChangesAsync();
+
+            await transaction.CommitAsync();
+
+            _logger.Log
+            (
+               LogLevel.Information,
+               """
+                    [GroupManagment Module]--[GroupManagment_GroupRepository class]--[RemoveUsersFromGroup Method] => 
+                    [RESULT] : [IP] {IP},users {@users} in group with [ID] {groupId} 
+                    were deleted from the user with [ID] {ownerId} at {deleteTime}.
+                """,
+               await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+               usersToRemoveFromGroup,
+               groupId,
+               ownerId,
+               isInTheGroup.Group.DeletedAt
+            );
+
+            return Util_GenericResponse<bool>.Response
+            (
+                true,
+                true,
+                $"Users were succsessfully removed from the group",
+                null,
+                System.Net.HttpStatusCode.OK
+            );
+
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync();
+
+            return
+            await Util_LogsHelper<bool, GroupManagment_GroupRepository>.ReturnInternalServerError
+            (
+                ex,
+                _logger,
+                $"""
+                    Somewthing went wrong in [GroupManagment Module]--[GroupManagment_GroupRepository class]--[RemoveUsersFromGroup Method], 
+                    owner with [ID] {ownerId} tried to delete group with [ID] {groupId}.
+                 """,
+                false,
+                _httpContextAccessor
+            );
+        }
+    }
+
     /// <summary>
     /// Checks if a user exists in the database.
     /// </summary>
@@ -638,9 +971,23 @@ public class GroupManagment_GroupRepository :
     IsUserInTheGroup
     (
         Guid userId,
-        Guid groupId
+        Guid groupId,
+        bool byUsername,
+        string? username
     )
     {
+        if (byUsername && username != null)
+        {
+            return await _db.GroupMembers.Include(x => x.Group)
+                                    .FirstOrDefaultAsync
+                                    (
+                                       x => x.GroupId == groupId &&
+                                       x.User.UserName == username &&
+                                       !x.Group.IsDeleted &&
+                                       !x.IsDeleted
+                                    );
+        }
+
         return await _db.GroupMembers.Include(x => x.Group)
                                      .FirstOrDefaultAsync
                                      (

@@ -10,20 +10,21 @@ using System.Net;
 using System.Text;
 using AutoMapper.Execution;
 using SendGrid.Helpers.Mail;
-using SafeShare.Utilities.IP;
-using SafeShare.Utilities.Log;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using SafeShare.Utilities.Responses;
+using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
 using System.Text.RegularExpressions;
-using SafeShare.Utilities.Dependencies;
-using SafeShare.DataAccessLayer.Models;
+using SafeShare.Security.GroupSecurity;
 using SafeShare.DataAccessLayer.Context;
-using SafeShare.DataTransormObject.Expenses;
+using SafeShare.Utilities.SafeShareApi.IP;
+using SafeShare.Utilities.SafeShareApi.Log;
 using SafeShare.ExpenseManagement.Interfaces;
-using SafeShare.DataTransormObject.GroupManagment;
-using SafeShare.DataTransormObject.ExpenseManagment;
+using SafeShare.Utilities.SafeShareApi.Responses;
+using SafeShare.Utilities.SafeShareApi.Dependencies;
+using SafeShare.DataAccessLayer.Models.SafeShareApi;
+using SafeShare.DataTransormObject.SafeShareApi.GroupManagment;
+using SafeShare.DataTransormObject.SafeShareApi.ExpenseManagment;
 
 namespace SafeShare.ExpenseManagement.Implementations;
 
@@ -31,32 +32,27 @@ namespace SafeShare.ExpenseManagement.Implementations;
 /// Provides methods for managing expenses within the application's groups, 
 /// including creating, retrieving, updating, and deleting expenses.
 /// </summary>
-public class ExpenseManagment_ExpenseRepository :
-    Util_BaseContextDependencies<ApplicationDbContext, ExpenseManagment_ExpenseRepository>,
-    IExpenseManagment_ExpenseRepository
+/// <remarks>
+/// Initializes a new instance of the ExpenseManagment_ExpenseRepository class with injected dependencies.
+/// </remarks>
+/// <param name="db">Database context for accessing the application's data.</param>
+/// <param name="mapper">Automapper instance for mapping between entities and DTOs.</param>
+/// <param name="logger">Logger instance for logging messages.</param>
+/// <param name="httpContextAccessor">HTTP context accessor for accessing the current HTTP context.</param>
+public class ExpenseManagment_ExpenseRepository
+(
+    ApplicationDbContext db,
+    IMapper mapper,
+    ILogger<ExpenseManagment_ExpenseRepository> logger,
+    IHttpContextAccessor httpContextAccessor,
+    IExpenseManagment_SecurityRepository securityExpense
+) : Util_BaseContextDependencies<ApplicationDbContext, ExpenseManagment_ExpenseRepository>(
+    db,
+    mapper,
+    logger,
+    httpContextAccessor
+), IExpenseManagment_ExpenseRepository
 {
-    /// <summary>
-    /// Initializes a new instance of the ExpenseManagment_ExpenseRepository class with injected dependencies.
-    /// </summary>
-    /// <param name="db">Database context for accessing the application's data.</param>
-    /// <param name="mapper">Automapper instance for mapping between entities and DTOs.</param>
-    /// <param name="logger">Logger instance for logging messages.</param>
-    /// <param name="httpContextAccessor">HTTP context accessor for accessing the current HTTP context.</param>
-    public ExpenseManagment_ExpenseRepository
-    (
-        ApplicationDbContext db,
-        IMapper mapper,
-        ILogger<ExpenseManagment_ExpenseRepository> logger,
-        IHttpContextAccessor httpContextAccessor
-    )
-    : base
-    (
-        db,
-        mapper,
-        logger,
-        httpContextAccessor
-    )
-    { }
     /// <summary>
     /// Retrieves all expenses for a specified group that the user is a member of.
     /// </summary>
@@ -72,9 +68,10 @@ public class ExpenseManagment_ExpenseRepository :
     {
         try
         {
-            var isGroupMember = await _db.GroupMembers.AnyAsync(gm => gm.GroupId == groupId && gm.UserId == userId);
+            var groupMember = await _db.GroupMembers.Include(x => x.Group)
+                                                    .FirstOrDefaultAsync(gm => gm.GroupId == groupId && gm.UserId == userId && !gm.User.IsDeleted && !gm.IsDeleted && !gm.Group.IsDeleted);
 
-            if (!isGroupMember)
+            if (groupMember is null)
             {
                 _logger.Log
                 (
@@ -93,18 +90,54 @@ public class ExpenseManagment_ExpenseRepository :
                     null,
                     false,
                     "User is not a member of the group.",
-                    new List<string> { "Access Denied" },
+                    ["Access Denied"],
                     HttpStatusCode.Forbidden
                 );
             }
 
+            CancellationTokenSource cts = new();
+            CancellationToken cancellationToken = cts.Token;
+
+            List<string> groupMembersIds = await _db.GroupMembers.Where(x => x.GroupId == groupId).Select(x => x.UserId).ToListAsync();
+
             var expenses = await _db.Expenses
-                .Where(e => e.GroupId == groupId)
+                .Include(x => x.ExpenseMembers)
+                .ThenInclude(x => x.User)
+                .Where(e => e.GroupId == groupId && !e.Group.IsDeleted && !e.IsDeleted)
                 .ToListAsync();
+
+            var getDecryptedExpenses = await securityExpense.DecryptMultipleExpensesData(groupId, groupMembersIds, expenses, groupMember.Group.Tag, cancellationToken);
+
+            if (!getDecryptedExpenses.Succsess || getDecryptedExpenses.Value is null)
+            {
+                return Util_GenericResponse<List<DTO_Expense>>.Response
+                (
+                    null,
+                    false,
+                    "Expenses retrieved unsuccessfully.",
+                    null,
+                    HttpStatusCode.BadRequest
+                );
+            }
+
+            var mappedExpenseToDto = getDecryptedExpenses.Value.Select(e => new DTO_Expense
+            {
+                Id = e.Id,
+                Title = e.Title,
+                Date = e.Date,
+                Amount = e.Amount,
+                Description = e.Desc,
+                GroupId = e.GroupId,
+                CreatedByMe = e.ExpenseMembers.Any(em => em.UserId == userId && em.CreatorOfExpense),
+                CreatorOfExpense = e.ExpenseMembers
+                        .Where(em => em.CreatorOfExpense)
+                        .Select(em => em.User.FullName)
+                        .FirstOrDefault() ?? string.Empty
+            }).ToList();
 
             return Util_GenericResponse<List<DTO_Expense>>.Response
             (
-                expenses.Select(_mapper.Map<DTO_Expense>).ToList(),
+                mappedExpenseToDto,
                 true,
                 "Expenses retrieved successfully.",
                 null,
@@ -143,7 +176,8 @@ public class ExpenseManagment_ExpenseRepository :
         {
             var expense = await _db.Expenses
                 .Include(e => e.ExpenseMembers)
-                .FirstOrDefaultAsync(e => e.Id == expenseId);
+                .Include(x => x.Group)
+                .FirstOrDefaultAsync(e => e.Id == expenseId && !e.IsDeleted);
 
             if (expense == null || expense.IsDeleted)
             {
@@ -192,9 +226,31 @@ public class ExpenseManagment_ExpenseRepository :
                 );
             }
 
+            var getExpenseDecrypted = await securityExpense.DecryptExpenseData(userId, expense, expense.Group.Tag);
+
+            if (!getExpenseDecrypted.Succsess || getExpenseDecrypted.Value is null)
+            {
+                return Util_GenericResponse<DTO_Expense>.Response
+                (
+                    null,
+                    false,
+                    "Expense was not retrieved successfully.",
+                    null,
+                    HttpStatusCode.BadRequest
+                );
+            }
+
+            var mappedDtoExpense = _mapper.Map<DTO_Expense>(getExpenseDecrypted.Value);
+
+            mappedDtoExpense.CreatedByMe = expense.ExpenseMembers.Any(em => em.UserId == userId && em.CreatorOfExpense);
+            mappedDtoExpense.CreatorOfExpense = expense.ExpenseMembers
+                       .Where(em => em.UserId == userId && em.CreatorOfExpense)
+                       .Select(em => em.User.FullName)
+                       .FirstOrDefault() ?? string.Empty;
+
             return Util_GenericResponse<DTO_Expense>.Response
             (
-                _mapper.Map<DTO_Expense>(expense),
+                mappedDtoExpense,
                 true,
                 "Expense retrieved successfully.",
                 null,
@@ -235,9 +291,33 @@ public class ExpenseManagment_ExpenseRepository :
         {
             var groupMembers = await _db.GroupMembers.Include(x => x.Group)
                                                      .ThenInclude(x => x.GroupMembers)
+                                                     .ThenInclude(x => x.User)
                                                      .Where(gm => gm.GroupId == expenseDto.GroupId)
                                                      .ToListAsync();
 
+            int memberCount = groupMembers.Count;
+
+            if (memberCount <= 1)
+            {
+                _logger.Log
+                (
+                    LogLevel.Error,
+                    """
+                        [ExpenseManagment Module]-[ExpenseManagment_ExpenseRepository class]-[CreateExpense Method] => 
+                        [RESULT] : User with id : {userId} tried to create an expense with no other memebers in the group.
+                    """,
+                    userId
+                );
+
+                return Util_GenericResponse<DTO_Expense>.Response
+                (
+                    null,
+                    false,
+                    "Can not create an expense if no other members are in the group",
+                    null,
+                    HttpStatusCode.BadRequest
+                );
+            }
 
             var isMember = groupMembers.FirstOrDefault(gm => gm.UserId == userId);
 
@@ -260,30 +340,101 @@ public class ExpenseManagment_ExpenseRepository :
                     null,
                     false,
                     "User is not part of the group.",
-                    new List<string> { "Access Denied" },
+                    ["Access Denied"],
                     HttpStatusCode.Forbidden
                 );
             }
+
+            var canParseAmount = decimal.TryParse(expenseDto.Amount, out decimal amountParsed);
+
+            if (!canParseAmount)
+            {
+                _logger.Log
+                (
+                    LogLevel.Error,
+                    """
+                        [ExpenseManagment Module]-[ExpenseManagment_ExpenseRepository class]-[CreateExpense Method] => 
+                        [RESULT] : The proccess to convert expense amount of {expenseAmount} to a decimal failed.
+                    """,
+                    expenseDto.Amount
+                );
+
+                return Util_GenericResponse<DTO_Expense>.Response
+                (
+                    null,
+                    false,
+                    "Expense was not created. Invalid amount of money",
+                    null,
+                    HttpStatusCode.BadRequest
+                );
+            }
+
+            var cpyOfDto = new DTO_Expense
+            {
+                Amount = expenseDto.Amount,
+                Title = expenseDto.Title,
+                Description = expenseDto.Description,
+                Date = expenseDto.Date,
+                GroupId = expenseDto.GroupId,
+                CreatedByMe = true,
+                CreatorOfExpense = isMember.User.FullName
+            };
+
+            var resultEncryption = await securityExpense.EncryptExpenseData(userId, expenseDto, isMember.Group.Tag);
+
+            if (!resultEncryption.Succsess || resultEncryption.Value is null)
+            {
+                return Util_GenericResponse<DTO_Expense>.Response
+                (
+                    null,
+                    false,
+                    "Expense was not created.",
+                    null,
+                    HttpStatusCode.BadRequest
+                );
+            }
+
+            expenseDto = resultEncryption.Value;
 
             var expense = _mapper.Map<Expense>(expenseDto);
 
             _db.Expenses.Add(expense);
 
-            int memberCount = groupMembers.Count;
-            decimal shareAmount = expenseDto.DecryptedAmount / (memberCount - 1);
+            decimal shareAmount = amountParsed / (memberCount - 1);
 
             foreach (var member in groupMembers)
             {
                 if (member.UserId == userId)
-                    member.Balance += (expenseDto.DecryptedAmount - shareAmount);
+                    member.Balance += (amountParsed - shareAmount);
                 else
                     member.Balance -= shareAmount;
 
                 _db.GroupMembers.Update(member);
             }
 
+            var expenseMembers = new List<ExpenseMember>();
+
+            foreach (var member in groupMembers)
+            {
+                expenseMembers.Add(new ExpenseMember
+                {
+                    CreatedAt = member.CreatedAt,
+                    CreatorOfExpense = member.UserId == userId,
+                    DeletedAt = null,
+                    ExpenseId = expense.Id,
+                    IsDeleted = false,
+                    UserId = member.UserId,
+                    ModifiedAt = null,
+                });
+            }
+
+            await _db.ExpenseMembers.AddRangeAsync(expenseMembers);
+
             await _db.SaveChangesAsync();
+
             await transaction.CommitAsync();
+
+            cpyOfDto.Id = expense.Id;
 
             _logger.Log
             (
@@ -300,7 +451,7 @@ public class ExpenseManagment_ExpenseRepository :
 
             return Util_GenericResponse<DTO_Expense>.Response
             (
-                _mapper.Map<DTO_Expense>(expenseDto),
+                cpyOfDto,
                 true,
                 "Expense created successfully.",
                 null,
@@ -335,7 +486,7 @@ public class ExpenseManagment_ExpenseRepository :
     EditExpense
     (
         Guid expenseId,
-        DTO_ExpenseCreate expenseCreateDto,
+        DTO_ExpenseCreate expenseEdit,
         string userId
     )
     {
@@ -343,7 +494,65 @@ public class ExpenseManagment_ExpenseRepository :
 
         try
         {
-            var expense = await _db.ExpenseMembers.Include(e => e.Expense).FirstOrDefaultAsync(e => e.ExpenseId == expenseId);
+            var groupMembers = await _db.GroupMembers.Include(x => x.Group)
+                                                   .ThenInclude(x => x.GroupMembers)
+                                                   .Where(gm => gm.GroupId == expenseEdit.GroupId)
+                                                   .ToListAsync();
+
+            int memberCount = groupMembers.Count;
+
+            if (memberCount <= 1)
+            {
+                _logger.Log
+                (
+                    LogLevel.Error,
+                    """
+                        [ExpenseManagment Module]-[ExpenseManagment_ExpenseRepository class]-[EditExpense Method] => 
+                        [RESULT] : User with id : {userId} tried to edit an expense with no other memebers in the group.
+                    """,
+                    userId
+                );
+
+                return Util_GenericResponse<DTO_Expense>.Response
+                (
+                    null,
+                    false,
+                    "Can not edit an expense if no other members are in the group",
+                    null,
+                    HttpStatusCode.BadRequest
+                );
+            }
+
+            var isMember = groupMembers.FirstOrDefault(gm => gm.UserId == userId);
+
+            if (isMember is null || isMember.IsDeleted)
+            {
+                _logger.Log
+                (
+                    LogLevel.Error,
+                    """
+                        [ExpenseManagment Module]-[ExpenseManagment_ExpenseRepository class]-[EditExpense Method] => 
+                        [RESULT] : [IP] {IP}, user with [ID] {ID} is not a memeber of the group with [ID] {groupId}.
+                     """,
+                    await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                    userId,
+                    expenseEdit.GroupId
+                );
+
+                return Util_GenericResponse<DTO_Expense>.Response
+                (
+                    null,
+                    false,
+                    "User is not part of the group.",
+                    ["Access Denied"],
+                    HttpStatusCode.Forbidden
+                );
+            }
+
+
+            var expense = await _db.Expenses.Include(em => em.ExpenseMembers)
+                                                  .ThenInclude(e => e.User)
+                                                  .FirstOrDefaultAsync(e => e.Id == expenseId && !e.IsDeleted && e.GroupId == expenseEdit.GroupId);
 
             if (expense is null || expense.IsDeleted)
             {
@@ -368,7 +577,9 @@ public class ExpenseManagment_ExpenseRepository :
                 );
             }
 
-            if (expense.UserId != userId)
+            var expenseCreator = expense.ExpenseMembers.FirstOrDefault(em => em.UserId == userId);
+
+            if (expenseCreator is null || expenseCreator.IsDeleted || !expenseCreator.CreatorOfExpense || expenseCreator.UserId != userId)
             {
                 _logger.Log
                 (
@@ -393,26 +604,108 @@ public class ExpenseManagment_ExpenseRepository :
                 );
             }
 
-            expense.Expense.Title = expenseCreateDto.Title;
-            expense.Expense.Date = expenseCreateDto.Date;
-            expense.Expense.Amount = expenseCreateDto.Amount;
-            expense.Expense.Desc = expenseCreateDto.Description;
+            var canParseAmount = decimal.TryParse(expenseEdit.Amount, out decimal amountParsed);
 
-            _db.Expenses.Update(expense.Expense);
+            if (!canParseAmount)
+            {
+                _logger.Log
+                (
+                    LogLevel.Error,
+                    """
+                        [ExpenseManagment Module]-[ExpenseManagment_ExpenseRepository class]-[EditExpense Method] => 
+                        [RESULT] : The proccess to convert expense amount of {expenseAmount} to a decimal failed.
+                    """,
+                    expenseEdit.Amount
+                );
 
-            var members = await _db.GroupMembers.Where(m => m.GroupId == expense.Expense.GroupId).ToListAsync();
+                return Util_GenericResponse<DTO_Expense>.Response
+                (
+                    null,
+                    false,
+                    "Expense was not edited. Invalid amount of money",
+                    null,
+                    HttpStatusCode.BadRequest
+                );
+            }
 
-            foreach (var member in members)
+            var cpyOfDto = new DTO_Expense
+            {
+                Amount = expenseEdit.Amount,
+                Title = expenseEdit.Title,
+                Description = expenseEdit.Description,
+                Date = expenseEdit.Date,
+                GroupId = expenseEdit.GroupId,
+                CreatedByMe = true,
+                CreatorOfExpense = isMember.User.FullName,
+                Id = expenseId
+            };
+
+            var resultEncryption = await securityExpense.EncryptExpenseData(userId, expenseEdit, expense.Group.Tag);
+
+            if (!resultEncryption.Succsess || resultEncryption.Value is null)
+            {
+                return Util_GenericResponse<DTO_Expense>.Response
+                (
+                    null,
+                    false,
+                    "Expense was not edited.",
+                    null,
+                    HttpStatusCode.BadRequest
+                );
+            }
+
+            bool tryParseDate = DateTime.TryParse(cpyOfDto.Date, out DateTime parsedDate);
+
+            if (!tryParseDate)
+            {
+                _logger.Log
+               (
+                   LogLevel.Error,
+                   """
+                        [ExpenseManagment Module]-[ExpenseManagment_ExpenseRepository class]-[EditExpense Method] => 
+                        [RESULT] : The proccess to convert expense date : {cpyOfDtoDate} to a date time failed.
+                    """,
+                   cpyOfDto.Date
+               );
+
+                return Util_GenericResponse<DTO_Expense>.Response
+                (
+                    null,
+                    false,
+                    "Expense was not edited.",
+                    null,
+                    HttpStatusCode.BadRequest
+                );
+            }
+
+            expense.ModifiedAt = DateTime.Parse(cpyOfDto.Date);
+            expense.Desc = resultEncryption.Value.Description;
+            expense.Title = resultEncryption.Value.Title;
+            expense.Amount = resultEncryption.Value.Amount;
+
+            _db.Expenses.Update(expense);
+
+            decimal shareAmount = amountParsed / (memberCount - 1);
+
+            foreach (var member in groupMembers)
             {
                 if (member.UserId == userId)
-                    member.Balance += expenseCreateDto.DecryptedAmount;
+                    member.Balance += (amountParsed - shareAmount);
                 else
-                    member.Balance -= expenseCreateDto.DecryptedAmount / (members.Count - 1);
+                    member.Balance -= shareAmount;
 
                 _db.GroupMembers.Update(member);
             }
 
+            var expenseMembers = expense.ExpenseMembers;
+
+            foreach (var member in expenseMembers)
+                member.ModifiedAt = DateTime.UtcNow;
+
+            _db.ExpenseMembers.UpdateRange(expenseMembers);
+
             await _db.SaveChangesAsync();
+
             await transaction.CommitAsync();
 
             _logger.Log
@@ -429,7 +722,7 @@ public class ExpenseManagment_ExpenseRepository :
 
             return Util_GenericResponse<DTO_Expense>.Response
             (
-                _mapper.Map<DTO_Expense>(expense.Expense),
+                cpyOfDto,
                 true,
                 "Expense edited successfully.",
                 null,
@@ -468,9 +761,43 @@ public class ExpenseManagment_ExpenseRepository :
 
         try
         {
+            var groupMembers = await _db.GroupMembers.Include(x => x.Group)
+                                                   .ThenInclude(x => x.GroupMembers)
+                                                   .Where(gm => gm.GroupId == expenseDelete.GroupId)
+                                                   .ToListAsync();
+
+
+            var isMember = groupMembers.FirstOrDefault(gm => gm.UserId == expenseDelete.UserId.ToString());
+
+            if (isMember is null || isMember.IsDeleted)
+            {
+                _logger.Log
+                (
+                    LogLevel.Error,
+                    """
+                        [ExpenseManagment Module]-[ExpenseManagment_ExpenseRepository class]-[DeleteExpense Method] => 
+                        [RESULT] : [IP] {IP}, user with [ID] {ID} is not a memeber of the group with [ID] {groupId}.
+                     """,
+                    await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                    expenseDelete.UserId,
+                    expenseDelete.GroupId
+                );
+
+                return Util_GenericResponse<bool>.Response
+                (
+                    false,
+                    false,
+                    "User is not part of the group.",
+                    ["Access Denied"],
+                    HttpStatusCode.Forbidden
+                );
+            }
+
             var expense = await _db.Expenses.Include(x => x.Group)
                                             .ThenInclude(x => x.GroupMembers)
-                                            .FirstOrDefaultAsync(ex => ex.Id == expenseDelete.ExpenseId);
+                                            .ThenInclude(x => x.User)
+                                            .ThenInclude(x => x.ExpenseMembers)
+                                            .FirstOrDefaultAsync(ex => ex.Id == expenseDelete.ExpenseId && ex.GroupId == expenseDelete.GroupId);
 
             if (expense is null || expense.IsDeleted)
             {
@@ -495,7 +822,7 @@ public class ExpenseManagment_ExpenseRepository :
                 );
             }
 
-            var expenseMadeByCreator = expense.ExpenseMembers.Any(em => em.UserId == expenseDelete.UserId.ToString());
+            var expenseMadeByCreator = expense.ExpenseMembers.Any(em => em.UserId == expenseDelete.UserId.ToString() && !em.IsDeleted && !em.User.IsDeleted);
 
             if (!expenseMadeByCreator)
             {
@@ -522,24 +849,41 @@ public class ExpenseManagment_ExpenseRepository :
                 );
             }
 
+            var getExpenseDecrypted = await securityExpense.DecryptExpenseData(expenseDelete.UserId.ToString(), expense, expense.Group.Tag);
+
+            if (getExpenseDecrypted is null || !getExpenseDecrypted.Succsess || getExpenseDecrypted.Value is null)
+            {
+                return Util_GenericResponse<bool>.Response
+                (
+                    false,
+                    false,
+                    "Expense was not deleted.",
+                    null,
+                    HttpStatusCode.BadRequest
+                );
+            }
+
             expense.IsDeleted = true;
 
-            var members = expense.Group.GroupMembers;
-            var shareAmount = expenseDelete.ExpenseAmount / (members.Count - 1);
+            var shareAmount = expenseDelete.ExpenseAmount / (groupMembers.Count - 1);
 
-            foreach (var member in members)
+            foreach (var member in groupMembers)
             {
                 if (member.UserId == expenseDelete.UserId.ToString())
-                    member.Balance -= (expenseDelete.ExpenseAmount - shareAmount);
+                    member.Balance -= (decimal.Parse(expense.Amount) - shareAmount);
                 else
                     member.Balance += shareAmount;
 
                 _db.GroupMembers.Update(member);
             }
 
+            foreach (var member in expense.ExpenseMembers)
+                _db.ExpenseMembers.Remove(member);
+
             _db.Expenses.Update(expense);
 
             await _db.SaveChangesAsync();
+
             await transaction.CommitAsync();
 
             _logger.Log
