@@ -4,7 +4,7 @@
 This document outlines the requirements, features, and instructions for implementing a secure client/server system for managing group expenses.
 
 ## Contributors
-Mema Klevis 582513, Fernandes do Rosario Tiago 502627, Azmar Samir 503446, Laha Vaishnavi 581882.
+Mema Klevis 582513 / Fernandes do Rosario Tiago 502627 / Azmar Samir 503446 / Laha Vaishnavi 581882.
 
 ## Table of Contents
 1. [Introduction](#1-introduction)
