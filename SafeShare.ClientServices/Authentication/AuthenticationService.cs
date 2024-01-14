@@ -114,16 +114,16 @@ public class AuthenticationService(IHttpClientFactory httpClientFactory) : IAuth
     public async Task
     LogoutUser
     (
-        Guid userId
+        
     )
     {
         try
         {
             var httpClient = httpClientFactory.CreateClient(Client);
 
-            var content = new StringContent(JsonSerializer.Serialize(new { userId }), Encoding.UTF8, "application/json");
+            //var content = new StringContent(JsonSerializer.Serialize(new { userId }), Encoding.UTF8, "application/json");
 
-            await httpClient.PostAsync(BaseRoute.RouteAuthenticationProxy + Route_AuthenticationRoute.LogOut.Replace("{userId}", userId.ToString()), content);
+            await httpClient.PostAsync(BaseRoute.RouteAuthenticationProxy + Route_AuthenticationRoute.LogOut, null);
         }
         catch (Exception)
         {

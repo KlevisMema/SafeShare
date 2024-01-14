@@ -191,7 +191,7 @@ public static class API_Helper_ProgramStartup
                 {
                     options.User.RequireUniqueEmail = true;
                     options.Password.RequiredLength = 6;
-                    options.Lockout.MaxFailedAccessAttempts = 2;
+                    options.Lockout.MaxFailedAccessAttempts = 10;
                     options.Lockout.AllowedForNewUsers = true;
                     options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
                     options.SignIn.RequireConfirmedEmail = true;

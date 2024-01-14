@@ -48,7 +48,7 @@ public partial class MainLayout
         _snackbar.Add("Logging you out", Severity.Success, config => { config.CloseAfterNavigation = true; });
         await Task.Delay(2000);
         var userId = await _localStorage.GetItemAsStringAsync("UserData");
-        await authService.LogoutUser(Guid.Parse(userId));
+        await authService.LogoutUser();
         await _localStorage.RemoveItemAsync("UserData");
         _navigationManager.NavigateTo("/");
         hideLogOutBtn = false;

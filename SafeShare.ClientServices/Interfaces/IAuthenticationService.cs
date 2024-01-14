@@ -20,7 +20,7 @@ namespace SafeShare.ClientServices.Interfaces
         Task
         LogoutUser
         (
-            Guid userId
+            
         );
 
         Task<ClientUtil_ApiResponse<bool>>

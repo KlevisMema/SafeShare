@@ -118,11 +118,18 @@ public class AuthProxyController(IProxyAuthentication authenticationService) : C
     public async Task<ActionResult>
     LogOut
     (
-        Guid userId
+        
     )
     {
         var jwtToken = Request.Cookies["AuthToken"] ?? string.Empty;
 
+        bool isUserId = Guid.TryParse(UserId(jwtToken), out Guid userId);
+
+        if (!isUserId)
+        {
+            return NotFound();
+        }
+        
         var result = await authenticationService.LogoutUser(userId, jwtToken);
 
         if (result.Headers.Contains("Set-Cookie"))
@@ -181,5 +188,14 @@ public class AuthProxyController(IProxyAuthentication authenticationService) : C
             SameSite = SameSiteMode.Strict,
             Expires = DateTimeOffset.UtcNow.AddDays(-1)
         });
+    }
+    
+    private static string
+    UserId
+    (
+        string jwtToken
+    )
+    {
+        return Helper_JwtToken.GetUserIdDirectlyFromJwtToken(jwtToken);
     }
 }
