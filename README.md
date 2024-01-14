@@ -72,7 +72,7 @@ This section outlines the high-level features and protocols for secure data exch
 ## 5. Requirements
 Ensure the following components are installed and configured on your system:
 
-- **.NET 8 SDK**: [Download .NET SDK] https://dotnet.microsoft.com/en-us/download/dotnet/8.0
+- **.NET 8 SDK**: [Download .NET SDK] https://dotnet.microsoft.com/en-us/download
 - **SQL Server**: Installed and running. https://www.microsoft.com/en-us/sql-server/sql-server-downloads
 - **SSMS**: Installed and running. https://aka.ms/ssmsfullsetup
 - **Seq**: Running on http://localhost:5341/ | Download in https://datalust.co/download/begin?version=2023.4.10219
