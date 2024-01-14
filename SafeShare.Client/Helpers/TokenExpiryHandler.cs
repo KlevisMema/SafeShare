@@ -32,7 +32,7 @@ internal class TokenExpiryHandler
                 return await base.SendAsync(request, cancellationToken);
             else
             {
-                await localStorage.SetItemAsync<bool>("SessionExpired", true, cancellationToken);
+                await localStorage.SetItemAsync("SessionExpired", true, cancellationToken);
                 navigationManager.NavigateTo("/Login");
             }
         }

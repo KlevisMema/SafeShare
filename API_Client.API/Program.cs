@@ -15,6 +15,7 @@ using Microsoft.Extensions.Configuration;
 using SafeShare.Utilities.SafeShareApiKey.Helpers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using SafeShare.DataAccessLayer.Models.SafeShareApiKey;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -129,16 +130,62 @@ builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Host.UseSerilog((context, configuration) => configuration.ReadFrom.Configuration(context.Configuration));
 var app = builder.Build();
 
-using var serviceScope = app.Services.CreateScope();
-
-var _apiContext = serviceScope.ServiceProvider.GetService<ApiClientDbContext>();
-
-_apiContext?.Database.EnsureCreated();
-
 if (app.Environment.IsDevelopment())
 {
+    using var serviceScope = app.Services.CreateScope();
+
+    var _apiContext = serviceScope.ServiceProvider.GetService<ApiClientDbContext>();
+
+    _apiContext?.Database.EnsureCreated();
+
     app.UseSwagger();
     app.UseSwaggerUI();
+
+    if (!_apiContext.Clients.Any())
+    {
+        var newClient = new ApiClient
+        {
+            AccessFailedCount = 0,
+            CompanyName = "test",
+            ContactPerson = "test",
+            Description = "test",
+            Email = "test@gmail.com",
+            IsActive = true,
+            NormalizedEmail = "TEST",
+            UserName = "test.test",
+            NormalizedUserName = "TEST.TEST",
+            PhoneNumber = "45435344543",
+            PhoneNumberConfirmed = true,
+            RegisteredOn = DateTime.UtcNow,
+            TwoFactorEnabled = false,
+            Website = "https://test",
+            SiteYouDevelopingUrl = "https://test2",
+            EmailConfirmed = true,
+            LockoutEnabled = false,
+            LockoutEnd = null,
+            ConcurrencyStamp = null,
+            SecurityStamp = null,
+            Id = "5a0aa964-31f1-447a-bd2c-00f6fe739502",
+        };
+
+        _apiContext.Clients.Add(newClient);
+
+        var apiKey = new ApiKey
+        {
+            ApiClientId = newClient.Id,
+            ApiKeyId = Guid.Parse("afb98543-2c4c-487e-870a-efb0c4b59ca9"),
+            CreatedOn = DateTime.UtcNow,
+            Environment = SafeShare.Utilities.SafeShareApi.Enums.WorkEnvironment.Testing,
+            ExpiresOn = DateTime.UtcNow.AddDays(7),
+            IsActive = true,
+            ApiClient = newClient,
+            KeyHash = "1f467cdafbdf1532e9734dc4c45234958331267e51964892363856817d972ba4"
+        };
+
+        _apiContext.ApiKeys.Add(apiKey);
+
+        _apiContext.SaveChanges();
+    }
 }
 
 app.UseHttpsRedirection();
@@ -150,5 +197,3 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.UseSerilogRequestLogging();
-
-app.Run();
