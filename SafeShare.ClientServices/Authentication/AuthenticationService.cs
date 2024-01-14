@@ -19,6 +19,8 @@ public class AuthenticationService(IHttpClientFactory httpClientFactory) : IAuth
          ClientDto_Register register
     )
     {
+        HttpResponseMessage response = new();
+
         try
         {
             var requestMessage = new HttpRequestMessage();
@@ -39,7 +41,7 @@ public class AuthenticationService(IHttpClientFactory httpClientFactory) : IAuth
 
             var contentForm = new FormUrlEncodedContent(registerData);
 
-            var response = await httpClient.PostAsync(BaseRoute.RouteAuthenticationProxy + Route_AuthenticationRoute.Register, contentForm);
+            response = await httpClient.PostAsync(BaseRoute.RouteAuthenticationProxy + Route_AuthenticationRoute.Register, contentForm);
 
             var responseContent = await response.Content.ReadAsStringAsync();
 
@@ -53,11 +55,16 @@ public class AuthenticationService(IHttpClientFactory httpClientFactory) : IAuth
         }
         catch (Exception)
         {
-
-            throw;
+            return new ClientUtil_ApiResponse<bool>
+            {
+                Errors = null,
+                Message = "Something went wrong, could not login",
+                StatusCode = response.StatusCode,
+                Succsess = false,
+                Value = false
+            };
         }
     }
-
 
     public async Task<ClientUtil_ApiResponse<ClientDto_LoginResult>>
     LogInUser
@@ -65,6 +72,8 @@ public class AuthenticationService(IHttpClientFactory httpClientFactory) : IAuth
         ClientDto_Login login
     )
     {
+        HttpResponseMessage response = new();
+
         try
         {
             var requestMessage = new HttpRequestMessage();
@@ -78,7 +87,7 @@ public class AuthenticationService(IHttpClientFactory httpClientFactory) : IAuth
 
             var contentForm = new FormUrlEncodedContent(loginData);
 
-            var response = await httpClient.PostAsync(BaseRoute.RouteAuthenticationProxy + Route_AuthenticationRoute.Login, contentForm);
+            response = await httpClient.PostAsync(BaseRoute.RouteAuthenticationProxy + Route_AuthenticationRoute.Login, contentForm);
 
             var responseContent = await response.Content.ReadAsStringAsync();
 
@@ -95,7 +104,7 @@ public class AuthenticationService(IHttpClientFactory httpClientFactory) : IAuth
             {
                 Message = "Something went wrong",
                 Errors = null,
-                StatusCode = System.Net.HttpStatusCode.InternalServerError,
+                StatusCode = response.StatusCode,
                 Succsess = false,
                 Value = null
             };
@@ -127,16 +136,19 @@ public class AuthenticationService(IHttpClientFactory httpClientFactory) : IAuth
         ClientDto_ConfirmRegistration confirmRegistration
     )
     {
+        HttpResponseMessage response = new();
+
         try
         {
             var requestMessage = new HttpRequestMessage();
+
             var httpClient = httpClientFactory.CreateClient(Client);
 
             var json = JsonSerializer.Serialize(confirmRegistration);
 
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            var response = await httpClient.PostAsync(BaseRoute.RouteAuthenticationProxy + Route_AuthenticationRoute.ConfirmRegistration, content);
+            response = await httpClient.PostAsync(BaseRoute.RouteAuthenticationProxy + Route_AuthenticationRoute.ConfirmRegistration, content);
 
             var responseContent = await response.Content.ReadAsStringAsync();
 
@@ -150,7 +162,14 @@ public class AuthenticationService(IHttpClientFactory httpClientFactory) : IAuth
         }
         catch (Exception)
         {
-            throw;
+            return new ClientUtil_ApiResponse<bool>
+            {
+                Errors = null,
+                Message = "Something went wrong, could not confirm login",
+                StatusCode = response.StatusCode,
+                Succsess = false,
+                Value = false
+            };
         }
 
     }
@@ -161,6 +180,8 @@ public class AuthenticationService(IHttpClientFactory httpClientFactory) : IAuth
         ClientDto_ReConfirmRegistration ConfirmRegistration
     )
     {
+        HttpResponseMessage response = new();
+
         try
         {
             var requestMessage = new HttpRequestMessage();
@@ -170,7 +191,7 @@ public class AuthenticationService(IHttpClientFactory httpClientFactory) : IAuth
 
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            var response = await httpClient.PostAsync(BaseRoute.RouteAuthenticationProxy + Route_AuthenticationRoute.ReConfirmRegistrationRequest, content);
+            response = await httpClient.PostAsync(BaseRoute.RouteAuthenticationProxy + Route_AuthenticationRoute.ReConfirmRegistrationRequest, content);
 
             var responseContent = await response.Content.ReadAsStringAsync();
 
@@ -183,8 +204,14 @@ public class AuthenticationService(IHttpClientFactory httpClientFactory) : IAuth
         }
         catch (Exception)
         {
-
-            throw;
+            return new ClientUtil_ApiResponse<bool>
+            {
+                Errors = null,
+                Message = "Something went wrong, could not confirm re registration proccess",
+                StatusCode = response.StatusCode,
+                Succsess = false,
+                Value = false
+            };
         }
     }
 
@@ -194,16 +221,19 @@ public class AuthenticationService(IHttpClientFactory httpClientFactory) : IAuth
         ClientDto_2FA TwoFA
     )
     {
+        HttpResponseMessage response = new();
+
         try
         {
             var requestMessage = new HttpRequestMessage();
+
             var httpClient = httpClientFactory.CreateClient(Client);
 
             var json = JsonSerializer.Serialize(TwoFA);
 
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            var response = await httpClient.PostAsync(BaseRoute.RouteAuthenticationProxy + Route_AuthenticationRoute.ConfirmLogin.Replace("{userId}", TwoFA.UserId.ToString()), content);
+            response = await httpClient.PostAsync(BaseRoute.RouteAuthenticationProxy + Route_AuthenticationRoute.ConfirmLogin.Replace("{userId}", TwoFA.UserId.ToString()), content);
 
             var responseContent = await response.Content.ReadAsStringAsync();
 
@@ -222,7 +252,7 @@ public class AuthenticationService(IHttpClientFactory httpClientFactory) : IAuth
                 Message = "Something went wrong, please try logging in again",
                 Succsess = false,
                 Value = null,
-                StatusCode = System.Net.HttpStatusCode.InternalServerError
+                StatusCode = response.StatusCode
             };
         }
     }

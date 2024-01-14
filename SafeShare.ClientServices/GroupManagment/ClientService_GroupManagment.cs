@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using System.Net.Http;
 using System.Text.Json;
+using SafeShare.ClientDTO.Authentication;
 using SafeShare.ClientDTO.GroupManagment;
 using SafeShare.ClientServerShared.Routes;
 using SafeShare.ClientUtilities.Responses;
@@ -14,11 +15,13 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
     public async Task<ClientUtil_ApiResponse<ClientDto_GroupTypes>>
     GetGroupTypes()
     {
+        HttpResponseMessage response = new();
+
         try
         {
             var httpClient = httpClientFactory.CreateClient(Client);
 
-            var response = await httpClient.GetAsync(BaseRoute.RouteGroupManagmentProxy + Route_GroupManagmentRoutes.ProxyGroupTypes);
+            response = await httpClient.GetAsync(BaseRoute.RouteGroupManagmentProxy + Route_GroupManagmentRoutes.ProxyGroupTypes);
 
             var responseContent = await response.Content.ReadAsStringAsync();
 
@@ -31,9 +34,13 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
         }
         catch (Exception)
         {
-            return new ClientUtil_ApiResponse<ClientDto_GroupTypes>
+            return new ClientUtil_ApiResponse<ClientDto_GroupTypes>()
             {
-                Succsess = false
+                Message = "Something went wrong, groups were not retrieved",
+                Errors = null,
+                StatusCode = response.StatusCode,
+                Succsess = false,
+                Value = null
             };
         }
     }
@@ -44,11 +51,13 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
         Guid groupId
     )
     {
+        HttpResponseMessage response = new();
+
         try
         {
             var httpClient = httpClientFactory.CreateClient(Client);
 
-            var response = await httpClient.GetAsync(BaseRoute.RouteGroupManagmentProxy + Route_GroupManagmentRoutes.ProxyGetGroupDetails.Replace("{groupId}", groupId.ToString()));
+            response = await httpClient.GetAsync(BaseRoute.RouteGroupManagmentProxy + Route_GroupManagmentRoutes.ProxyGetGroupDetails.Replace("{groupId}", groupId.ToString()));
 
             var responseContent = await response.Content.ReadAsStringAsync();
 
@@ -61,8 +70,14 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
         }
         catch (Exception)
         {
-
-            throw;
+            return new ClientUtil_ApiResponse<ClientDto_GroupDetails>()
+            {
+                Message = "Something went wrong, group details were not retrieved",
+                Errors = null,
+                StatusCode = response.StatusCode,
+                Succsess = false,
+                Value = null
+            };
         }
     }
 
@@ -72,6 +87,8 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
         ClientDto_CreateGroup createGroup
     )
     {
+        HttpResponseMessage response = new();
+
         try
         {
             var httpClient = httpClientFactory.CreateClient(Client);
@@ -84,7 +101,7 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
 
             var contentForm = new FormUrlEncodedContent(registerData);
 
-            var response = await httpClient.PostAsync(BaseRoute.RouteGroupManagmentProxy + Route_GroupManagmentRoutes.ProxyCreateGroup, contentForm);
+            response = await httpClient.PostAsync(BaseRoute.RouteGroupManagmentProxy + Route_GroupManagmentRoutes.ProxyCreateGroup, contentForm);
 
             var responseContent = await response.Content.ReadAsStringAsync();
 
@@ -97,8 +114,14 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
         }
         catch (Exception)
         {
-
-            throw;
+            return new ClientUtil_ApiResponse<ClientDto_GroupType>()
+            {
+                Message = "Something went wrong, group was not created",
+                Errors = null,
+                StatusCode = response.StatusCode,
+                Succsess = false,
+                Value = null
+            };
         }
     }
 
@@ -109,6 +132,8 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
         ClientDto_EditGroup editGroup
     )
     {
+        HttpResponseMessage response = new();
+
         try
         {
             var httpClient = httpClientFactory.CreateClient(Client);
@@ -121,7 +146,7 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
 
             var contentForm = new FormUrlEncodedContent(registerData);
 
-            var response = await httpClient.PutAsync(BaseRoute.RouteGroupManagmentProxy + Route_GroupManagmentRoutes.ProxyEditGroup.Replace("{groupId}", groupId.ToString()), contentForm);
+            response = await httpClient.PutAsync(BaseRoute.RouteGroupManagmentProxy + Route_GroupManagmentRoutes.ProxyEditGroup.Replace("{groupId}", groupId.ToString()), contentForm);
 
             var responseContent = await response.Content.ReadAsStringAsync();
 
@@ -134,8 +159,14 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
         }
         catch (Exception)
         {
-
-            throw;
+            return new ClientUtil_ApiResponse<ClientDto_GroupType>()
+            {
+                Message = "Something went wrong, group was not edited",
+                Errors = null,
+                StatusCode = response.StatusCode,
+                Succsess = false,
+                Value = null
+            };
         }
     }
 
@@ -145,11 +176,13 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
         Guid groupId
     )
     {
+        HttpResponseMessage response = new();
+
         try
         {
             var httpClient = httpClientFactory.CreateClient(Client);
 
-            var response = await httpClient.DeleteAsync(BaseRoute.RouteGroupManagmentProxy + Route_GroupManagmentRoutes.ProxyDeleteGroup.Replace("{groupId}", groupId.ToString()));
+            response = await httpClient.DeleteAsync(BaseRoute.RouteGroupManagmentProxy + Route_GroupManagmentRoutes.ProxyDeleteGroup.Replace("{groupId}", groupId.ToString()));
 
             var responseContent = await response.Content.ReadAsStringAsync();
 
@@ -162,19 +195,27 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
         }
         catch (Exception)
         {
-
-            throw;
+            return new ClientUtil_ApiResponse<bool>()
+            {
+                Message = "Something went wrong, group was not deleted",
+                Errors = null,
+                StatusCode = response.StatusCode,
+                Succsess = false,
+                Value = false
+            };
         }
     }
 
     public async Task<ClientUtil_ApiResponse<List<ClientDto_RecivedInvitations>>>
     GetGroupsInvitations()
     {
+        HttpResponseMessage response = new();
+
         try
         {
             var httpClient = httpClientFactory.CreateClient(Client);
 
-            var response = await httpClient.GetAsync(BaseRoute.RouteGroupManagmentProxy + Route_GroupManagmentRoutes.ProxyGetGroupsInvitations);
+            response = await httpClient.GetAsync(BaseRoute.RouteGroupManagmentProxy + Route_GroupManagmentRoutes.ProxyGetGroupsInvitations);
 
             var responseContent = await response.Content.ReadAsStringAsync();
 
@@ -187,19 +228,27 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
         }
         catch (Exception)
         {
-
-            throw;
+            return new ClientUtil_ApiResponse<List<ClientDto_RecivedInvitations>>()
+            {
+                Message = "Something went wrong, group invitations were not retrieved",
+                Errors = null,
+                StatusCode = response.StatusCode,
+                Succsess = false,
+                Value = null
+            };
         }
     }
 
     public async Task<ClientUtil_ApiResponse<List<ClientDto_SentInvitations>>>
     GetSentGroupInvitations()
     {
+        HttpResponseMessage response = new();
+
         try
         {
             var httpClient = httpClientFactory.CreateClient(Client);
 
-            var response = await httpClient.GetAsync(BaseRoute.RouteGroupManagmentProxy + Route_GroupManagmentRoutes.ProxyGetSentGroupInvitations);
+            response = await httpClient.GetAsync(BaseRoute.RouteGroupManagmentProxy + Route_GroupManagmentRoutes.ProxyGetSentGroupInvitations);
 
             var responseContent = await response.Content.ReadAsStringAsync();
 
@@ -212,8 +261,14 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
         }
         catch (Exception)
         {
-
-            throw;
+            return new ClientUtil_ApiResponse<List<ClientDto_SentInvitations>>()
+            {
+                Message = "Something went wrong, sent group invitations were not retrieved",
+                Errors = null,
+                StatusCode = response.StatusCode,
+                Succsess = false,
+                Value = null
+            };
         }
     }
 
@@ -223,6 +278,8 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
         ClientDto_SendInvitationRequest sendInvitationRequest
     )
     {
+        HttpResponseMessage response = new();
+
         try
         {
             var httpClient = httpClientFactory.CreateClient(Client);
@@ -231,7 +288,7 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
 
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            var response = await httpClient.PostAsync(BaseRoute.RouteGroupManagmentProxy + Route_GroupManagmentRoutes.ProxySendInvitation, content);
+            response = await httpClient.PostAsync(BaseRoute.RouteGroupManagmentProxy + Route_GroupManagmentRoutes.ProxySendInvitation, content);
 
             var responseContent = await response.Content.ReadAsStringAsync();
 
@@ -244,8 +301,14 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
         }
         catch (Exception)
         {
-
-            throw;
+            return new ClientUtil_ApiResponse<bool>()
+            {
+                Message = "Something went wrong, invitation was not sent",
+                Errors = null,
+                StatusCode = response.StatusCode,
+                Succsess = false,
+                Value = false
+            };
         }
     }
 
@@ -255,6 +318,8 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
         ClientDto_InvitationRequestActions invitationRequestActions
     )
     {
+        HttpResponseMessage response = new();
+
         try
         {
             var httpClient = httpClientFactory.CreateClient(Client);
@@ -263,7 +328,7 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
 
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            var response = await httpClient.PostAsync(BaseRoute.RouteGroupManagmentProxy + Route_GroupManagmentRoutes.ProxyAcceptInvitation, content);
+            response = await httpClient.PostAsync(BaseRoute.RouteGroupManagmentProxy + Route_GroupManagmentRoutes.ProxyAcceptInvitation, content);
 
             var responseContent = await response.Content.ReadAsStringAsync();
 
@@ -276,8 +341,14 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
         }
         catch (Exception)
         {
-
-            throw;
+            return new ClientUtil_ApiResponse<bool>()
+            {
+                Message = "Something went wrong, invitation was not accepted",
+                Errors = null,
+                StatusCode = response.StatusCode,
+                Succsess = false,
+                Value = false
+            };
         }
     }
 
@@ -287,6 +358,8 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
         ClientDto_InvitationRequestActions invitationRequestActions
     )
     {
+        HttpResponseMessage response = new();
+
         try
         {
             var httpClient = httpClientFactory.CreateClient(Client);
@@ -295,7 +368,7 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
 
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            var response = await httpClient.PostAsync(BaseRoute.RouteGroupManagmentProxy + Route_GroupManagmentRoutes.ProxyRejectInvitation, content);
+            response = await httpClient.PostAsync(BaseRoute.RouteGroupManagmentProxy + Route_GroupManagmentRoutes.ProxyRejectInvitation, content);
 
             var responseContent = await response.Content.ReadAsStringAsync();
 
@@ -308,8 +381,14 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
         }
         catch (Exception)
         {
-
-            throw;
+            return new ClientUtil_ApiResponse<bool>()
+            {
+                Message = "Something went wrong, invitation was not rejected",
+                Errors = null,
+                StatusCode = response.StatusCode,
+                Succsess = false,
+                Value = false
+            };
         }
     }
 
@@ -319,6 +398,8 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
         ClientDto_InvitationRequestActions invitationRequestActions
     )
     {
+        HttpResponseMessage response = new();
+
         try
         {
             var httpClient = httpClientFactory.CreateClient(Client);
@@ -330,7 +411,7 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
                 Content = content
             };
 
-            var response = await httpClient.SendAsync(request);
+            response = await httpClient.SendAsync(request);
 
             var responseContent = await response.Content.ReadAsStringAsync();
 
@@ -343,8 +424,14 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
         }
         catch (Exception)
         {
-
-            throw;
+            return new ClientUtil_ApiResponse<bool>()
+            {
+                Message = "Something went wrong, invitation was not rejected",
+                Errors = null,
+                StatusCode = response.StatusCode,
+                Succsess = false,
+                Value = false
+            };
         }
     }
 
@@ -355,6 +442,8 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
         List<ClientDto_UsersGroupDetails> usersOfTheGroup
     )
     {
+        HttpResponseMessage response = new();
+
         try
         {
             var httpClient = httpClientFactory.CreateClient(Client);
@@ -366,7 +455,7 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
                 Content = content
             };
 
-            var response = await httpClient.SendAsync(request);
+            response = await httpClient.SendAsync(request);
 
             var responseContent = await response.Content.ReadAsStringAsync();
 
@@ -379,8 +468,14 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
         }
         catch (Exception)
         {
-
-            throw;
+            return new ClientUtil_ApiResponse<bool>()
+            {
+                Message = "Something went wrong, user was not removed form the group",
+                Errors = null,
+                StatusCode = response.StatusCode,
+                Succsess = false,
+                Value = false
+            };
         }
     }
 }

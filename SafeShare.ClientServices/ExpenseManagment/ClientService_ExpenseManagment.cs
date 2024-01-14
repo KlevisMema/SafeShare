@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Collections.Generic;
 using SafeShare.ClientDTO.Expense;
 using SafeShare.ClientDTO.GroupManagment;
+using SafeShare.ClientDTO.Authentication;
 using SafeShare.ClientUtilities.Responses;
 using SafeShare.ClientServerShared.Routes;
 using SafeShare.ClientServices.Interfaces;
@@ -20,6 +21,8 @@ public class ClientService_ExpenseManagment(IHttpClientFactory httpClientFactory
         Guid groupId
     )
     {
+        HttpResponseMessage response = new();
+
         try
         {
             var httpClient = httpClientFactory.CreateClient(Client);
@@ -28,7 +31,7 @@ public class ClientService_ExpenseManagment(IHttpClientFactory httpClientFactory
 
             var request = new HttpRequestMessage(HttpMethod.Get, BaseRoute.RouteExpenseManagmentProxy + Route_ExpenseManagment.ProxyGetAllExpensesOfGroup + $"?groupId={groupId}");
 
-            var response = await httpClient.SendAsync(request);
+            response = await httpClient.SendAsync(request);
 
             var responseContent = await response.Content.ReadAsStringAsync();
 
@@ -41,8 +44,14 @@ public class ClientService_ExpenseManagment(IHttpClientFactory httpClientFactory
         }
         catch (Exception)
         {
-
-            throw;
+            return new ClientUtil_ApiResponse<List<ClientDto_Expense>>()
+            {
+                Message = "Something went wrong, expenses were not retrieved",
+                Errors = null,
+                StatusCode = response.StatusCode,
+                Succsess = false,
+                Value = null
+            };
         }
     }
 
@@ -52,6 +61,8 @@ public class ClientService_ExpenseManagment(IHttpClientFactory httpClientFactory
         Guid groupId
     )
     {
+        HttpResponseMessage response = new();
+
         try
         {
             var httpClient = httpClientFactory.CreateClient(Client);
@@ -63,7 +74,7 @@ public class ClientService_ExpenseManagment(IHttpClientFactory httpClientFactory
                 Content = content
             };
 
-            var response = await httpClient.SendAsync(request);
+            response = await httpClient.SendAsync(request);
 
             var responseContent = await response.Content.ReadAsStringAsync();
 
@@ -76,8 +87,14 @@ public class ClientService_ExpenseManagment(IHttpClientFactory httpClientFactory
         }
         catch (Exception)
         {
-
-            throw;
+            return new ClientUtil_ApiResponse<ClientDto_Expense>()
+            {
+                Message = "Something went wrong, expense was not retrieved",
+                Errors = null,
+                StatusCode = response.StatusCode,
+                Succsess = false,
+                Value = null
+            };
         }
     }
 
@@ -87,6 +104,8 @@ public class ClientService_ExpenseManagment(IHttpClientFactory httpClientFactory
         ClientDto_ExpenseCreate clientDto_ExpenseCreate
     )
     {
+        HttpResponseMessage response = new();
+
         try
         {
             var httpClient = httpClientFactory.CreateClient(Client);
@@ -102,7 +121,7 @@ public class ClientService_ExpenseManagment(IHttpClientFactory httpClientFactory
 
             var contentForm = new FormUrlEncodedContent(registerData);
 
-            var response = await httpClient.PostAsync(BaseRoute.RouteExpenseManagmentProxy + Route_ExpenseManagment.ProxyCreateExpense, contentForm);
+            response = await httpClient.PostAsync(BaseRoute.RouteExpenseManagmentProxy + Route_ExpenseManagment.ProxyCreateExpense, contentForm);
 
             var responseContent = await response.Content.ReadAsStringAsync();
 
@@ -115,8 +134,14 @@ public class ClientService_ExpenseManagment(IHttpClientFactory httpClientFactory
         }
         catch (Exception)
         {
-
-            throw;
+            return new ClientUtil_ApiResponse<ClientDto_Expense>()
+            {
+                Message = "Something went wrong, expense was not created!",
+                Errors = null,
+                StatusCode = response.StatusCode,
+                Succsess = false,
+                Value = null
+            };
         }
     }
 
@@ -127,6 +152,8 @@ public class ClientService_ExpenseManagment(IHttpClientFactory httpClientFactory
         ClientDto_ExpenseCreate clientDto_ExpenseCreate
     )
     {
+        HttpResponseMessage response = new();
+
         try
         {
             var httpClient = httpClientFactory.CreateClient(Client);
@@ -142,7 +169,7 @@ public class ClientService_ExpenseManagment(IHttpClientFactory httpClientFactory
 
             var contentForm = new FormUrlEncodedContent(registerData);
 
-            var response = await httpClient.PutAsync(BaseRoute.RouteExpenseManagmentProxy + Route_ExpenseManagment.ProxyEditExpense + $"?expenseId={expenseId}", contentForm);
+            response = await httpClient.PutAsync(BaseRoute.RouteExpenseManagmentProxy + Route_ExpenseManagment.ProxyEditExpense + $"?expenseId={expenseId}", contentForm);
 
             var responseContent = await response.Content.ReadAsStringAsync();
 
@@ -155,8 +182,14 @@ public class ClientService_ExpenseManagment(IHttpClientFactory httpClientFactory
         }
         catch (Exception)
         {
-
-            throw;
+            return new ClientUtil_ApiResponse<ClientDto_Expense>()
+            {
+                Message = "Something went wrong, expense was not edited",
+                Errors = null,
+                StatusCode = response.StatusCode,
+                Succsess = false,
+                Value = null
+            };
         }
     }
 
@@ -166,6 +199,8 @@ public class ClientService_ExpenseManagment(IHttpClientFactory httpClientFactory
         ClientDto_ExpenseDelete clientDto_ExpenseDelete
     )
     {
+        HttpResponseMessage response = new();
+
         try
         {
             var httpClient = httpClientFactory.CreateClient(Client);
@@ -177,7 +212,7 @@ public class ClientService_ExpenseManagment(IHttpClientFactory httpClientFactory
                 Content = content
             };
 
-            var response = await httpClient.SendAsync(request);
+             response = await httpClient.SendAsync(request);
 
             var responseContent = await response.Content.ReadAsStringAsync();
 
@@ -190,8 +225,14 @@ public class ClientService_ExpenseManagment(IHttpClientFactory httpClientFactory
         }
         catch (Exception)
         {
-
-            throw;
+            return new ClientUtil_ApiResponse<bool>()
+            {
+                Message = "Something went wrong, expense was not deleted",
+                Errors = null,
+                StatusCode = response.StatusCode,
+                Succsess = false,
+                Value = false
+            };
         }
     }
 }

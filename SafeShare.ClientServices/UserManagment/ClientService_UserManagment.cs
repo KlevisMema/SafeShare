@@ -4,6 +4,7 @@ using System.Text.Json;
 using Newtonsoft.Json.Linq;
 using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Http;
+using SafeShare.ClientDTO.Authentication;
 using SafeShare.ClientServerShared.Routes;
 using SafeShare.ClientUtilities.Responses;
 using SafeShare.ClientServices.Interfaces;
@@ -18,11 +19,13 @@ public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) :
     public async Task<ClientUtil_ApiResponse<ClientDto_UserInfo>>
     GetUser()
     {
+        HttpResponseMessage response = new();
+
         try
         {
             var httpClient = httpClientFactory.CreateClient(Client);
 
-            var response = await httpClient.GetAsync(BaseRoute.RouteAccountManagmentProxy + Route_AccountManagmentRoute.ProxyGetUser);
+            response = await httpClient.GetAsync(BaseRoute.RouteAccountManagmentProxy + Route_AccountManagmentRoute.ProxyGetUser);
 
             var responseContent = await response.Content.ReadAsStringAsync();
 
@@ -35,10 +38,13 @@ public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) :
         }
         catch (Exception)
         {
-
             return new ClientUtil_ApiResponse<ClientDto_UserInfo>
             {
-                Succsess = false
+                Message = "Something went wrong, user was not retrieved",
+                Errors = null,
+                StatusCode = response.StatusCode,
+                Succsess = false,
+                Value = null
             };
         }
     }
@@ -49,6 +55,8 @@ public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) :
         ClientDto_UpdateUser clientDto_UpdateUser
     )
     {
+        HttpResponseMessage response = new();
+
         try
         {
             var httpClient = httpClientFactory.CreateClient(Client);
@@ -65,7 +73,7 @@ public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) :
 
             var content = new FormUrlEncodedContent(updateUserData);
 
-            var response = await httpClient.PutAsync(BaseRoute.RouteAccountManagmentProxy + Route_AccountManagmentRoute.ProxyUpdateUser, content);
+            response = await httpClient.PutAsync(BaseRoute.RouteAccountManagmentProxy + Route_AccountManagmentRoute.ProxyUpdateUser, content);
 
             var responseContent = await response.Content.ReadAsStringAsync();
 
@@ -78,8 +86,14 @@ public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) :
         }
         catch (Exception)
         {
-
-            throw;
+            return new ClientUtil_ApiResponse<ClientDto_UserInfo>()
+            {
+                Message = "Something went wrong, your data was not updated",
+                Errors = null,
+                StatusCode = response.StatusCode,
+                Succsess = false,
+                Value = null
+            };
         }
     }
 
@@ -89,6 +103,8 @@ public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) :
         ClientDto_UserChangePassword userChangePassword
     )
     {
+        HttpResponseMessage response = new();
+
         try
         {
             var httpClient = httpClientFactory.CreateClient(Client);
@@ -102,7 +118,7 @@ public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) :
 
             var content = new FormUrlEncodedContent(changePasswordData);
 
-            var response = await httpClient.PutAsync(BaseRoute.RouteAccountManagmentProxy + Route_AccountManagmentRoute.ProxyChangePassword, content);
+            response = await httpClient.PutAsync(BaseRoute.RouteAccountManagmentProxy + Route_AccountManagmentRoute.ProxyChangePassword, content);
 
             var responseContent = await response.Content.ReadAsStringAsync();
 
@@ -115,7 +131,14 @@ public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) :
         }
         catch (Exception)
         {
-            throw;
+            return new ClientUtil_ApiResponse<bool>()
+            {
+                Message = "Something went wrong, your password was not changed",
+                Errors = null,
+                StatusCode = response.StatusCode,
+                Succsess = false,
+                Value = false
+            };
         }
     }
 
@@ -125,6 +148,8 @@ public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) :
         ClientDto_DeactivateAccount deactivateAccount
     )
     {
+        HttpResponseMessage response = new();
+
         try
         {
             var httpClient = httpClientFactory.CreateClient(Client);
@@ -137,7 +162,7 @@ public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) :
 
             var content = new FormUrlEncodedContent(deactivateAccountData);
 
-            var response = await httpClient.PostAsync(BaseRoute.RouteAccountManagmentProxy + Route_AccountManagmentRoute.ProxyDeactivateAccount, content);
+            response = await httpClient.PostAsync(BaseRoute.RouteAccountManagmentProxy + Route_AccountManagmentRoute.ProxyDeactivateAccount, content);
 
             var responseContent = await response.Content.ReadAsStringAsync();
 
@@ -151,8 +176,14 @@ public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) :
         }
         catch (Exception)
         {
-
-            throw;
+            return new ClientUtil_ApiResponse<bool>()
+            {
+                Message = "Something went wrong, your account was not deactivated",
+                Errors = null,
+                StatusCode = response.StatusCode,
+                Succsess = false,
+                Value = false
+            };
         }
     }
 
@@ -162,6 +193,8 @@ public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) :
          ClienDto_ActivateAccountRequest ActivateAccountRequest
     )
     {
+        HttpResponseMessage response = new();
+
         try
         {
             var httpClient = httpClientFactory.CreateClient(Client);
@@ -170,7 +203,7 @@ public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) :
 
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            var response = await httpClient.PostAsync(BaseRoute.RouteAccountManagmentProxy + Route_AccountManagmentRoute.ActivateAccountRequest + $"?email={ActivateAccountRequest.Email}", content);
+            response = await httpClient.PostAsync(BaseRoute.RouteAccountManagmentProxy + Route_AccountManagmentRoute.ActivateAccountRequest + $"?email={ActivateAccountRequest.Email}", content);
 
             var responseContent = await response.Content.ReadAsStringAsync();
 
@@ -183,7 +216,14 @@ public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) :
         }
         catch (Exception)
         {
-            return new ClientUtil_ApiResponse<bool>();
+            return new ClientUtil_ApiResponse<bool>()
+            {
+                Message = "Something went wrong with your request",
+                Errors = null,
+                StatusCode = response.StatusCode,
+                Succsess = false,
+                Value = false
+            };
         }
     }
 
@@ -193,6 +233,8 @@ public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) :
         ClientDto_ActivateAccountConfirmation activateAccountConfirmation
     )
     {
+        HttpResponseMessage response = new();
+
         try
         {
             var httpClient = httpClientFactory.CreateClient(Client);
@@ -201,7 +243,7 @@ public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) :
 
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            var response = await httpClient.PostAsync(BaseRoute.RouteAccountManagmentProxy + Route_AccountManagmentRoute.ActivateAccountRequestConfirmation, content);
+            response = await httpClient.PostAsync(BaseRoute.RouteAccountManagmentProxy + Route_AccountManagmentRoute.ActivateAccountRequestConfirmation, content);
 
             var responseContent = await response.Content.ReadAsStringAsync();
 
@@ -214,8 +256,14 @@ public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) :
         }
         catch (Exception)
         {
-
-            throw;
+            return new ClientUtil_ApiResponse<bool>()
+            {
+                Message = "Something went wrong, your account was not activated",
+                Errors = null,
+                StatusCode = response.StatusCode,
+                Succsess = false,
+                Value = false
+            };
         }
     }
 
@@ -225,6 +273,8 @@ public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) :
         ClientDto_ForgotPassword forgotPassword
     )
     {
+        HttpResponseMessage response = new();
+
         try
         {
             var requestMessage = new HttpRequestMessage();
@@ -237,7 +287,7 @@ public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) :
 
             var content = new FormUrlEncodedContent(forgotPasswordData);
 
-            var response = await httpClient.PostAsync(BaseRoute.RouteAccountManagmentProxy + Route_AccountManagmentRoute.ForgotPassword, content);
+            response = await httpClient.PostAsync(BaseRoute.RouteAccountManagmentProxy + Route_AccountManagmentRoute.ForgotPassword, content);
 
             var responseContent = await response.Content.ReadAsStringAsync();
 
@@ -250,8 +300,14 @@ public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) :
         }
         catch (Exception)
         {
-
-            throw;
+            return new ClientUtil_ApiResponse<bool>()
+            {
+                Message = "Something went wrong with the request",
+                Errors = null,
+                StatusCode = response.StatusCode,
+                Succsess = false,
+                Value = false
+            };
         }
     }
 
@@ -261,6 +317,8 @@ public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) :
         ClientDto_ResetPassword resetPassword
     )
     {
+        HttpResponseMessage response = new();
+
         try
         {
             var requestMessage = new HttpRequestMessage();
@@ -276,7 +334,7 @@ public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) :
 
             var content = new FormUrlEncodedContent(forgotPasswordData);
 
-            var response = await httpClient.PostAsync(BaseRoute.RouteAccountManagmentProxy + Route_AccountManagmentRoute.ResetPassword, content);
+            response = await httpClient.PostAsync(BaseRoute.RouteAccountManagmentProxy + Route_AccountManagmentRoute.ResetPassword, content);
 
             var responseContent = await response.Content.ReadAsStringAsync();
 
@@ -289,8 +347,14 @@ public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) :
         }
         catch (Exception)
         {
-
-            throw;
+            return new ClientUtil_ApiResponse<bool>()
+            {
+                Message = "Something went wrong with the request",
+                Errors = null,
+                StatusCode = response.StatusCode,
+                Succsess = false,
+                Value = false
+            };
         }
     }
 
@@ -300,6 +364,8 @@ public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) :
         ClientDto_ChangeEmailAddressRequest changeEmailAddressRequest
     )
     {
+        HttpResponseMessage response = new();
+
         try
         {
             var httpClient = httpClientFactory.CreateClient(Client);
@@ -313,7 +379,7 @@ public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) :
 
             var content = new FormUrlEncodedContent(requestChangeEmailData);
 
-            var response = await httpClient.PostAsync(BaseRoute.RouteAccountManagmentProxy + Route_AccountManagmentRoute.ProxyRequestChangeEmail, content);
+            response = await httpClient.PostAsync(BaseRoute.RouteAccountManagmentProxy + Route_AccountManagmentRoute.ProxyRequestChangeEmail, content);
 
             var responseContent = await response.Content.ReadAsStringAsync();
 
@@ -326,7 +392,14 @@ public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) :
         }
         catch (Exception)
         {
-            throw;
+            return new ClientUtil_ApiResponse<bool>()
+            {
+                Message = "Something went wrong with the request",
+                Errors = null,
+                StatusCode = response.StatusCode,
+                Succsess = false,
+                Value = false
+            };
         }
     }
 
@@ -336,6 +409,8 @@ public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) :
         ClientDto_ChangeEmailAddressRequestConfirm changeEmailAddressRequestConfirm
     )
     {
+        HttpResponseMessage response = new();
+
         try
         {
             var httpClient = httpClientFactory.CreateClient(Client);
@@ -344,7 +419,7 @@ public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) :
 
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            var response = await httpClient.PostAsync(BaseRoute.RouteAccountManagmentProxy + Route_AccountManagmentRoute.ProxyConfirmChangeEmailRequest, content);
+            response = await httpClient.PostAsync(BaseRoute.RouteAccountManagmentProxy + Route_AccountManagmentRoute.ProxyConfirmChangeEmailRequest, content);
 
             var responseContent = await response.Content.ReadAsStringAsync();
 
@@ -358,7 +433,14 @@ public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) :
         catch (Exception)
         {
 
-            throw;
+            return new ClientUtil_ApiResponse<bool>()
+            {
+                Message = "Something went wrong with the request",
+                Errors = null,
+                StatusCode = response.StatusCode,
+                Succsess = false,
+                Value = false
+            };
         }
     }
 
@@ -369,11 +451,13 @@ public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) :
         CancellationToken cancellationToken
     )
     {
+        HttpResponseMessage response = new();
+
         try
         {
             var httpClient = httpClientFactory.CreateClient(Client);
 
-            var response = await httpClient.GetAsync(BaseRoute.RouteAccountManagmentProxy + Route_AccountManagmentRoute.ProxySearchUserByUserName + $"?username={userName}", cancellationToken);
+            response = await httpClient.GetAsync(BaseRoute.RouteAccountManagmentProxy + Route_AccountManagmentRoute.ProxySearchUserByUserName + $"?username={userName}", cancellationToken);
 
             var responseContent = await response.Content.ReadAsStringAsync();
 
@@ -387,7 +471,14 @@ public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) :
         catch (Exception)
         {
 
-            throw;
+            return new ClientUtil_ApiResponse<List<ClientDto_UserSearched>>()
+            {
+                Message = "Something went wrong with the request",
+                Errors = null,
+                StatusCode = response.StatusCode,
+                Succsess = false,
+                Value = null
+            };
         }
     }
 
@@ -398,6 +489,8 @@ public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) :
         StreamContent streamContent
     )
     {
+        HttpResponseMessage response = new();
+
         try
         {
             var httpClient = httpClientFactory.CreateClient(Client);
@@ -407,7 +500,7 @@ public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) :
                 {streamContent, "image", fileName }
             };
 
-            var response = await httpClient.PostAsync(BaseRoute.RouteAccountManagmentProxy + Route_AccountManagmentRoute.ProxyUploadProfilePicture, formData);
+            response = await httpClient.PostAsync(BaseRoute.RouteAccountManagmentProxy + Route_AccountManagmentRoute.ProxyUploadProfilePicture, formData);
 
             var responseContent = await response.Content.ReadAsStringAsync();
 
@@ -418,10 +511,16 @@ public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) :
 
             return readResult!;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            Console.WriteLine(ex.ToString());
-            throw;
+            return new ClientUtil_ApiResponse<byte[]>()
+            {
+                Message = "Something went wrong with the request",
+                Errors = null,
+                StatusCode = response.StatusCode,
+                Succsess = false,
+                Value = null
+            };
         }
     }
 }
