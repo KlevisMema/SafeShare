@@ -15,7 +15,7 @@ Mema Klevis 582513, Fernandes do Rosario Tiago 502627, Azmar Samir 503446, Laha 
 6. [Setup Instructions](#6-setup-instructions)
 
 ## 1. Introduction
-The project aims to implement a secure system for handling common expenses within a group, emphasizing security aspects in data storage and transmission.
+The project aims to implement a secure system for handling common expenses within a group, emphasizing security aspects in data storage and transmission. This project only run on Windows.
 
 ### Key Points
 - Focus on security protocols and techniques.
