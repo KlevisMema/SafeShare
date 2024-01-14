@@ -15,4 +15,7 @@ echo -e "\n3.
 " 
 setx SAFE_SHARE_API_KEY "249f5306cb93c276ef417bd8c8377be293b9489a6ab4ca3ee89740f44b5c03f7"
 
+# SAFE_SHARE_API_KEY is a key to access to the API without that key no one can access to the server. In normal condition, you need to
+# apply to a service outside of this project to get a key but for simplification we provide a key.
+
 cd API_Client.API && dotnet run --urls=https://localhost:7261
