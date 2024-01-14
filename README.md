@@ -15,7 +15,7 @@ Mema Klevis 582513 / Fernandes do Rosario Tiago 502627 / Azmar Samir 503446 / La
 6. [Setup Instructions](#6-setup-instructions)
 
 ## 1. Introduction
-The project aims to implement a secure system for handling common expenses within a group, emphasizing security aspects in data storage and transmission. This project only run on x64
+The project aims to implement a secure system for handling common expenses within a group, emphasizing security aspects in data storage and transmission. This project only runs on x64
 Windows 10.
 
 ### Key Points
@@ -24,7 +24,7 @@ Windows 10.
 - Penalties for choices that compromise security.
 
 ## 2. System Characteristics
-The system follows a client/server architecture with specific roles for users and the server. Key tasks include user registration, authentication, and various operations for authenticated users.
+The system follows a client/server architecture with specific user and server roles. Key tasks include user registration, authentication, and various operations for authenticated users.
 
 ### Server
 - Not a trusted entity.
@@ -39,7 +39,7 @@ The system follows a client/server architecture with specific roles for users an
 - Only the group owner can manage group membership.
 
 ## 3. Features
-This section outlines the high-level features and protocols required for secure data exchange, storage, and user activities.
+This section outlines the high-level features and protocols for secure data exchange, storage, and user activities.
 
 ### User Registration, Authentication, and Revocation
 - Secure credentials generation for user registration.
@@ -59,7 +59,7 @@ This section outlines the high-level features and protocols required for secure 
 - Only the expense creator can edit or delete it.
 
 ### Viewing Balances
-- Group members can view balances of other members.
+- Group members can view the balances of other members.
 
 ## 4. Technologies Used
 - **.NET 8 Web API**: Used for building the server-side application.
@@ -78,7 +78,6 @@ Ensure the following components are installed and configured on your system:
 - **Seq**: Running on http://localhost:5341/ | Download in https://datalust.co/download/begin?version=2023.4.10219
 
 ## 6. Setup Instructions
-# Setup Instructions
 
 ## Prerequisites:
    - Bash is required to run these scripts.
@@ -86,14 +85,11 @@ Ensure the following components are installed and configured on your system:
 ## For a clean setup of the process, run the scripts in order:
 
 ### 1. setup1.sh
-   - This script will prompt you for values that will be stored in environment variables.
+   - This script will prompt you for values stored in environment variables.
    - The application reads certain values from the code, so accurate naming and values are crucial.
 
 ### 2. setup2.sh
-   - This script will build and run the main API project.
+   - This script will build and run all the projects.
    - Running this project will automatically create two tables using the seeder.
    - Ensure you have SQL Server and MSSQL installed on your machine, and create a Windows account.
    - The connection string is straightforward and creates the database in Windows accounts.
-
-### 3. runall.sh
-   - Runs the entire application, including the Blazor client, proxy API, and main API.
