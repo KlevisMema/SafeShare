@@ -160,6 +160,30 @@ public class AccountManagment
 
             return await GetUserInfoMapped("updated", id, token);
         }
+        catch (DbUpdateException dbEx)
+        {
+            _logger.Log
+            (
+                LogLevel.Critical,
+                """
+                        [UserManagment Module]-[AccountManagment Class]-[UpdateUser Method],
+                        [IP] {IP} User with [ID] : {id} tried to update his data and got the error
+                        {ex}
+                    """,
+                await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                id,
+                dbEx
+            );
+
+            return Util_GenericResponse<DTO_UserUpdatedInfo>.Response
+            (
+                null,
+                false,
+                "Something went wrong, username was not updated",
+                null,
+                System.Net.HttpStatusCode.BadRequest
+            );
+        }
         catch (Exception ex)
         {
             return await Util_LogsHelper<DTO_UserUpdatedInfo, AccountManagment>.ReturnInternalServerError
@@ -1527,7 +1551,7 @@ public class AccountManagment
     /// </summary>
     /// <param name="hex">The hex value</param>
     /// <returns>String representation of the hex</returns>
-    public static byte[] 
+    public static byte[]
     StringToByteArray
     (
         string hex

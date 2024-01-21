@@ -45,8 +45,8 @@ public class AccountManagmentController
     /// </summary>
     /// <param name="userId">Unique identifier of the user.</param>
     /// <returns>Returns user's updated information.</returns>
-    [HttpGet(Route_AccountManagmentRoute.GetUser)]
     [ServiceFilter(typeof(VerifyUser))]
+    [HttpGet(Route_AccountManagmentRoute.GetUser)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<DTO_UserUpdatedInfo>))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<DTO_UserUpdatedInfo>))]

@@ -26,4 +26,8 @@ public class DTO_LoginResult
     /// Gets or sets the unique identifier of the user who has logged in.
     /// </summary>
     public string UserId { get; set; } = string.Empty;
+    /// <summary>
+    ///  Gets or sets the full name of the user who has logged in.
+    /// </summary>
+    public string UserFullName { get; set; } = string.Empty;
 }

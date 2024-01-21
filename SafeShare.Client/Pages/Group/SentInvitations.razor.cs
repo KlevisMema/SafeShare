@@ -11,6 +11,7 @@ public partial class SentInvitations
     [Inject] IClientService_GroupManagment _groupManagmentService { get; set; } = null!;
     [Inject] public ISnackbar _snackbar { get; set; } = null!;
     private List<ClientDto_SentInvitations> SentInvitationsList { get; set; } = [];
+    private bool _processingDeleteInvitation = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -26,6 +27,8 @@ public partial class SentInvitations
         ClientDto_SentInvitations SentInvitation
     )
     {
+        _processingDeleteInvitation = true;
+
         var deleteInvitationResult = await _groupManagmentService.DeleteInvitation(new ClientDto_InvitationRequestActions
         {
             GroupId = SentInvitation.GroupId,
@@ -34,7 +37,7 @@ public partial class SentInvitations
         });
 
         if (deleteInvitationResult.Succsess)
-            SentInvitationsList.Find(x => x.InvitationId == SentInvitation.InvitationId).InvitationStatus = ClientDTO.Enums.InvitationStatus.Rejected;
+            SentInvitationsList.Remove(SentInvitationsList.Find(x => x.InvitationId == SentInvitation.InvitationId));
 
         switch (deleteInvitationResult.StatusCode)
         {
@@ -50,6 +53,8 @@ public partial class SentInvitations
             default:
                 break;
         }
+
+        _processingDeleteInvitation = false;
 
         StateHasChanged();
     }

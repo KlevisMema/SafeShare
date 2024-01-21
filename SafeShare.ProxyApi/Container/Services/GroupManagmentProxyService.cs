@@ -1,436 +1,887 @@
-﻿using System.Text;
+﻿using System.Net;
+using System.Text;
+using System.Net.Http;
 using System.Text.Json;
 using Newtonsoft.Json.Linq;
 using System.Net.Http.Headers;
+using SafeShare.ProxyApi.Helpers;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using SafeShare.ClientServerShared.Routes;
 using SafeShare.Security.JwtSecurity.Helpers;
 using SafeShare.ProxyApi.Container.Interfaces;
 using SafeShare.Utilities.SafeShareApi.Responses;
 using SafeShare.DataTransormObject.SafeShareApi.Security;
+using SafeShare.DataTransormObject.SafeShareApi.UserManagment;
 using SafeShare.DataTransormObject.SafeShareApi.GroupManagment;
 using SafeShare.DataTransormObject.SafeShareApi.ExpenseManagment;
 using SafeShare.DataTransormObject.SafeShareApi.GroupManagment.GroupInvitations;
+using Microsoft.AspNetCore.SignalR;
 
 namespace SafeShare.ProxyApi.Container.Services;
 
-public class GroupManagmentProxyService(IHttpClientFactory httpClientFactory) : IGroupManagmentProxyService
+public class GroupManagmentProxyService
+(
+    IHttpClientFactory httpClientFactory,
+    ILogger<GroupManagmentProxyService> logger,
+    IHubContext<NotificationHubProxyService> _hubContext,
+    IOptions<API_Helper_RequestHeaderSettings> requestHeaderOptions,
+    IRequestConfigurationProxyService requestConfigurationProxyService
+) : IGroupManagmentProxyService
 {
-    private const string Client = "ProxyHttpClient";
-    private readonly string ApiKey = Environment.GetEnvironmentVariable("SAFE_SHARE_API_KEY") ?? string.Empty;
-
-    public async Task<Util_GenericResponse<DTO_GroupsTypes>>
+    public async Task<Tuple<Util_GenericResponse<DTO_GroupsTypes>, HttpResponseMessage>>
     GetGroupTypes
     (
+        string userId,
+        string userIp,
         string jwtToken
     )
     {
-        var userId = Helper_JwtToken.GetUserIdDirectlyFromJwtToken(jwtToken);
-
-        var httpClient = httpClientFactory.CreateClient(Client);
-
-        var content = new StringContent(JsonSerializer.Serialize(new { userId }), Encoding.UTF8, "application/json");
-
-        var requestMessage = new HttpRequestMessage(HttpMethod.Get, BaseRoute.RouteGroupManagmentForClient + Route_GroupManagmentRoutes.GroupTypes.Replace("{userId}", userId.ToString()))
+        try
         {
-            Content = content
-        };
-        requestMessage.Headers.Add("X-Api-Key", $"{ApiKey}");
+            API_Helper_ParamsStringChecking.CheckNullOrEmpty
+            (
+                (nameof(userId), userId),
+                (nameof(jwtToken), jwtToken)
+            );
 
-        httpClient.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", jwtToken);
+            var httpClient = API_Helper_HttpClient.CreateClientInstance(requestConfigurationProxyService.GetClient(), httpClientFactory);
 
-        var response = await httpClient.SendAsync(requestMessage);
+            var content = new StringContent(JsonSerializer.Serialize(new { userId }), Encoding.UTF8, "application/json");
 
-        var responseContent = await response.Content.ReadAsStringAsync();
+            var requestMessage = new HttpRequestMessage(HttpMethod.Get, BaseRoute.RouteGroupManagmentForClient + Route_GroupManagmentRoutes.GroupTypes.Replace("{userId}", userId.ToString()))
+            {
+                Content = content
+            };
 
-        var readResult = JsonSerializer.Deserialize<Util_GenericResponse<DTO_GroupsTypes>>(responseContent, new JsonSerializerOptions
+            API_Helper_HttpClient.AddHeadersToTheRequest
+            (
+                jwtToken,
+                requestMessage,
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.ClientIP, userIp),
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.ApiKey, requestConfigurationProxyService.GetApiKey())
+            );
+
+            var response = await httpClient.SendAsync(requestMessage);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            var readResult = JsonSerializer.Deserialize<Util_GenericResponse<DTO_GroupsTypes>>(responseContent, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            }) ?? throw new ArgumentNullException("Failed to deserialize the server response. The content may not match the expected format.");
+
+            return Tuple.Create(readResult, response);
+        }
+        catch (Exception ex)
         {
-            PropertyNameCaseInsensitive = true
-        });
+            logger.LogCritical(ex, "Exception in GetGroupTypes.");
 
-        return readResult ?? new Util_GenericResponse<DTO_GroupsTypes>();
+            return Tuple.Create
+            (
+                new Util_GenericResponse<DTO_GroupsTypes>()
+                {
+                    Message = "Something went wrong",
+                    Errors = null,
+                    StatusCode = HttpStatusCode.InternalServerError,
+                    Succsess = false,
+                    Value = null
+                }, new HttpResponseMessage()
+            );
+        }
     }
 
     public async Task<Util_GenericResponse<DTO_GroupDetails>>
     GetGroupDetails
     (
         string userId,
+        string userIp,
         string jwtToken,
         Guid groupId
     )
     {
-        var httpClient = httpClientFactory.CreateClient(Client);
-
-        var content = new StringContent(JsonSerializer.Serialize(new { userId }), Encoding.UTF8, "application/json");
-
-        var requestMessage = new HttpRequestMessage(HttpMethod.Get, BaseRoute.RouteGroupManagmentForClient + Route_GroupManagmentRoutes.GetGroupDetails.Replace("{userId}", userId.ToString()).Replace("{groupId}", groupId.ToString()))
+        try
         {
-            Content = content
-        };
-        requestMessage.Headers.Add("X-Api-Key", $"{ApiKey}");
+            API_Helper_ParamsStringChecking.CheckNullOrEmpty
+            (
+                (nameof(userId), userId),
+                (nameof(jwtToken), jwtToken)
+            );
 
-        httpClient.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", jwtToken);
+            var httpClient = API_Helper_HttpClient.CreateClientInstance(requestConfigurationProxyService.GetClient(), httpClientFactory);
 
-        var response = await httpClient.SendAsync(requestMessage);
+            var content = new StringContent(JsonSerializer.Serialize(new { userId }), Encoding.UTF8, "application/json");
 
-        var responseContent = await response.Content.ReadAsStringAsync();
+            var requestMessage = new HttpRequestMessage(HttpMethod.Get, BaseRoute.RouteGroupManagmentForClient + Route_GroupManagmentRoutes.GetGroupDetails.Replace("{userId}", userId.ToString()).Replace("{groupId}", groupId.ToString()))
+            {
+                Content = content
+            };
 
-        var readResult = JsonSerializer.Deserialize<Util_GenericResponse<DTO_GroupDetails>>(responseContent, new JsonSerializerOptions
+            API_Helper_HttpClient.AddHeadersToTheRequest
+            (
+                jwtToken,
+                requestMessage,
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.ClientIP, userIp),
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.ApiKey, requestConfigurationProxyService.GetApiKey())
+            );
+
+            var response = await httpClient.SendAsync(requestMessage);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            var readResult = JsonSerializer.Deserialize<Util_GenericResponse<DTO_GroupDetails>>(responseContent, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            }) ?? throw new ArgumentNullException("Failed to deserialize the server response. The content may not match the expected format.");
+
+            return readResult;
+        }
+        catch (Exception ex)
         {
-            PropertyNameCaseInsensitive = true
-        });
+            logger.LogCritical(ex, "Exception in GetGroupTypes.");
 
-        return readResult ?? new Util_GenericResponse<DTO_GroupDetails>();
+            return new Util_GenericResponse<DTO_GroupDetails>
+            {
+                Errors = null,
+                Message = "Something went wrong",
+                StatusCode = HttpStatusCode.InternalServerError,
+                Succsess = false,
+                Value = null
+            };
+        }
     }
 
     public async Task<Util_GenericResponse<DTO_GroupType>>
     CreateGroup
     (
-         string userId,
+        string userId,
+        string userIp,
         string jwtToken,
+        string fogeryToken,
+        string aspNetForgeryToken,
         DTO_CreateGroup createGroup
     )
     {
-        var httpClient = httpClientFactory.CreateClient(Client);
-
-        var expense = new Dictionary<string, string>
+        try
         {
-            { nameof(DTO_CreateGroup.GroupName), createGroup.GroupName },
-            { nameof(DTO_CreateGroup.GroupDescription), createGroup.GroupDescription},
-        };
+            API_Helper_ParamsStringChecking.CheckNullOrEmpty
+            (
+                (nameof(userIp), userIp),
+                (nameof(userId), userId),
+                (nameof(jwtToken), jwtToken),
+                (nameof(fogeryToken), fogeryToken),
+                (nameof(aspNetForgeryToken), aspNetForgeryToken)
+            );
 
-        var contentForm = new FormUrlEncodedContent(expense);
+            var httpClient = API_Helper_HttpClient.NewClientWithCookies
+            (
+                requestConfigurationProxyService.GetBaseAddrOfMainApi(),
+                aspNetForgeryToken,
+                fogeryToken
+            );
 
-        var requestMessage = new HttpRequestMessage(HttpMethod.Post, BaseRoute.RouteGroupManagmentForClient + Route_GroupManagmentRoutes.CreateGroup.Replace("{userId}", userId.ToString()))
+            var expense = new Dictionary<string, string>
+            {
+                { nameof(DTO_CreateGroup.GroupName), createGroup.GroupName },
+                { nameof(DTO_CreateGroup.GroupDescription), createGroup.GroupDescription},
+            };
+
+            var contentForm = new FormUrlEncodedContent(expense);
+
+            var requestMessage = new HttpRequestMessage(HttpMethod.Post, BaseRoute.RouteGroupManagmentForClient + Route_GroupManagmentRoutes.CreateGroup.Replace("{userId}", userId.ToString()))
+            {
+                Content = contentForm
+            };
+
+            API_Helper_HttpClient.AddHeadersToTheRequest
+            (
+                jwtToken,
+                requestMessage,
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.XSRF_TOKEN, fogeryToken),
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.AspNetCoreAntiforgery, aspNetForgeryToken),
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.ClientIP, userIp),
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.ApiKey, requestConfigurationProxyService.GetApiKey())
+            );
+
+            var response = await httpClient.SendAsync(requestMessage);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            var readResult = JsonSerializer.Deserialize<Util_GenericResponse<DTO_GroupType>>(responseContent, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            }) ?? throw new ArgumentNullException("Failed to deserialize the server response. The content may not match the expected format.");
+
+            return readResult;
+        }
+        catch (Exception ex)
         {
-            Content = contentForm
-        };
-        requestMessage.Headers.Add("X-Api-Key", $"{ApiKey}");
+            logger.LogCritical(ex, "Exception in CreateGroup.");
 
-        httpClient.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", jwtToken);
-
-        var response = await httpClient.SendAsync(requestMessage);
-
-        var responseContent = await response.Content.ReadAsStringAsync();
-
-        var readResult = JsonSerializer.Deserialize<Util_GenericResponse<DTO_GroupType>>(responseContent, new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        });
-
-        return readResult ?? new Util_GenericResponse<DTO_GroupType>();
+            return new Util_GenericResponse<DTO_GroupType>
+            {
+                Errors = null,
+                Message = "Something went wrong",
+                StatusCode = HttpStatusCode.InternalServerError,
+                Succsess = false,
+                Value = null
+            };
+        }
     }
 
     public async Task<Util_GenericResponse<DTO_GroupType>>
     EditGroup
     (
         string userId,
+        string userIp,
+        string fogeryToken,
+        string aspNetForgeryToken,
         string jwtToken,
         Guid groupId,
         DTO_EditGroup editGroup
     )
     {
-        var httpClient = httpClientFactory.CreateClient(Client);
-
-        var expense = new Dictionary<string, string>
+        try
         {
-            { nameof(DTO_CreateGroup.GroupName), editGroup.GroupName },
-            { nameof(DTO_CreateGroup.GroupDescription), editGroup.GroupDescription},
-        };
+            API_Helper_ParamsStringChecking.CheckNullOrEmpty
+            (
+                (nameof(userIp), userIp),
+                (nameof(userId), userId),
+                (nameof(jwtToken), jwtToken),
+                (nameof(fogeryToken), fogeryToken),
+                (nameof(aspNetForgeryToken), aspNetForgeryToken)
+            );
 
-        var contentForm = new FormUrlEncodedContent(expense);
+            var httpClient = API_Helper_HttpClient.NewClientWithCookies
+            (
+                requestConfigurationProxyService.GetBaseAddrOfMainApi(),
+                aspNetForgeryToken,
+                fogeryToken
+            );
 
-        var requestMessage = new HttpRequestMessage(HttpMethod.Put, BaseRoute.RouteGroupManagmentForClient + Route_GroupManagmentRoutes.EditGroup.Replace("{userId}", userId.ToString()).Replace("{groupId}", groupId.ToString()))
+            var expense = new Dictionary<string, string>
+            {
+                { nameof(DTO_CreateGroup.GroupName), editGroup.GroupName },
+                { nameof(DTO_CreateGroup.GroupDescription), editGroup.GroupDescription},
+            };
+
+            var contentForm = new FormUrlEncodedContent(expense);
+
+            var requestMessage = new HttpRequestMessage(HttpMethod.Put, BaseRoute.RouteGroupManagmentForClient + Route_GroupManagmentRoutes.EditGroup.Replace("{userId}", userId.ToString()).Replace("{groupId}", groupId.ToString()))
+            {
+                Content = contentForm
+            };
+
+            API_Helper_HttpClient.AddHeadersToTheRequest
+            (
+                jwtToken,
+                requestMessage,
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.XSRF_TOKEN, fogeryToken),
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.AspNetCoreAntiforgery, aspNetForgeryToken),
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.ClientIP, userIp),
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.ApiKey, requestConfigurationProxyService.GetApiKey())
+            );
+
+            var response = await httpClient.SendAsync(requestMessage);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            var readResult = JsonSerializer.Deserialize<Util_GenericResponse<DTO_GroupType>>(responseContent, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            }) ?? throw new ArgumentNullException("Failed to deserialize the server response. The content may not match the expected format.");
+
+            return readResult;
+        }
+        catch (Exception ex)
         {
-            Content = contentForm
-        };
-        requestMessage.Headers.Add("X-Api-Key", $"{ApiKey}");
+            logger.LogCritical(ex, "Exception in EditGroup.");
 
-        httpClient.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", jwtToken);
-
-        var response = await httpClient.SendAsync(requestMessage);
-
-        var responseContent = await response.Content.ReadAsStringAsync();
-
-        var readResult = JsonSerializer.Deserialize<Util_GenericResponse<DTO_GroupType>>(responseContent, new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        });
-
-        return readResult ?? new Util_GenericResponse<DTO_GroupType>();
+            return new Util_GenericResponse<DTO_GroupType>
+            {
+                Errors = null,
+                Message = "Something went wrong",
+                StatusCode = HttpStatusCode.InternalServerError,
+                Succsess = false,
+                Value = null
+            };
+        }
     }
 
     public async Task<Util_GenericResponse<bool>>
     DeleteGroup
     (
         string userId,
+        string userIp,
+        string fogeryToken,
+        string aspNetForgeryToken,
         string jwtToken,
         Guid groupId
     )
     {
-        var httpClient = httpClientFactory.CreateClient(Client);
-
-        var content = new StringContent(JsonSerializer.Serialize(new { userId, groupId }), Encoding.UTF8, "application/json");
-
-        var requestMessage = new HttpRequestMessage(HttpMethod.Delete, BaseRoute.RouteGroupManagmentForClient + Route_GroupManagmentRoutes.DeleteGroup.Replace("{userId}", userId.ToString()).Replace("{groupId}", groupId.ToString()))
+        try
         {
-            Content = content
-        };
-        requestMessage.Headers.Add("X-Api-Key", $"{ApiKey}");
 
-        httpClient.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", jwtToken);
+            API_Helper_ParamsStringChecking.CheckNullOrEmpty
+            (
+                (nameof(userIp), userIp),
+                (nameof(userId), userId),
+                (nameof(jwtToken), jwtToken),
+                (nameof(fogeryToken), fogeryToken),
+                (nameof(aspNetForgeryToken), aspNetForgeryToken)
+            );
 
-        var response = await httpClient.SendAsync(requestMessage);
+            var httpClient = API_Helper_HttpClient.NewClientWithCookies
+            (
+                requestConfigurationProxyService.GetBaseAddrOfMainApi(),
+                aspNetForgeryToken,
+                fogeryToken
+            );
 
-        var responseContent = await response.Content.ReadAsStringAsync();
+            var content = new StringContent(JsonSerializer.Serialize(new { userId, groupId }), Encoding.UTF8, "application/json");
 
-        var readResult = JsonSerializer.Deserialize<Util_GenericResponse<bool>>(responseContent, new JsonSerializerOptions
+            var requestMessage = new HttpRequestMessage(HttpMethod.Delete, BaseRoute.RouteGroupManagmentForClient + Route_GroupManagmentRoutes.DeleteGroup.Replace("{userId}", userId.ToString()).Replace("{groupId}", groupId.ToString()))
+            {
+                Content = content
+            };
+
+            API_Helper_HttpClient.AddHeadersToTheRequest
+            (
+                jwtToken,
+                requestMessage,
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.XSRF_TOKEN, fogeryToken),
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.AspNetCoreAntiforgery, aspNetForgeryToken),
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.ClientIP, userIp),
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.ApiKey, requestConfigurationProxyService.GetApiKey())
+            );
+
+            var response = await httpClient.SendAsync(requestMessage);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            var readResult = JsonSerializer.Deserialize<Util_GenericResponse<bool>>(responseContent, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            }) ?? throw new ArgumentNullException("Failed to deserialize the server response. The content may not match the expected format.");
+
+            return readResult;
+        }
+        catch (Exception ex)
         {
-            PropertyNameCaseInsensitive = true
-        });
+            logger.LogCritical(ex, "Exception in DeleteGroup.");
 
-        return readResult ?? new Util_GenericResponse<bool>();
+            return new Util_GenericResponse<bool>
+            {
+                Errors = null,
+                Message = "Something went wrong",
+                StatusCode = HttpStatusCode.InternalServerError,
+                Succsess = false,
+                Value = false
+            };
+        }
     }
 
     public async Task<Util_GenericResponse<List<DTO_RecivedInvitations>>>
     GetGroupsInvitations
     (
         string userId,
+        string userIp,
         string jwtToken
     )
     {
-        var httpClient = httpClientFactory.CreateClient(Client);
-
-        var content = new StringContent(JsonSerializer.Serialize(new { userId }), Encoding.UTF8, "application/json");
-
-        var requestMessage = new HttpRequestMessage(HttpMethod.Get, BaseRoute.RouteGroupManagmentForClient + Route_GroupManagmentRoutes.GetGroupsInvitations.Replace("{userId}", userId.ToString()))
+        try
         {
-            Content = content
-        };
-        requestMessage.Headers.Add("X-Api-Key", $"{ApiKey}");
+            API_Helper_ParamsStringChecking.CheckNullOrEmpty
+            (
+                (nameof(userIp), userIp),
+                (nameof(userId), userId),
+                (nameof(jwtToken), jwtToken)
+            );
 
-        httpClient.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", jwtToken);
+            var httpClient = API_Helper_HttpClient.CreateClientInstance(requestConfigurationProxyService.GetClient(), httpClientFactory);
 
-        var response = await httpClient.SendAsync(requestMessage);
+            var content = new StringContent(JsonSerializer.Serialize(new { userId }), Encoding.UTF8, "application/json");
 
-        var responseContent = await response.Content.ReadAsStringAsync();
+            var requestMessage = new HttpRequestMessage(HttpMethod.Get, BaseRoute.RouteGroupManagmentForClient + Route_GroupManagmentRoutes.GetGroupsInvitations.Replace("{userId}", userId.ToString()))
+            {
+                Content = content
+            };
 
-        var readResult = JsonSerializer.Deserialize<Util_GenericResponse<List<DTO_RecivedInvitations>>>(responseContent, new JsonSerializerOptions
+            API_Helper_HttpClient.AddHeadersToTheRequest
+            (
+                jwtToken,
+                requestMessage,
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.ClientIP, userIp),
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.ApiKey, requestConfigurationProxyService.GetApiKey())
+            );
+
+            var response = await httpClient.SendAsync(requestMessage);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            var readResult = JsonSerializer.Deserialize<Util_GenericResponse<List<DTO_RecivedInvitations>>>(responseContent, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            }) ?? throw new ArgumentNullException("Failed to deserialize the server response. The content may not match the expected format.");
+
+            return readResult;
+        }
+        catch (Exception ex)
         {
-            PropertyNameCaseInsensitive = true
-        });
+            logger.LogCritical(ex, "Exception in GetGroupsInvitations.");
 
-        return readResult ?? new Util_GenericResponse<List<DTO_RecivedInvitations>>();
+            return new Util_GenericResponse<List<DTO_RecivedInvitations>>
+            {
+                Errors = null,
+                Message = "Something went wrong",
+                StatusCode = HttpStatusCode.InternalServerError,
+                Succsess = false,
+                Value = null
+            };
+        }
     }
 
     public async Task<Util_GenericResponse<List<DTO_SentInvitations>>>
     GetSentGroupInvitations
     (
         string userId,
+        string userIp,
         string jwtToken
     )
     {
-        var httpClient = httpClientFactory.CreateClient(Client);
-
-        var content = new StringContent(JsonSerializer.Serialize(new { userId }), Encoding.UTF8, "application/json");
-
-        var requestMessage = new HttpRequestMessage(HttpMethod.Get, BaseRoute.RouteGroupManagmentForClient + Route_GroupManagmentRoutes.GetSentGroupInvitations.Replace("{userId}", userId.ToString()))
+        try
         {
-            Content = content
-        };
-        requestMessage.Headers.Add("X-Api-Key", $"{ApiKey}");
+            API_Helper_ParamsStringChecking.CheckNullOrEmpty
+            (
+                (nameof(userIp), userIp),
+                (nameof(userId), userId),
+                (nameof(jwtToken), jwtToken)
+            );
 
-        httpClient.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", jwtToken);
+            var httpClient = API_Helper_HttpClient.CreateClientInstance(requestConfigurationProxyService.GetClient(), httpClientFactory);
 
-        var response = await httpClient.SendAsync(requestMessage);
+            var content = new StringContent(JsonSerializer.Serialize(new { userId }), Encoding.UTF8, "application/json");
 
-        var responseContent = await response.Content.ReadAsStringAsync();
+            var requestMessage = new HttpRequestMessage(HttpMethod.Get, BaseRoute.RouteGroupManagmentForClient + Route_GroupManagmentRoutes.GetSentGroupInvitations.Replace("{userId}", userId.ToString()))
+            {
+                Content = content
+            };
 
-        var readResult = JsonSerializer.Deserialize<Util_GenericResponse<List<DTO_SentInvitations>>>(responseContent, new JsonSerializerOptions
+            API_Helper_HttpClient.AddHeadersToTheRequest
+            (
+                jwtToken,
+                requestMessage,
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.ClientIP, userIp),
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.ApiKey, requestConfigurationProxyService.GetApiKey())
+            );
+
+            var response = await httpClient.SendAsync(requestMessage);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            var readResult = JsonSerializer.Deserialize<Util_GenericResponse<List<DTO_SentInvitations>>>(responseContent, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            }) ?? throw new ArgumentNullException("Failed to deserialize the server response. The content may not match the expected format.");
+
+            return readResult;
+        }
+        catch (Exception ex)
         {
-            PropertyNameCaseInsensitive = true
-        });
+            logger.LogCritical(ex, "Exception in GetSentGroupInvitations.");
 
-        return readResult ?? new Util_GenericResponse<List<DTO_SentInvitations>>();
+            return new Util_GenericResponse<List<DTO_SentInvitations>>
+            {
+                Errors = null,
+                Message = "Something went wrong",
+                StatusCode = HttpStatusCode.InternalServerError,
+                Succsess = false,
+                Value = null
+            };
+        }
     }
 
     public async Task<Util_GenericResponse<bool>>
     SendInvitation
     (
         string userId,
+        string userIp,
         string jwtToken,
+        string fogeryToken,
+        string aspNetForgeryToken,
         DTO_SendInvitationRequest dTO_SendInvitation
     )
     {
-        var httpClient = httpClientFactory.CreateClient(Client);
-
-        dTO_SendInvitation.InvitingUserId = Guid.Parse(userId);
-
-        var content = new StringContent(JsonSerializer.Serialize(dTO_SendInvitation), Encoding.UTF8, "application/json");
-
-        var requestMessage = new HttpRequestMessage(HttpMethod.Post, BaseRoute.RouteGroupManagmentForClient + Route_GroupManagmentRoutes.SendInvitation.Replace("{userId}", userId.ToString()))
+        try
         {
-            Content = content
-        };
-        requestMessage.Headers.Add("X-Api-Key", $"{ApiKey}");
+            API_Helper_ParamsStringChecking.CheckNullOrEmpty
+            (
+                (nameof(userIp), userIp),
+                (nameof(userId), userId),
+                (nameof(jwtToken), jwtToken),
+                (nameof(fogeryToken), fogeryToken),
+                (nameof(aspNetForgeryToken), aspNetForgeryToken)
+            );
 
-        httpClient.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", jwtToken);
+            var httpClient = API_Helper_HttpClient.NewClientWithCookies
+            (
+                requestConfigurationProxyService.GetBaseAddrOfMainApi(),
+                aspNetForgeryToken,
+                fogeryToken
+            );
 
-        var response = await httpClient.SendAsync(requestMessage);
+            dTO_SendInvitation.InvitingUserId = Guid.Parse(userId);
 
-        var responseContent = await response.Content.ReadAsStringAsync();
+            var content = new StringContent(JsonSerializer.Serialize(dTO_SendInvitation), Encoding.UTF8, "application/json");
 
-        var readResult = JsonSerializer.Deserialize<Util_GenericResponse<bool>>(responseContent, new JsonSerializerOptions
+            var requestMessage = new HttpRequestMessage(HttpMethod.Post, BaseRoute.RouteGroupManagmentForClient + Route_GroupManagmentRoutes.SendInvitation.Replace("{userId}", userId.ToString()))
+            {
+                Content = content
+            };
+
+            API_Helper_HttpClient.AddHeadersToTheRequest
+            (
+                jwtToken,
+                requestMessage,
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.XSRF_TOKEN, fogeryToken),
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.AspNetCoreAntiforgery, aspNetForgeryToken),
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.ClientIP, userIp),
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.ApiKey, requestConfigurationProxyService.GetApiKey())
+            );
+
+            var response = await httpClient.SendAsync(requestMessage);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            var readResult = JsonSerializer.Deserialize<Util_GenericResponse<bool>>(responseContent, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            }) ?? throw new ArgumentNullException("Failed to deserialize the server response. The content may not match the expected format.");
+
+            if (readResult.Succsess)
+                await _hubContext.Clients.User(dTO_SendInvitation.InvitedUserId.ToString()).SendAsync("ReceiveGroupInvitation");
+
+            return readResult;
+        }
+        catch (Exception ex)
         {
-            PropertyNameCaseInsensitive = true
-        });
+            logger.LogCritical(ex, "Exception in SendInvitation.");
 
-        return readResult ?? new Util_GenericResponse<bool>();
+            return new Util_GenericResponse<bool>
+            {
+                Errors = null,
+                Message = "Something went wrong",
+                StatusCode = HttpStatusCode.InternalServerError,
+                Succsess = false,
+                Value = false
+            };
+        }
     }
 
     public async Task<Util_GenericResponse<bool>>
     AcceptInvitation
     (
         string userId,
+        string userIp,
         string jwtToken,
+        string fogeryToken,
+        string aspNetForgeryToken,
         DTO_InvitationRequestActions acceptInvitationRequest
     )
     {
-        var httpClient = httpClientFactory.CreateClient(Client);
-
-        acceptInvitationRequest.InvitedUserId = Guid.Parse(userId);
-
-        var content = new StringContent(JsonSerializer.Serialize(acceptInvitationRequest), Encoding.UTF8, "application/json");
-
-        var requestMessage = new HttpRequestMessage(HttpMethod.Post, BaseRoute.RouteGroupManagmentForClient + Route_GroupManagmentRoutes.AcceptInvitation.Replace("{userId}", userId.ToString()))
+        try
         {
-            Content = content
-        };
-        requestMessage.Headers.Add("X-Api-Key", $"{ApiKey}");
+            API_Helper_ParamsStringChecking.CheckNullOrEmpty
+            (
+                (nameof(userIp), userIp),
+                (nameof(userId), userId),
+                (nameof(jwtToken), jwtToken),
+                (nameof(fogeryToken), fogeryToken),
+                (nameof(aspNetForgeryToken), aspNetForgeryToken)
+            );
 
-        httpClient.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", jwtToken);
+            var httpClient = API_Helper_HttpClient.NewClientWithCookies
+            (
+                requestConfigurationProxyService.GetBaseAddrOfMainApi(),
+                aspNetForgeryToken,
+                fogeryToken
+            );
 
-        var response = await httpClient.SendAsync(requestMessage);
+            acceptInvitationRequest.InvitedUserId = Guid.Parse(userId);
 
-        var responseContent = await response.Content.ReadAsStringAsync();
+            var content = new StringContent(JsonSerializer.Serialize(acceptInvitationRequest), Encoding.UTF8, "application/json");
 
-        var readResult = JsonSerializer.Deserialize<Util_GenericResponse<bool>>(responseContent, new JsonSerializerOptions
+            var requestMessage = new HttpRequestMessage(HttpMethod.Post, BaseRoute.RouteGroupManagmentForClient + Route_GroupManagmentRoutes.AcceptInvitation.Replace("{userId}", userId.ToString()))
+            {
+                Content = content
+            };
+
+            API_Helper_HttpClient.AddHeadersToTheRequest
+            (
+                jwtToken,
+                requestMessage,
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.XSRF_TOKEN, fogeryToken),
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.AspNetCoreAntiforgery, aspNetForgeryToken),
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.ClientIP, userIp),
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.ApiKey, requestConfigurationProxyService.GetApiKey())
+            );
+
+            var response = await httpClient.SendAsync(requestMessage);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            var readResult = JsonSerializer.Deserialize<Util_GenericResponse<bool>>(responseContent, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            }) ?? throw new ArgumentNullException("Failed to deserialize the server response. The content may not match the expected format.");
+
+            if (readResult.Succsess)
+            {
+                await _hubContext.Clients.User(acceptInvitationRequest.InvitingUserId.ToString())
+                                         .SendAsync("AcceptedInvitation", acceptInvitationRequest.GroupName, acceptInvitationRequest.UserWhoAcceptedTheInvitation);
+            }
+
+            return readResult;
+
+        }
+        catch (Exception ex)
         {
-            PropertyNameCaseInsensitive = true
-        });
+            logger.LogCritical(ex, "Exception in AcceptInvitation.");
 
-        return readResult ?? new Util_GenericResponse<bool>();
+            return new Util_GenericResponse<bool>
+            {
+                Errors = null,
+                Message = "Something went wrong",
+                StatusCode = HttpStatusCode.InternalServerError,
+                Succsess = false,
+                Value = false
+            };
+        }
     }
 
     public async Task<Util_GenericResponse<bool>>
     RejectInvitation
     (
         string userId,
+        string userIp,
         string jwtToken,
+        string fogeryToken,
+        string aspNetForgeryToken,
         DTO_InvitationRequestActions rejectInvitationRequest
     )
     {
-        var httpClient = httpClientFactory.CreateClient(Client);
-
-        rejectInvitationRequest.InvitedUserId = Guid.Parse(userId);
-
-        var content = new StringContent(JsonSerializer.Serialize(rejectInvitationRequest), Encoding.UTF8, "application/json");
-
-        var requestMessage = new HttpRequestMessage(HttpMethod.Post, BaseRoute.RouteGroupManagmentForClient + Route_GroupManagmentRoutes.RejectInvitation.Replace("{userId}", userId.ToString()))
+        try
         {
-            Content = content
-        };
-        requestMessage.Headers.Add("X-Api-Key", $"{ApiKey}");
+            API_Helper_ParamsStringChecking.CheckNullOrEmpty
+            (
+                (nameof(userIp), userIp),
+                (nameof(userId), userId),
+                (nameof(jwtToken), jwtToken),
+                (nameof(fogeryToken), fogeryToken),
+                (nameof(aspNetForgeryToken), aspNetForgeryToken)
+            );
 
-        httpClient.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", jwtToken);
+            var httpClient = API_Helper_HttpClient.NewClientWithCookies
+            (
+                requestConfigurationProxyService.GetBaseAddrOfMainApi(),
+                aspNetForgeryToken,
+                fogeryToken
+            );
 
-        var response = await httpClient.SendAsync(requestMessage);
+            rejectInvitationRequest.InvitedUserId = Guid.Parse(userId);
 
-        var responseContent = await response.Content.ReadAsStringAsync();
+            var content = new StringContent(JsonSerializer.Serialize(rejectInvitationRequest), Encoding.UTF8, "application/json");
 
-        var readResult = JsonSerializer.Deserialize<Util_GenericResponse<bool>>(responseContent, new JsonSerializerOptions
+            var requestMessage = new HttpRequestMessage(HttpMethod.Post, BaseRoute.RouteGroupManagmentForClient + Route_GroupManagmentRoutes.RejectInvitation.Replace("{userId}", userId.ToString()))
+            {
+                Content = content
+            };
+
+            API_Helper_HttpClient.AddHeadersToTheRequest
+            (
+                jwtToken,
+                requestMessage,
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.XSRF_TOKEN, fogeryToken),
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.AspNetCoreAntiforgery, aspNetForgeryToken),
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.ClientIP, userIp),
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.ApiKey, requestConfigurationProxyService.GetApiKey())
+            );
+
+            var response = await httpClient.SendAsync(requestMessage);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            var readResult = JsonSerializer.Deserialize<Util_GenericResponse<bool>>(responseContent, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            }) ?? throw new ArgumentNullException("Failed to deserialize the server response. The content may not match the expected format.");
+
+            return readResult;
+        }
+        catch (Exception ex)
         {
-            PropertyNameCaseInsensitive = true
-        });
+            logger.LogCritical(ex, "Exception in RejectInvitation.");
 
-        return readResult ?? new Util_GenericResponse<bool>();
+            return new Util_GenericResponse<bool>
+            {
+                Errors = null,
+                Message = "Something went wrong",
+                StatusCode = HttpStatusCode.InternalServerError,
+                Succsess = false,
+                Value = false
+            };
+        }
     }
 
     public async Task<Util_GenericResponse<bool>>
     DeleteInvitation
     (
         string userId,
+        string userIp,
         string jwtToken,
+        string fogeryToken,
+        string aspNetForgeryToken,
         DTO_InvitationRequestActions deleteInvitationRequest
     )
     {
-        var httpClient = httpClientFactory.CreateClient(Client);
-
-        deleteInvitationRequest.InvitingUserId = Guid.Parse(userId);
-
-        var content = new StringContent(JsonSerializer.Serialize(deleteInvitationRequest), Encoding.UTF8, "application/json");
-
-        var requestMessage = new HttpRequestMessage(HttpMethod.Delete, BaseRoute.RouteGroupManagmentForClient + Route_GroupManagmentRoutes.DeleteInvitation.Replace("{userId}", userId.ToString()))
+        try
         {
-            Content = content
-        };
-        requestMessage.Headers.Add("X-Api-Key", $"{ApiKey}");
+            API_Helper_ParamsStringChecking.CheckNullOrEmpty
+            (
+                (nameof(userIp), userIp),
+                (nameof(userId), userId),
+                (nameof(jwtToken), jwtToken),
+                (nameof(fogeryToken), fogeryToken),
+                (nameof(aspNetForgeryToken), aspNetForgeryToken)
+            );
 
-        httpClient.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", jwtToken);
+            var httpClient = API_Helper_HttpClient.NewClientWithCookies
+            (
+                requestConfigurationProxyService.GetBaseAddrOfMainApi(),
+                aspNetForgeryToken,
+                fogeryToken
+            );
 
-        var response = await httpClient.SendAsync(requestMessage);
+            deleteInvitationRequest.InvitingUserId = Guid.Parse(userId);
 
-        var responseContent = await response.Content.ReadAsStringAsync();
+            var content = new StringContent(JsonSerializer.Serialize(deleteInvitationRequest), Encoding.UTF8, "application/json");
 
-        var readResult = JsonSerializer.Deserialize<Util_GenericResponse<bool>>(responseContent, new JsonSerializerOptions
+            var requestMessage = new HttpRequestMessage(HttpMethod.Delete, BaseRoute.RouteGroupManagmentForClient + Route_GroupManagmentRoutes.DeleteInvitation.Replace("{userId}", userId.ToString()))
+            {
+                Content = content
+            };
+
+            API_Helper_HttpClient.AddHeadersToTheRequest
+            (
+                jwtToken,
+                requestMessage,
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.XSRF_TOKEN, fogeryToken),
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.AspNetCoreAntiforgery, aspNetForgeryToken),
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.ClientIP, userIp),
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.ApiKey, requestConfigurationProxyService.GetApiKey())
+            );
+
+            var response = await httpClient.SendAsync(requestMessage);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            var readResult = JsonSerializer.Deserialize<Util_GenericResponse<bool>>(responseContent, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            }) ?? throw new ArgumentNullException("Failed to deserialize the server response. The content may not match the expected format.");
+
+            return readResult;
+        }
+        catch (Exception ex)
         {
-            PropertyNameCaseInsensitive = true
-        });
+            logger.LogCritical(ex, "Exception in DeleteInvitation.");
 
-        return readResult ?? new Util_GenericResponse<bool>();
+            return new Util_GenericResponse<bool>
+            {
+                Errors = null,
+                Message = "Something went wrong",
+                StatusCode = HttpStatusCode.InternalServerError,
+                Succsess = false,
+                Value = false
+            };
+        }
     }
 
     public async Task<Util_GenericResponse<bool>>
     DeleteUsersFromGroup
     (
         string userId,
+        string userIp,
         string jwtToken,
+        string fogeryToken,
+        string aspNetForgeryToken,
         Guid groupId,
         List<DTO_UsersGroupDetails> UsersToRemoveFromGroup
     )
     {
-        var httpClient = httpClientFactory.CreateClient(Client);
-
-        var content = new StringContent(JsonSerializer.Serialize(UsersToRemoveFromGroup), Encoding.UTF8, "application/json");
-
-        var requestMessage = new HttpRequestMessage(HttpMethod.Delete, BaseRoute.RouteGroupManagmentForClient + Route_GroupManagmentRoutes.DeleteUsersFromGroup.Replace("{userId}", userId.ToString()).Replace("{groupId}", groupId.ToString()))
+        try
         {
-            Content = content
-        };
-        requestMessage.Headers.Add("X-Api-Key", $"{ApiKey}");
+            API_Helper_ParamsStringChecking.CheckNullOrEmpty
+            (
+                (nameof(userIp), userIp),
+                (nameof(userId), userId),
+                (nameof(jwtToken), jwtToken),
+                (nameof(fogeryToken), fogeryToken),
+                (nameof(aspNetForgeryToken), aspNetForgeryToken)
+            );
 
-        httpClient.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", jwtToken);
+            var httpClient = API_Helper_HttpClient.NewClientWithCookies
+            (
+                requestConfigurationProxyService.GetBaseAddrOfMainApi(),
+                aspNetForgeryToken,
+                fogeryToken
+            );
 
-        var response = await httpClient.SendAsync(requestMessage);
+            var content = new StringContent(JsonSerializer.Serialize(UsersToRemoveFromGroup), Encoding.UTF8, "application/json");
 
-        var responseContent = await response.Content.ReadAsStringAsync();
+            var requestMessage = new HttpRequestMessage(HttpMethod.Delete, BaseRoute.RouteGroupManagmentForClient + Route_GroupManagmentRoutes.DeleteUsersFromGroup.Replace("{userId}", userId.ToString()).Replace("{groupId}", groupId.ToString()))
+            {
+                Content = content
+            };
 
-        var readResult = JsonSerializer.Deserialize<Util_GenericResponse<bool>>(responseContent, new JsonSerializerOptions
+            API_Helper_HttpClient.AddHeadersToTheRequest
+            (
+                jwtToken,
+                requestMessage,
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.XSRF_TOKEN, fogeryToken),
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.AspNetCoreAntiforgery, aspNetForgeryToken),
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.ClientIP, userIp),
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.ApiKey, requestConfigurationProxyService.GetApiKey())
+            );
+
+            var response = await httpClient.SendAsync(requestMessage);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            var readResult = JsonSerializer.Deserialize<Util_GenericResponse<bool>>(responseContent, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            }) ?? throw new ArgumentNullException("Failed to deserialize the server response. The content may not match the expected format.");
+
+            if (readResult.Succsess)
+                await _hubContext.Clients
+                                 .Users(UsersToRemoveFromGroup.Select(x => x.UserId))
+                                 .SendAsync("RemovedFromTheGroup", UsersToRemoveFromGroup.Select(x => x.GroupName).FirstOrDefault());
+
+            return readResult;
+        }
+        catch (Exception ex)
         {
-            PropertyNameCaseInsensitive = true
-        });
+            logger.LogCritical(ex, "Exception in DeleteUsersFromGroup.");
 
-        return readResult ?? new Util_GenericResponse<bool>();
+            return new Util_GenericResponse<bool>
+            {
+                Errors = null,
+                Message = "Something went wrong",
+                StatusCode = HttpStatusCode.InternalServerError,
+                Succsess = false,
+                Value = false
+            };
+        }
     }
 }

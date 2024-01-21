@@ -35,15 +35,23 @@
         padding: 10px;
         text-align: center;
     }
+
+    .colorChange {
+        color: white !important;
+    }
+
+    .mud-paper-outlined{
+        border: none;
+    }
 </style>
 
-<MudBadge Content="3" Overlap="true" Dot="true" Color="Color.Secondary">
+<MudBadge Content="3" Overlap="true" Dot="true" Color="Color.Secondary" Visible="badgeVisible">
     <MudIconButton OnClick="ToggleOpenNotifications" Icon="@Icons.Material.Outlined.Notifications" Color="Color.Inherit" Edge="Edge.End" />
 </MudBadge>
 <MudPopover Open="_isOpen" OverflowBehavior="OverflowBehavior.FlipAlways" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.BottomRight" Paper="true">
     <MudPaper Outlined="true" Class="notifications-container">
         <ul class="mud-list">
-            @if (Invitations != null && Invitations.Any())
+            @if (Invitations != null && NotificationsList != null)
             {
                 @foreach (var invitation in Invitations)
                 {
@@ -51,7 +59,7 @@
                         <div class="notification-avatar">
                             <div class="mud-avatar">
                                 <div class="mud-avatar-child">
-                                    <MudIcon Icon="@Icons.Material.Outlined.Person" />
+                                    <MudIcon Icon="@Icons.Material.Outlined.Person" Color="Color.Primary" />
                                 </div>
                             </div>
                         </div>
@@ -62,16 +70,49 @@
                             <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="accept-button" OnClick="() => AcceptInvitation(invitation)">
                                 @if (_processing)
                                 {
-                                    <MudProgressCircular Class="ms-n1" Size="MudBlazor.Size.Small" Indeterminate="true" Color="Color.Primary" />
-                                    <MudText Class="ms-2" Color="Color.Primary">Accepting</MudText>
+                                    <MudProgressCircular Class="ms-n1 colorChange" Size="MudBlazor.Size.Small" Indeterminate="true" />
+                                    <MudText Class="ms-2">Accepting</MudText>
                                 }
                                 else
                                 {
-                                    <MudText>Accept</MudText>
+                                    <MudText>@BtnText</MudText>
                                 }
                             </MudButton>
                         </div>
                     </li>
+
+                    <MudDivider />
+                }
+
+                foreach (var notification in NotificationsList)
+                {
+                    <li class="notification-item">
+                        <div class="notification-avatar">
+                            <div class="mud-avatar">
+                                <div class="mud-avatar-child">
+                                    <MudIcon Icon="@Icons.Material.Outlined.Notifications" Color="Color.Primary" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="notification-message">
+                            <div class="mud-text">@notification.NotificationMessage</div>
+                        </div>
+                        <div class="notification-actions">
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="accept-button" OnClick="() => DeleteNotification(notification.NotificationId)">
+                                @if (_processingNotificationDelete)
+                                {
+                                    <MudProgressCircular Class="ms-n1 colorChange" Size="MudBlazor.Size.Small" Indeterminate="true" />
+                                    <MudText Class="ms-2">Deleting</MudText>
+                                }
+                                else
+                                {
+                                    <MudText>Delete</MudText>
+                                }
+                            </MudButton>
+                        </div>
+                    </li>
+
+                    <MudDivider />
                 }
             }
             else
@@ -81,3 +122,8 @@
         </ul>
     </MudPaper>
 </MudPopover>
+
+@if (badgeVisible)
+{
+    <audio autoplay><source src="audio/notification.mp3" /></audio>
+}

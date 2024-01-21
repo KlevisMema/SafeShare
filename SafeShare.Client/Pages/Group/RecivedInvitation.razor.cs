@@ -13,6 +13,8 @@ public partial class RecivedInvitation
     [Inject] public ISnackbar _snackbar { get; set; } = null!;
     private List<ClientDto_RecivedInvitations> RecivedInvitations { get; set; } = [];
 
+    private bool _processingRejectInvitation = false;
+    private bool _processingAcceptInvitation = false;
 
     protected override void OnInitialized()
     {
@@ -41,9 +43,13 @@ public partial class RecivedInvitation
         ClientDto_GroupType? group
     )
     {
-        if (group != null)
+        if (group is not null)
         {
-            RecivedInvitations.Find(inv=> inv.GroupId == group.GroupId).InvitationStatus = ClientDTO.Enums.InvitationStatus.Accepted;
+            var findInvitation = RecivedInvitations.Find(inv => inv.GroupId == group.GroupId);
+
+            if (findInvitation is not null)
+                findInvitation.InvitationStatus = ClientDTO.Enums.InvitationStatus.Accepted;
+
             StateHasChanged();
         }
     }
@@ -54,6 +60,8 @@ public partial class RecivedInvitation
         ClientDto_RecivedInvitations recivedInvitation
     )
     {
+        _processingRejectInvitation = true;
+
         var rejectInvitationResult = await _groupManagmentService.RejectInvitation(new ClientDto_InvitationRequestActions
         {
             GroupId = recivedInvitation.GroupId,
@@ -63,6 +71,8 @@ public partial class RecivedInvitation
 
         if (rejectInvitationResult.Succsess)
             RecivedInvitations.Remove(recivedInvitation);
+
+        _processingRejectInvitation = false;
     }
 
     private async Task
@@ -71,6 +81,8 @@ public partial class RecivedInvitation
         ClientDto_RecivedInvitations recivedInvitation
     )
     {
+        _processingAcceptInvitation = true;
+
         var acceptInvitationResult = await _groupManagmentService.AcceptInvitation(new ClientDto_InvitationRequestActions
         {
             GroupId = recivedInvitation.GroupId,
@@ -103,5 +115,7 @@ public partial class RecivedInvitation
             default:
                 break;
         }
+
+        _processingAcceptInvitation = false;
     }
 }

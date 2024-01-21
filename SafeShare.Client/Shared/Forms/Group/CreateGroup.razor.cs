@@ -45,7 +45,7 @@ public partial class CreateGroup
 
         var createGroupResult = await _userGroupeManagment.CreateGroup(createGroup);
 
-        if (!createGroupResult.Succsess)
+        if (!createGroupResult.Succsess && createGroupResult.Value is null)
         {
             _snackbar.Add(createGroupResult.Message, Severity.Warning,
                 config => { config.CloseAfterNavigation = true; });
@@ -57,6 +57,11 @@ public partial class CreateGroup
         {
             _snackbar.Add(createGroupResult.Message, Severity.Success,
                 config => { config.CloseAfterNavigation = true; });
+
+            var getGroupDetails = await _userGroupeManagment.GetGroupDetails(createGroupResult.Value!.GroupId);
+
+            if (getGroupDetails.Succsess && getGroupDetails.Value is not null)
+                _appState.GroupDetails(getGroupDetails.Value);
 
             _appState.NewGroupAdded(createGroupResult.Value);
         }

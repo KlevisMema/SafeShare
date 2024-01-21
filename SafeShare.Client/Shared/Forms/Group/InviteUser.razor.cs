@@ -75,7 +75,7 @@ public partial class InviteUser
     {
         var result = await _userManagmentService.SearchUserByUserName(value ?? string.Empty, token);
 
-        if (!result.Succsess)
+        if (!result.Succsess && result.StatusCode == System.Net.HttpStatusCode.InternalServerError)
         {
             _snackbar.Add
             (

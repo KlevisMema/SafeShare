@@ -10,6 +10,7 @@ using SafeShare.ProxyApi.Container.Interfaces;
 using SafeShare.Utilities.SafeShareApi.Responses;
 using SafeShare.DataTransormObject.SafeShareApi.Security;
 using SafeShare.DataTransormObject.SafeShareApi.Authentication;
+using SafeShare.ProxyApi.Helpers;
 
 namespace SafeShare.ProxyApi.Controllers;
 
@@ -118,18 +119,16 @@ public class AuthProxyController(IProxyAuthentication authenticationService) : C
     public async Task<ActionResult>
     LogOut
     (
-        
+
     )
     {
         var jwtToken = Request.Cookies["AuthToken"] ?? string.Empty;
 
-        bool isUserId = Guid.TryParse(UserId(jwtToken), out Guid userId);
+        bool isUserId = Guid.TryParse(API_Helper_ExtractInfoFromRequestCookie.UserId(API_Helper_ExtractInfoFromRequestCookie.JwtToken(Request)), out var userId);
 
         if (!isUserId)
-        {
             return NotFound();
-        }
-        
+
         var result = await authenticationService.LogoutUser(userId, jwtToken);
 
         if (result.Headers.Contains("Set-Cookie"))
@@ -172,6 +171,8 @@ public class AuthProxyController(IProxyAuthentication authenticationService) : C
         ClearCookie("AuthToken");
         ClearCookie("RefreshAuthToken");
         ClearCookie("RefreshAuthTokenId");
+        ClearCookie(".AspNetCore.Antiforgery.NcD0snFZIjg");
+        ClearCookie("XSRF-TOKEN");
     }
 
     private void
@@ -189,7 +190,7 @@ public class AuthProxyController(IProxyAuthentication authenticationService) : C
             Expires = DateTimeOffset.UtcNow.AddDays(-1)
         });
     }
-    
+
     private static string
     UserId
     (

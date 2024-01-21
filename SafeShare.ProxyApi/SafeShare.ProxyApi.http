@@ -1,6 +1,0 @@
-@SafeShare.ProxyApi_HostAddress = http://localhost:5184
-
-GET {{SafeShare.ProxyApi_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###

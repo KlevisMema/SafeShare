@@ -32,6 +32,7 @@ using Microsoft.AspNetCore.DataProtection;
 using SafeShare.Security.API.ActionFilters;
 using SafeShare.Security.User.Implementation;
 using SafeShare.ExpenseManagement.Interfaces;
+using SafeShare.API.Helpers.AttributeFilters;
 using SafeShare.GroupManagment.GroupManagment;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
@@ -56,7 +57,7 @@ namespace SafeShare.API.Startup;
 /// <summary>
 /// Entry point for registering all services in the application.
 /// </summary>
-public static class API_Helper_ProgramStartup
+internal static class API_Helper_ProgramStartup
 {
     /// <summary>
     /// Injects all required services into the service collection.
@@ -72,32 +73,50 @@ public static class API_Helper_ProgramStartup
        IHostBuilder host
     )
     {
-        Services.AddMemoryCache();
-        Services.AddEndpointsApiExplorer();
-        Services.AddSwaggerGen();
-        Services.AddHttpContextAccessor();
-        Services.AddDataProtection()
-                .SetApplicationName("SafeShare")
-                .SetDefaultKeyLifetime(TimeSpan.FromDays(7))
-                .UseCryptographicAlgorithms(new AuthenticatedEncryptorConfiguration
-                {
-                    EncryptionAlgorithm = EncryptionAlgorithm.AES_256_GCM,
-                    ValidationAlgorithm = ValidationAlgorithm.HMACSHA512
-                });
+        try
+        {
+            Services.AddAntiforgery(options =>
+            {
+                options.HeaderName = "X-XSRF-TOKEN";
+                options.Cookie.HttpOnly = true;
+                options.Cookie.SameSite = SameSiteMode.Strict;
+                options.Cookie.IsEssential = true;
+            });
 
-        AddDatabase(Services, Configuration);
-        AddConfigurations(Services, Configuration);
-        AddAutomapper(Services);
-        AddSwagger(Services, Configuration);
-        AddServices(Services);
-        AddCors(Services, Configuration);
-        Services.AddControllers();
-        AddAPIRateLimiting(Services);
-        AddSerilog(host);
-        AddMediatR(Services);
-        EnforceTLS(Services);
+            Services.AddScoped<API_Helper_AntiforgeryValidationFilter>();
 
-        return Services;
+            Services.AddControllers();
+            Services.AddMemoryCache();
+            Services.AddEndpointsApiExplorer();
+            Services.AddSwaggerGen();
+            Services.AddHttpContextAccessor();
+
+            Services.AddDataProtection()
+                    .SetApplicationName("SafeShare")
+                    .SetDefaultKeyLifetime(TimeSpan.FromDays(7))
+                    .UseCryptographicAlgorithms(new AuthenticatedEncryptorConfiguration
+                    {
+                        EncryptionAlgorithm = EncryptionAlgorithm.AES_256_GCM,
+                        ValidationAlgorithm = ValidationAlgorithm.HMACSHA512
+                    });
+
+            AddDatabase(Services, Configuration);
+            AddConfigurations(Services, Configuration);
+            AddAutomapper(Services);
+            AddSwagger(Services, Configuration);
+            AddServices(Services);
+            AddCors(Services, Configuration);
+            AddAPIRateLimiting(Services, Configuration);
+            AddSerilog(host);
+            AddMediatR(Services);
+            EnforceTLS(Services);
+
+            return Services;
+        }
+        catch (Exception)
+        {
+            throw;
+        }
     }
     /// <summary>
     ///     Add configurations in the container
@@ -111,11 +130,16 @@ public static class API_Helper_ProgramStartup
         IConfiguration configuration
     )
     {
+        bool canParseLimitToInt = double.TryParse(configuration.GetSection("DefaultTokenExpirationTimeInHours").Value, out double TokenLifespan);
+
+        if (canParseLimitToInt && TokenLifespan <= 0)
+            throw new Exception("Token lifespan can not be 0 or lower");
+
         services.Configure<Util_JwtSettings>(configuration.GetSection(Util_JwtSettings.SectionName));
         services.Configure<API_Helper_CookieSettings>(configuration.GetSection(API_Helper_CookieSettings.SectionName));
         services.Configure<DataProtectionTokenProviderOptions>
         (
-            opt => opt.TokenLifespan = TimeSpan.FromHours(double.Parse(configuration.GetSection("DefaultTokenExpirationTimeInHours").Value!))
+            opt => opt.TokenLifespan = TimeSpan.FromHours(TokenLifespan)
         );
         services.Configure<Util_ResetPasswordSettings>(configuration.GetSection(Util_ResetPasswordSettings.SectionName));
         services.Configure<Util_ActivateAccountSettings>(configuration.GetSection(Util_ActivateAccountSettings.SectionName));
@@ -140,7 +164,6 @@ public static class API_Helper_ProgramStartup
             });
         });
     }
-
     /// <summary>
     ///     Add custom services in the container.
     /// </summary>
@@ -186,20 +209,20 @@ public static class API_Helper_ProgramStartup
         //Services.AddDbContext<ApiClientDbContext>(options => options.UseSqlServer(Environment.GetEnvironmentVariable("AZURE_SQL_CONNECTIONSTRING")));
 
         Services.AddIdentity<ApplicationUser, IdentityRole>
-            (
-                options =>
-                {
-                    options.User.RequireUniqueEmail = true;
-                    options.Password.RequiredLength = 6;
-                    options.Lockout.MaxFailedAccessAttempts = 10;
-                    options.Lockout.AllowedForNewUsers = true;
-                    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
-                    options.SignIn.RequireConfirmedEmail = true;
-                    options.SignIn.RequireConfirmedPhoneNumber = false;
-                }
-            )
-            .AddEntityFrameworkStores<ApplicationDbContext>()
-            .AddDefaultTokenProviders();
+        (
+            options =>
+            {
+                options.User.RequireUniqueEmail = true;
+                options.Password.RequiredLength = 6;
+                options.Lockout.MaxFailedAccessAttempts = 10;
+                options.Lockout.AllowedForNewUsers = true;
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+                options.SignIn.RequireConfirmedEmail = true;
+                options.SignIn.RequireConfirmedPhoneNumber = false;
+            }
+        )
+        .AddEntityFrameworkStores<ApplicationDbContext>()
+        .AddDefaultTokenProviders();
     }
     /// <summary>
     ///     Add automaper in the container.
@@ -382,13 +405,41 @@ public static class API_Helper_ProgramStartup
         IConfiguration Configuration
     )
     {
+        string? MainClientBaseAddr = Configuration.GetSection("ClientOrigin").Value ?? throw new Exception("ClientOrigin is null");
+
+        string? XSRF_TOKEN_Header = Configuration.GetSection("RequestHeaderSettings:XSRF_TOKEN").Value ?? throw new Exception("XSRF_TOKEN is null");
+        string? AspNetCoreAntiforgery_Header = Configuration.GetSection("RequestHeaderSettings:AspNetCoreAntiforgery").Value ?? throw new Exception("AspNetCoreAntiforgery is null");
+        string? ClientIP_Header = Configuration.GetSection("RequestHeaderSettings:ClientIP").Value ?? throw new Exception("ClientIP is null");
+        string? ApiKey_Header = Configuration.GetSection("RequestHeaderSettings:ApiKey").Value ?? throw new Exception("ApiKey is null");
+        string? AuthToken_Header = Configuration.GetSection("RequestHeaderSettings:AuthToken").Value ?? throw new Exception("AuthToken is null");
+        string? RefreshAuthToken_Header = Configuration.GetSection("RequestHeaderSettings:RefreshAuthToken").Value ?? throw new Exception("RefreshAuthToken is null");
+        string? RefreshAuthTokenId_Header = Configuration.GetSection("RequestHeaderSettings:RefreshAuthTokenId").Value ?? throw new Exception("RefreshAuthTokenId is null");
+        string? AspNetCoreIdentity_Header = Configuration.GetSection("RequestHeaderSettings:AspNetCoreIdentity").Value ?? throw new Exception("AspNetCoreIdentity is null");
+
+        string? AllowedMethodGet = Configuration.GetSection("RequestMethodsSettings:Get").Value ?? throw new Exception("RequestMethodsSettings:Get is null");
+        string? AllowedMethodPut = Configuration.GetSection("RequestMethodsSettings:Put").Value ?? throw new Exception("RequestMethodsSettings:Put is null");
+        string? AllowedMethodPost = Configuration.GetSection("RequestMethodsSettings:Post").Value ?? throw new Exception("RequestMethodsSettings:Post is null");
+        string? AllowedMethodDelete = Configuration.GetSection("RequestMethodsSettings:Delete").Value ?? throw new Exception("RequestMethodsSettings:Delete is null");
+
+        string? PolicyName = Configuration.GetSection("Cors:Policy:Name").Value ?? throw new Exception("RequestMethodsSettings:Delete is null");
+
         Services.AddCors(options =>
         {
-            options.AddPolicy(Configuration.GetSection("Cors:Policy:Name").Value!, builder =>
+            options.AddPolicy(PolicyName, builder =>
             {
-                builder.WithOrigins("https://localhost:7280")
-                       .AllowAnyHeader()
-                       .AllowAnyMethod()
+                builder.WithOrigins(MainClientBaseAddr)
+                       .WithMethods(AllowedMethodGet, AllowedMethodPut, AllowedMethodPost, AllowedMethodDelete)
+                       .WithHeaders
+                       (
+                            XSRF_TOKEN_Header,
+                            AspNetCoreAntiforgery_Header,
+                            ClientIP_Header,
+                            ApiKey_Header,
+                            AuthToken_Header,
+                            RefreshAuthToken_Header,
+                            RefreshAuthTokenId_Header,
+                            AspNetCoreIdentity_Header
+                        )
                        .AllowCredentials();
             });
         });
@@ -397,24 +448,36 @@ public static class API_Helper_ProgramStartup
     ///     Add api rate limiting in the container.
     /// </summary>
     /// <param name="Services"> The <see cref="IServiceCollection"/> </param>
+    /// <param name="Configuration"> The <see cref="IConfiguration"/></param>
     private static void
     AddAPIRateLimiting
     (
-        IServiceCollection Services
+        IServiceCollection Services,
+        IConfiguration Configuration
     )
     {
+        bool canParseLimitToInt = int.TryParse(Configuration.GetSection("IpRateLimitOptions:Limit").Value, out int Limit);
+
+        if (canParseLimitToInt && Limit <= 0)
+            throw new Exception("Api rate limiting can not be 0 or lower");
+
+        bool canParsePeriodToInt = int.TryParse(Configuration.GetSection("IpRateLimitOptions:PeriodTimespan").Value, out int PeriodTimespan);
+
+        if (canParsePeriodToInt && PeriodTimespan <= 0)
+            throw new Exception("Api rate limiting Period Timespan can not be 0 or lower");
+
         // Limit 100 requests per minute for all endpoints. 
         Services.Configure<IpRateLimitOptions>(options =>
         {
-            options.GeneralRules = new List<RateLimitRule>
-                    {
-                        new RateLimitRule
-                        {
-                            Endpoint = "*",
-                            Limit = 100,
-                            PeriodTimespan = TimeSpan.FromMinutes(1)
-                        }
-                    };
+            options.GeneralRules =
+            [
+                new RateLimitRule
+                {
+                    Endpoint = "*",
+                    Limit = Limit,
+                    PeriodTimespan = TimeSpan.FromMinutes(PeriodTimespan)
+                }
+            ];
         });
 
         Services.AddSingleton<IIpPolicyStore, MemoryCacheIpPolicyStore>();

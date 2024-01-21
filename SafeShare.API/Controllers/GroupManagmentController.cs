@@ -16,6 +16,8 @@ using SafeShare.MediatR.Actions.Commands.GroupManagment;
 using SafeShare.DataTransormObject.SafeShareApi.UserManagment;
 using SafeShare.DataTransormObject.SafeShareApi.GroupManagment;
 using SafeShare.DataTransormObject.SafeShareApi.GroupManagment.GroupInvitations;
+using Microsoft.AspNetCore.Antiforgery;
+using SafeShare.API.Helpers.AttributeFilters;
 
 namespace SafeShare.API.Controllers;
 
@@ -30,7 +32,7 @@ namespace SafeShare.API.Controllers;
 /// </remarks>
 /// <param name="mediator">The instance of mediator used to send commands and queries</param>
 [ServiceFilter(typeof(VerifyUser))]
-public class GroupManagmentController(IMediator mediator) : BaseController(mediator)
+public class GroupManagmentController(IMediator mediator, IAntiforgery antiforgery) : BaseController(mediator)
 {
     /// <summary>
     /// Get group types of a user
@@ -77,6 +79,7 @@ public class GroupManagmentController(IMediator mediator) : BaseController(media
     /// <param name="createGroup">The details of the group to be created.</param>
     /// <returns>A boolean value indicating whether the group was successfully created.</returns>
     [HttpPost(Route_GroupManagmentRoutes.CreateGroup)]
+    [ServiceFilter(typeof(API_Helper_AntiforgeryValidationFilter))]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<bool>))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<bool>))]
@@ -101,6 +104,7 @@ public class GroupManagmentController(IMediator mediator) : BaseController(media
     /// <param name="editGroup">The new details to update the group with.</param>
     /// <returns>A boolean value indicating whether the group was successfully edited.</returns>
     [HttpPut(Route_GroupManagmentRoutes.EditGroup)]
+    [ServiceFilter(typeof(API_Helper_AntiforgeryValidationFilter))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<DTO_GroupType>))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<DTO_GroupType>))]

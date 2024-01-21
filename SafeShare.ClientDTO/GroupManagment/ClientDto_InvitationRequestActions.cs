@@ -11,4 +11,7 @@ public class ClientDto_InvitationRequestActions
     [Required]
     public Guid InvitationId { get; set; }
     public Guid InvitedUserId { get; set; }
+
+    public string GroupName { get; set; } = string.Empty;
+    public string UserWhoAcceptedTheInvitation { get; set; } = string.Empty;
 }

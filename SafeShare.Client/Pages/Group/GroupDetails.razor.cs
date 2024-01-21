@@ -34,11 +34,11 @@ public partial class GroupDetails
     private MudMessageBox? mbox3 { get; set; }
     private List<ClientDto_Expense>? Expenses { get; set; } = [];
     private ClientDto_EditGroup? EditGroup { get; set; } = new();
-    private ClientDto_GroupDetails? GroupDetailsDto { get; set; }
+    private ClientDto_GroupDetails GroupDetailsDto { get; set; } = null!;
     private ClientDto_Expense SelectedExpense { get; set; } = new();
     private ClientDto_Expense? SelectedExpenseForDeletion { get; set; }
     private ClientDto_ExpenseCreate CreateExpenseModel { get; set; } = new();
-    private List<ClientDto_UsersGroupDetails>? SelectedUsers { get; set; } = [];
+    private List<ClientDto_UsersGroupDetails> SelectedUsers { get; set; } = [];
     private ClientDto_ExpenseCreate? EditExpense { get; set; }
 
     private int screenWidth;
@@ -164,7 +164,7 @@ public partial class GroupDetails
         ShowValidationsMessages(context.GetValidationMessages());
     }
 
-    private async void
+    private async Task
     RemoveUsers()
     {
         _processingDeleteGroup = true;
@@ -174,8 +174,15 @@ public partial class GroupDetails
         if (deleteResult.Succsess)
         {
             foreach (var item in SelectedUsers)
-                GroupDetailsDto.UsersGroups.Remove(GroupDetailsDto.UsersGroups.Find(x => x.UserName == item.UserName));
+            {
+                var deletedMember = GroupDetailsDto.UsersGroups.Find(x => x.UserName == item.UserName);
 
+                if (deletedMember != null)
+                    GroupDetailsDto.UsersGroups.Remove(deletedMember);
+
+            }
+
+            SelectedUsers.Clear();
         }
 
         _processingDeleteGroup = false;
@@ -196,7 +203,7 @@ public partial class GroupDetails
                 break;
         }
 
-        StateHasChanged();
+        await InvokeAsync(StateHasChanged);
     }
 
     private void

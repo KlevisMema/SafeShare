@@ -134,7 +134,7 @@ public class Security_JwtTokenAuth
     {
         var claims = new List<Claim>
         {
-            new(ClaimTypes.Name, user.Email),
+            new(ClaimTypes.Name, user.Id),
             new(ClaimTypes.NameIdentifier, user.Id),
             new(JwtRegisteredClaimNames.NameId, user.Id!),
             new(JwtRegisteredClaimNames.Email, user.Email),

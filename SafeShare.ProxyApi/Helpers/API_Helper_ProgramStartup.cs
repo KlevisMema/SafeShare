@@ -4,15 +4,18 @@ using AspNetCoreRateLimit;
 using Microsoft.OpenApi.Models;
 using System.Security.Authentication;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.Configuration;
+using SafeShare.ProxyApi.Helpers.Constants;
 using SafeShare.ProxyApi.Container.Services;
 using SafeShare.ProxyApi.Container.Interfaces;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using SafeShare.Utilities.SafeShareApi.ConfigurationSettings;
+using System.Net;
 
-namespace SafeShare.ProxyApi.Helper;
+namespace SafeShare.ProxyApi.Helpers;
 
-public static class API_Helper_ProgramStartup
+internal static class API_Helper_ProgramStartup
 {
     public static IServiceCollection InjectServices
     (
@@ -21,23 +24,185 @@ public static class API_Helper_ProgramStartup
        IHostBuilder Host
     )
     {
-        const string ClientName = "ProxyHttpClient";
-        const string ApiBaseRoute = "https://localhost:7046/";
-
-        Services.AddControllers();
-        Services.AddEndpointsApiExplorer();
-        Services.AddSwaggerGen();
-        Services.AddMemoryCache();
-        Services.AddHttpContextAccessor();
-
-        Services.AddHttpClient(ClientName, client =>
+        try
         {
-            client.BaseAddress = new Uri(ApiBaseRoute);
-            client.DefaultRequestHeaders.Add("Accept", "application/json");
+            string? ClientName = Configuration.GetSection(API_Helper_Const_Request.ProxyClientName).Value;
+
+            string? ClientBaseAddress = Configuration.GetSection(API_Helper_Const_Request.MainApiBaseAddr).Value;
+
+            API_Helper_ParamsStringChecking.CheckNullOrEmpty
+            (
+                (nameof(ClientName), ClientName),
+                (nameof(ClientBaseAddress), ClientBaseAddress)
+            );
+
+            Services.AddControllers();
+            Services.AddEndpointsApiExplorer();
+            Services.AddSwaggerGen();
+            Services.AddMemoryCache();
+            Services.AddHttpContextAccessor();
+            Services.AddSignalR();
+
+            Services.AddHttpClient(ClientName!, client =>
+            {
+                client.BaseAddress = new Uri(ClientBaseAddress!);
+                client.DefaultRequestHeaders.Add("Accept", "application/json");
+            });
+
+            ConfigureSerilog(Host);
+
+            ConfigureTls(Services);
+
+            ConfigureServices(Services);
+
+            ConfigureCors(Services, Configuration);
+
+            ConfigureSwagger(Services, Configuration);
+
+            ConfigureIpRateLimiting(Services, Configuration);
+
+            ConfigureAdditionalConfigurations(Services, Configuration);
+
+            return Services;
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
+
+    private static void
+    ConfigureAdditionalConfigurations
+    (
+         IServiceCollection Services,
+         IConfiguration Configuration
+    )
+    {
+        Services.Configure<API_Helper_RequestHeaderSettings>(Configuration.GetSection(API_Helper_RequestHeaderSettings.SectionName));
+    }
+
+    private static void
+    ConfigureServices
+    (
+        IServiceCollection Services
+    )
+    {
+        Services.AddSingleton<IIpPolicyStore, MemoryCacheIpPolicyStore>();
+        Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
+        Services.AddSingleton<IProcessingStrategy, AsyncKeyLockProcessingStrategy>();
+        Services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>();
+
+        Services.AddScoped<IProxyAuthentication, ProxyAuthentication>();
+        Services.AddScoped<IGroupManagmentProxyService, GroupManagmentProxyService>();
+        Services.AddScoped<IExpenseManagmentProxyService, ExpenseManagmentProxyService>();
+        Services.AddScoped<IAccountManagmentProxyService, AccountManagmentProxyService>();
+        Services.AddScoped<IRequestConfigurationProxyService, RequestConfigurationProxyService>();
+    }
+
+    private static void
+    ConfigureCors
+    (
+        IServiceCollection Services,
+        IConfiguration Configuration
+    )
+    {
+        string? MainClientBaseAddr = Configuration.GetSection("MainClientBaseAddr").Value;
+
+        string? AllowedMethodGet = Configuration.GetSection("RequestMethodsSettings:Get").Value;
+        string? AllowedMethodPut = Configuration.GetSection("RequestMethodsSettings:Put").Value;
+        string? AllowedMethodPost = Configuration.GetSection("RequestMethodsSettings:Post").Value;
+        string? AllowedMethodDelete = Configuration.GetSection("RequestMethodsSettings:Delete").Value;
+
+        API_Helper_ParamsStringChecking.CheckNullOrEmpty
+        (
+            (nameof(AllowedMethodGet), AllowedMethodGet),
+            (nameof(AllowedMethodPut), AllowedMethodPut),
+            (nameof(AllowedMethodPost), AllowedMethodPost),
+            (nameof(MainClientBaseAddr), MainClientBaseAddr),
+            (nameof(AllowedMethodDelete), AllowedMethodDelete)
+        );
+
+        Services.AddCors(options =>
+        {
+            options.AddPolicy(Configuration.GetSection("Cors:Policy:Name").Value!, builder =>
+            {
+                builder.WithOrigins(MainClientBaseAddr!)
+                       .WithMethods
+                        (
+                            AllowedMethodGet!,
+                            AllowedMethodPut!,
+                            AllowedMethodPost!,
+                            AllowedMethodDelete!
+                        )
+                       .AllowAnyHeader()
+                       .AllowCredentials();
+            });
         });
 
-        Host.UseSerilog((context, configuration) => configuration.ReadFrom.Configuration(context.Configuration));
+    }
 
+    private static void
+    ConfigureIpRateLimiting
+    (
+        IServiceCollection Services,
+        IConfiguration Configuration
+    )
+    {
+        bool canParseLimitToInt = int.TryParse(Configuration.GetSection("IpRateLimitOptions:Limit").Value, out int Limit);
+
+        if (canParseLimitToInt && Limit <= 0)
+            throw new Exception("Api rate limiting can not be 0 or lower");
+
+        bool canParsePeriodToInt = int.TryParse(Configuration.GetSection("IpRateLimitOptions:PeriodTimespan").Value, out int PeriodTimespan);
+
+        if (canParsePeriodToInt && PeriodTimespan <= 0)
+            throw new Exception("Api rate limiting Period Timespan can not be 0 or lower");
+
+        Services.Configure<IpRateLimitOptions>(options =>
+        {
+            options.GeneralRules =
+            [
+                new RateLimitRule
+                {
+                    Endpoint = "*",
+                    Limit = Limit,
+                    PeriodTimespan = TimeSpan.FromMinutes(PeriodTimespan)
+                }
+            ];
+        });
+    }
+
+    private static void
+    ConfigureSerilog
+    (
+        IHostBuilder Host
+    )
+    {
+        Host.UseSerilog((context, configuration) => configuration.ReadFrom.Configuration(context.Configuration));
+    }
+
+    private static void
+    ConfigureTls
+    (
+        IServiceCollection Services
+    )
+    {
+        Services.Configure<KestrelServerOptions>(options =>
+        {
+            options.ConfigureHttpsDefaults(httpsOptions =>
+            {
+                httpsOptions.SslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13;
+            });
+        });
+    }
+
+    private static void
+    ConfigureSwagger
+    (
+        IServiceCollection Services,
+        IConfiguration Configuration
+    )
+    {
         var jwtSetting = Configuration.GetSection(Util_JwtSettings.SectionName);
 
         var defaultTokanValidationParameters = new TokenValidationParameters
@@ -63,7 +228,6 @@ public static class API_Helper_ProgramStartup
         .AddJwtBearer("Default", options =>
         {
             options.TokenValidationParameters = defaultTokanValidationParameters;
-
         })
         .AddJwtBearer("ConfirmLogin", options =>
         {
@@ -174,51 +338,5 @@ public static class API_Helper_ProgramStartup
 
             //options.IncludeXmlComments(xmlPath);
         });
-
-        Services.Configure<KestrelServerOptions>(options =>
-        {
-            options.ConfigureHttpsDefaults(httpsOptions =>
-            {
-                httpsOptions.SslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13;
-            });
-        });
-
-        Services.AddCors(options =>
-        {
-            options.AddPolicy(Configuration.GetSection("Cors:Policy:Name").Value!, builder =>
-            {
-                builder.WithOrigins("https://localhost:7027")
-                       .AllowAnyHeader()
-                       .AllowAnyMethod()
-                       .AllowCredentials();
-            });
-        });
-
-        Services.Configure<IpRateLimitOptions>(options =>
-        {
-            options.GeneralRules =
-            [
-                new RateLimitRule
-                {
-                    Endpoint = "*",
-                    Limit = 100,
-                    PeriodTimespan = TimeSpan.FromMinutes(1)
-                }
-            ];
-        });
-
-        Services.AddSingleton<IIpPolicyStore, MemoryCacheIpPolicyStore>();
-        Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
-        Services.AddSingleton<IProcessingStrategy, AsyncKeyLockProcessingStrategy>();
-        Services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>();
-
-        Services.AddScoped<IProxyAuthentication, ProxyAuthentication>();
-        Services.AddScoped<IGroupManagmentProxyService, GroupManagmentProxyService>();
-        Services.AddScoped<IExpenseManagmentProxyService, ExpenseManagmentProxyService>();
-        Services.AddScoped<IAccountManagmentProxyService, AccountManagmentProxyService>();
-
-
-        return Services;
     }
-
 }

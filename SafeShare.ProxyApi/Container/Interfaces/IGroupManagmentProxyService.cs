@@ -6,9 +6,11 @@ namespace SafeShare.ProxyApi.Container.Interfaces;
 
 public interface IGroupManagmentProxyService
 {
-    Task<Util_GenericResponse<DTO_GroupsTypes>>
+    Task<Tuple<Util_GenericResponse<DTO_GroupsTypes>, HttpResponseMessage>>
     GetGroupTypes
     (
+        string userId,
+        string userIp,
         string jwtToken
     );
 
@@ -16,6 +18,7 @@ public interface IGroupManagmentProxyService
     GetGroupDetails
     (
         string userId,
+        string userIp,
         string jwtToken,
         Guid groupId
     );
@@ -23,8 +26,11 @@ public interface IGroupManagmentProxyService
     Task<Util_GenericResponse<DTO_GroupType>>
     CreateGroup
     (
-         string userId,
+        string userId,
+        string userIP,
         string jwtToken,
+        string fogeryToken,
+        string aspNetForgeryToken,
         DTO_CreateGroup createGroup
     );
 
@@ -32,6 +38,9 @@ public interface IGroupManagmentProxyService
     EditGroup
     (
         string userId,
+        string userIp,
+        string fogeryToken,
+        string aspNetForgeryToken,
         string jwtToken,
         Guid groupId,
         DTO_EditGroup editGroup
@@ -41,6 +50,9 @@ public interface IGroupManagmentProxyService
     DeleteGroup
     (
         string userId,
+        string userIp,
+        string fogeryToken,
+        string aspNetForgeryToken,
         string jwtToken,
         Guid groupId
     );
@@ -49,6 +61,7 @@ public interface IGroupManagmentProxyService
     GetGroupsInvitations
     (
         string userId,
+        string userIp,
         string jwtToken
     );
 
@@ -56,6 +69,7 @@ public interface IGroupManagmentProxyService
     GetSentGroupInvitations
     (
         string userId,
+        string userIp,
         string jwtToken
     );
 
@@ -63,7 +77,10 @@ public interface IGroupManagmentProxyService
     SendInvitation
     (
         string userId,
+        string userIp,
         string jwtToken,
+        string fogeryToken,
+        string aspNetForgeryToken,
         DTO_SendInvitationRequest dTO_SendInvitation
     );
 
@@ -71,7 +88,10 @@ public interface IGroupManagmentProxyService
     AcceptInvitation
     (
         string userId,
+        string userIp,
         string jwtToken,
+        string fogeryToken,
+        string aspNetForgeryToken,
         DTO_InvitationRequestActions acceptInvitationRequest
     );
 
@@ -79,7 +99,10 @@ public interface IGroupManagmentProxyService
     RejectInvitation
     (
         string userId,
+        string userIp,
         string jwtToken,
+        string fogeryToken,
+        string aspNetForgeryToken,
         DTO_InvitationRequestActions rejectInvitationRequest
     );
 
@@ -87,7 +110,10 @@ public interface IGroupManagmentProxyService
     DeleteInvitation
     (
         string userId,
+        string userIp,
         string jwtToken,
+        string fogeryToken,
+        string aspNetForgeryToken,
         DTO_InvitationRequestActions deleteInvitationRequest
     );
 
@@ -95,7 +121,10 @@ public interface IGroupManagmentProxyService
     DeleteUsersFromGroup
     (
         string userId,
+        string userIp,
         string jwtToken,
+        string fogeryToken,
+        string aspNetForgeryToken,
         Guid groupId,
         List<DTO_UsersGroupDetails> UsersToRemoveFromGroup
     );

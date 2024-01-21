@@ -121,8 +121,6 @@ public class AuthenticationService(IHttpClientFactory httpClientFactory) : IAuth
         {
             var httpClient = httpClientFactory.CreateClient(Client);
 
-            //var content = new StringContent(JsonSerializer.Serialize(new { userId }), Encoding.UTF8, "application/json");
-
             await httpClient.PostAsync(BaseRoute.RouteAuthenticationProxy + Route_AuthenticationRoute.LogOut, null);
         }
         catch (Exception)

@@ -58,6 +58,15 @@
         border-radius: 8px;
         color: #777;
     }
+
+    .sent-invitation-actions{
+        gap: 10px;
+        display: flex;
+    }
+
+    .colorChange {
+        color: white !important;
+    }
 </style>
 
 <div class="sent-invitations-container">
@@ -86,8 +95,33 @@
                     <div class="sent-invitation-actions">
                         @if (invitation.InvitationStatus == InvitationStatus.Pending)
                         {
-                            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.ThumbUp" @onclick="() => AcceptInvitation(invitation)">Accept</MudButton>
-                            <MudButton Variant="Variant.Outlined" Color="Color.Error" StartIcon="@Icons.Material.Filled.Remove" @onclick="() => RejectInvitation(invitation)">Reject</MudButton>
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.ThumbUp" @onclick="() => AcceptInvitation(invitation)">
+
+                                @if (_processingAcceptInvitation)
+                                {
+                                    <MudProgressCircular Class="ms-n1 colorChange" Size="MudBlazor.Size.Small" Indeterminate="true" />
+                                    <MudText Class="ms-2 colorChange">Accepting</MudText>
+                                }
+                                else
+                                {
+                                    <MudText>Accept</MudText>
+                                }
+
+                            </MudButton>
+
+                            <MudButton Variant="Variant.Outlined" Color="Color.Error" StartIcon="@Icons.Material.Filled.Remove" @onclick="() => RejectInvitation(invitation)">
+
+                                @if (_processingRejectInvitation)
+                                {
+                                    <MudProgressCircular Class="ms-n1" Color="Color.Error" Size="MudBlazor.Size.Small" Indeterminate="true" />
+                                    <MudText Class="ms-2" Color="Color.Error">Rejecting</MudText>
+                                }
+                                else
+                                {
+                                    <MudText>Reject</MudText>
+                                }
+
+                            </MudButton>
                         }
                     </div>
                 </MudExpansionPanel>

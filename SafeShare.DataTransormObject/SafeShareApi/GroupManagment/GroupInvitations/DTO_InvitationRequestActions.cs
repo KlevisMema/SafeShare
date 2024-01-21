@@ -34,4 +34,12 @@ public class DTO_InvitationRequestActions
     /// </summary>
     [Required]
     public Guid InvitedUserId { get; set; }
+    /// <summary>
+    /// Gets or sets the name of the group.
+    /// </summary>
+    public string GroupName { get; set; } = string.Empty;
+    /// <summary>
+    /// Gets or sets the name of the user who accepted the invitation.
+    /// </summary>
+    public string UserWhoAcceptedTheInvitation { get; set; } = string.Empty;
 }

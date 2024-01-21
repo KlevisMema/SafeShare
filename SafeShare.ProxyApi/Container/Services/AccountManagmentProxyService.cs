@@ -97,7 +97,7 @@ public class AccountManagmentProxyService(IHttpClientFactory httpClientFactory) 
                 StatusCode = System.Net.HttpStatusCode.InternalServerError,
                 Succsess = false,
                 Value = null
-            }, new HttpResponseMessage()); ;
+            }, new HttpResponseMessage());
     }
 
     public async Task<Util_GenericResponse<bool>>

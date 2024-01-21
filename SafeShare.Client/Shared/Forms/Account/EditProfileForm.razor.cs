@@ -26,8 +26,10 @@ public partial class EditProfileForm
     private bool _processingUploadProfilePic = false;
     private IBrowserFile? file;
     private const string EditUserDataModeInvalidGender = "Register - Please select a valid gender";
-    private string BtnMessage {  get; set; }
-   
+    private string BtnMessage { get; set; }
+
+    private string? CurrentUserName;
+
     protected override async Task OnInitializedAsync()
     {
         UserInfo ??= new();
@@ -44,6 +46,8 @@ public partial class EditProfileForm
             UpdateUser.Gender = UserInfo.Gender;
             UpdateUser.PhoneNumber = UserInfo.PhoneNumber;
             UpdateUser.UserName = UserInfo.UserName;
+
+            CurrentUserName = new string(UpdateUser.UserName);
 
             if (UserInfo.ProfilePicture is null || UserInfo.ProfilePicture.Length == 0)
                 BtnMessage = "Add a profile picture";
@@ -81,8 +85,12 @@ public partial class EditProfileForm
 
         if (!updateDataResult.Succsess)
         {
+            UpdateUser.UserName = CurrentUserName?? UpdateUser.UserName;
+            
             _snackbar.Add(updateDataResult.Message, Severity.Warning, config => { config.CloseAfterNavigation = true; });
-            ShowValidationsMessages(updateDataResult.Errors!);
+
+            if (updateDataResult.Errors is not null)
+                ShowValidationsMessages(updateDataResult.Errors!);
         }
         else
         {
@@ -94,7 +102,7 @@ public partial class EditProfileForm
         _processing = false;
     }
 
-    private void 
+    private void
     UploadFile
     (
         IBrowserFile file
@@ -113,7 +121,7 @@ public partial class EditProfileForm
         this.file = file;
     }
 
-    private static bool 
+    private static bool
     IsImageValidFile
     (
         string contentType

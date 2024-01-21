@@ -2,6 +2,8 @@ using Serilog;
 using SafeShare.API.Helpers;
 using SafeShare.API.Startup;
 using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Antiforgery;
+using SafeShare.API.Helpers.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,13 +20,17 @@ if (app.Environment.IsDevelopment())
 }
 app.UseHttpsRedirection();
 
-app.UseMiddleware<API_HELPER_ApiKeyMiddleware>();
-
-app.UseCors(builder.Configuration.GetSection("Cors:Policy:Name").Value!);
-
 app.UseAuthentication();
 
 app.UseAuthorization();
+
+app.UseCors(builder.Configuration.GetSection("Cors:Policy:Name").Value!);
+
+app.UseAntiforgery();
+
+app.UseMiddleware<API_HELPER_ApiKeyMiddleware>(); 
+
+app.UseMiddleware<API_Helper_ForgeryToken>();
 
 app.MapControllers();
 

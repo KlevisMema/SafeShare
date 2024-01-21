@@ -9,10 +9,14 @@ namespace SafeShare.DataTransormObject.SafeShareApi.GroupManagment;
 /// <summary>
 /// Represents detailed information about a group.
 /// This class includes properties for the group's name, number of members, recent expenses, description,
-/// administrator details, creation date, and total expenditure.
+/// administrator details, creation date, Id, and total expenditure.
 /// </summary>
 public class DTO_GroupDetails
 {
+    /// <summary>
+    /// Gets or sets the id of the group.
+    /// </summary>
+    public Guid GroupId { get; set; }
     /// <summary>
     /// Gets or sets the name of the group.
     /// </summary>

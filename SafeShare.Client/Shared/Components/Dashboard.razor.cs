@@ -1,7 +1,10 @@
-﻿using SafeShare.Client.Helpers;
+﻿using System.Linq;
+using SafeShare.Client.Helpers;
+using SafeShare.Client.Pages.Group;
 using Microsoft.AspNetCore.Components;
 using SafeShare.ClientDTO.GroupManagment;
 using SafeShare.ClientServices.GroupManagment;
+using Microsoft.AspNetCore.SignalR.Client;
 
 namespace SafeShare.Client.Shared.Components
 {
@@ -38,6 +41,7 @@ namespace SafeShare.Client.Shared.Components
             _appState.OnGroupDeleted += HandleGroupDeleted;
             _appState.OnNewGroupCreated += HandleNewGroupCreated;
             _appState.OnGroupInvitationAccepted += HandleGroupInvitationAccepted;
+            _appState.OnGroupDetails += HandleGroupDetails;
 
             await base.OnInitializedAsync();
         }
@@ -67,7 +71,24 @@ namespace SafeShare.Client.Shared.Components
             Guid groupId
         )
         {
+            var groupToDeleteFromDrom = GroupsDetails.FirstOrDefault(x => x.GroupId == groupId);
+
+            if (groupToDeleteFromDrom != null)
+                GroupsDetails.Remove(groupToDeleteFromDrom);
+
             NrGroupsCreated--;
+            StateHasChanged();
+        }
+
+        private void
+        HandleGroupDetails
+        (
+            ClientDto_GroupDetails? groupDetails
+        )
+        {
+            if (groupDetails is not null)
+                GroupsDetails.Add(groupDetails);
+
             StateHasChanged();
         }
 
@@ -87,6 +108,7 @@ namespace SafeShare.Client.Shared.Components
         public void
         Dispose()
         {
+            _appState.OnGroupDetails -= HandleGroupDetails;
             _appState.OnGroupDeleted -= HandleGroupDeleted;
             _appState.OnNewGroupCreated -= HandleNewGroupCreated;
             _appState.OnGroupInvitationAccepted -= HandleGroupInvitationAccepted;

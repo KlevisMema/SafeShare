@@ -70,9 +70,8 @@ public partial class NavMenu
         var deletedGroup = GroupTypes.GroupsCreated.Find(x => x.GroupId == groupId);
 
         if (deletedGroup is not null)
-        {
             GroupTypes.GroupsCreated.Remove(deletedGroup);
-        }
+        
         _navigationManager.NavigateTo("/Dashboard");
     }
 

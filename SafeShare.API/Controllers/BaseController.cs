@@ -13,6 +13,7 @@
 using MediatR;
 using SafeShare.Security.API;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Authorization;
 using SafeShare.ClientServerShared.Routes;
 

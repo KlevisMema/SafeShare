@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using SafeShare.DataAccessLayer.Context;
 using SafeShare.Utilities.SafeShareApiKey.Helpers;
 
-namespace SafeShare.API.Helpers;
+namespace SafeShare.API.Helpers.Middlewares;
 
 /// <summary>
 /// Middleware for validating API keys in incoming HTTP requests.
@@ -23,7 +23,7 @@ public class API_HELPER_ApiKeyMiddleware(RequestDelegate next, ILogger<API_HELPE
     /// Invokes the middleware to check the API key in the request.
     /// </summary>
     /// <param name="context">The HttpContext for the current request.</param>
-    public async Task 
+    public async Task
     InvokeAsync
     (
         HttpContext context

@@ -6,8 +6,10 @@ using System.Net.Http.Json;
 using Blazored.LocalStorage;
 using SafeShare.Client.Helpers;
 using System.Text.Encodings.Web;
+using Microsoft.Extensions.Configuration;
 using SafeShare.ClientServices.Interfaces;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.Forms;
 using SafeShare.ClientServices.UserManagment;
 using SafeShare.ClientServices.GroupManagment;
 using SafeShare.ClientServices.Authentication;
@@ -47,6 +49,6 @@ builder.Services.AddScoped<IClientService_GroupManagment, ClientService_GroupMan
 builder.Services.AddScoped<IClientService_ExpenseManagment, ClientService_ExpenseManagment>();
 builder.Services.AddScoped<IClientAuthentication_TokenRefreshService, ClientAuthentication_TokenRefreshService>();
 
-builder.Services.AddSingleton(HtmlEncoder.Create(allowedRanges: [ UnicodeRanges.BasicLatin,UnicodeRanges.CjkUnifiedIdeographs ]));
+builder.Services.AddSingleton(HtmlEncoder.Create(allowedRanges: [UnicodeRanges.BasicLatin, UnicodeRanges.CjkUnifiedIdeographs]));
 
 await builder.Build().RunAsync();

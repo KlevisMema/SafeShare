@@ -232,15 +232,6 @@ public class AccountManagmentProxyController(IAccountManagmentProxyService accou
         return Helper_JwtToken.GetUserIdDirectlyFromJwtToken(jwtToken);
     }
 
-    private static string
-    UserEmail
-    (
-        string jwtToken
-    )
-    {
-        return Helper_JwtToken.GetUserEmailDirectlyFromJwtToken(jwtToken);
-    }
-
     private string
     JwtToken()
     {

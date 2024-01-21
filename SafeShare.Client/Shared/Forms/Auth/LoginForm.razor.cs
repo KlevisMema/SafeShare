@@ -82,6 +82,10 @@ public partial class LoginForm
                 return;
             }
 
+            AppState.SetClientSecrests(loginResult.Value);
+
+            await _localStorage.SetItemAsStringAsync("FullName", loginResult.Value.UserFullName);
+
             await RedirectToDashboardPage(loginResult.Message, loginResult.Value);
         }
         else

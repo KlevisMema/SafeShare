@@ -9,7 +9,7 @@ namespace SafeShare.API.Helpers;
 /// <summary>
 /// Provides utility methods to be executed post application build.
 /// </summary>
-public static class API_Helper_AfterAppBuild
+internal static class API_Helper_AfterAppBuild
 {
     /// <summary>
     /// An extension method to perform operations right after the web application is built.

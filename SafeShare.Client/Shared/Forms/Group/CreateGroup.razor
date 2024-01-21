@@ -22,6 +22,8 @@
     <DialogContent>
         <EditForm @ref="@CreateGroupForm" Model="createGroup">
             <DataAnnotationsValidator />
+            <AntiforgeryToken />
+            
             <MudTextField InputType="@GroupNameInput" @bind-Value="@createGroup.GroupName" Label="Group Name"
                           Adornment="Adornment.End"
                           AdornmentColor="Color.Primary"

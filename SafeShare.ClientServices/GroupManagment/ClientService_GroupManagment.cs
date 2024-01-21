@@ -101,7 +101,12 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
 
             var contentForm = new FormUrlEncodedContent(registerData);
 
-            response = await httpClient.PostAsync(BaseRoute.RouteGroupManagmentProxy + Route_GroupManagmentRoutes.ProxyCreateGroup, contentForm);
+            var requestMessage = new HttpRequestMessage(HttpMethod.Post, BaseRoute.RouteGroupManagmentProxy + Route_GroupManagmentRoutes.ProxyCreateGroup)
+            {
+                Content = contentForm
+            };
+
+            response = await httpClient.SendAsync(requestMessage);
 
             var responseContent = await response.Content.ReadAsStringAsync();
 
@@ -124,6 +129,7 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
             };
         }
     }
+
 
     public async Task<ClientUtil_ApiResponse<ClientDto_GroupType>>
     EditGroup
@@ -299,7 +305,7 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
 
             return readResult!;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             return new ClientUtil_ApiResponse<bool>()
             {

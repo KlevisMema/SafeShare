@@ -47,7 +47,7 @@ namespace SafeShare.API.Controllers;
 [Route(BaseRoute.Route)]
 public class AuthenticationController
 (
-    IMediator mediator, 
+    IMediator mediator,
     IOptions<API_Helper_CookieSettings> cookieOpt, 
     ISecurity_UserDataProtectionService _userDataProtection
 ) : ControllerBase
@@ -129,7 +129,7 @@ public class AuthenticationController
             }
 
             SetCookiesResposne(result.Value.Token, result.Value.UserId);
-            result.Value.Token = null;
+            //result.Value.Token = null;
         }
 
         return Util_GenericControllerResponse<DTO_LoginResult>.ControllerResponse(result);
@@ -349,7 +349,9 @@ public class AuthenticationController
     private void
     ClearCookies()
     {
+        ClearCookie("XSRF-TOKEN");
         ClearCookie(".AspNetCore.Identity.Application");
+        ClearCookie(".AspNetCore.Antiforgery.NcD0snFZIjg");
         ClearCookie(cookieOpt.Value.AuthTokenCookieName);
         ClearCookie(cookieOpt.Value.RefreshAuthTokenCookieName);
         ClearCookie(cookieOpt.Value.RefreshAuthTokenIdCookieName);

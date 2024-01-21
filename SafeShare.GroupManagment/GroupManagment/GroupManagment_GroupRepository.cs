@@ -93,6 +93,7 @@ public class GroupManagment_GroupRepository
             groupTypes.AllGroupsDetails = allGroups.Where(gm => !gm.IsDeleted && !gm.Group.IsDeleted)
                                         .Select(gm => new
                                         {
+                                            Id = gm.GroupId,
                                             Member = gm,
                                             GroupOwner = _db.GroupMembers
                                                             .Where(owner => owner.GroupId == gm.GroupId && owner.IsOwner)
@@ -108,7 +109,8 @@ public class GroupManagment_GroupRepository
                                             GroupAdmin = x.GroupOwner,
                                             GroupCreationDate = x.GroupDetails.CreatedAt,
                                             GroupName = x.GroupDetails.Name,
-                                            NumberOfMembers = x.NumberOfMembers
+                                            NumberOfMembers = x.NumberOfMembers,
+                                            GroupId = x.Id,
                                         }).ToList();
 
             return Util_GenericResponse<DTO_GroupsTypes>.Response
@@ -179,6 +181,7 @@ public class GroupManagment_GroupRepository
                                               .Where(gm => gm.GroupId == groupId && !gm.IsDeleted && !gm.Group.IsDeleted && gm.UserId == userId.ToString())
                                               .Select(gm => new
                                               {
+                                                  Id = gm.GroupId,
                                                   Member = gm,
                                                   GroupOwner = _db.GroupMembers
                                                                  .Where(owner => owner.GroupId == gm.GroupId && owner.IsOwner)
@@ -195,6 +198,8 @@ public class GroupManagment_GroupRepository
                                                                 UserName = x.User.UserName,
                                                                 IsAdmin = x.IsOwner,
                                                                 Balance = x.Balance,
+                                                                UserId = x.UserId ,
+                                                                GroupName = x.Group.Name
                                                             })
                                                             .ToList()
                                               })
@@ -255,6 +260,7 @@ public class GroupManagment_GroupRepository
                 NumberOfMembers = group.NumberOfMembers,
                 UsersGroups = group.Members,
                 ImAdmin = group.ImAdmin,
+                GroupId = group.Id,
             };
 
             return Util_GenericResponse<DTO_GroupDetails>.Response
@@ -803,6 +809,30 @@ public class GroupManagment_GroupRepository
 
                 if (groupMember is not null)
                     _db.GroupMembers.Remove(groupMember);
+                else
+                {
+                    _logger.Log
+                    (
+                        LogLevel.Error,
+                        """
+                            [GroupManagment Module]--[GroupManagment_GroupRepository class]--[RemoveUsersFromGroup Method] => 
+                            [RESULT] : [IP] {IP},
+                            Owner of the group with id {ownerId} tried to delete a user that is already deleted exmember username : {memeberUsername}
+                         """,
+                        await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                        ownerId,
+                        item.UserName
+                    );
+
+                    return Util_GenericResponse<bool>.Response
+                    (
+                        false,
+                        false,
+                        $"Something went wrong",
+                        null,
+                        System.Net.HttpStatusCode.BadRequest
+                    );
+                }
             }
 
             var group = await _db.Groups.Include(x => x.GroupMembers)
@@ -832,7 +862,7 @@ public class GroupManagment_GroupRepository
             }
 
             var listOfNewEncryptedExpenses = new List<Expense>();
-            
+
             var newTag = Guid.NewGuid();
 
             group.Tag = newTag;

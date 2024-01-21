@@ -248,6 +248,7 @@ public class AUTH_Login
 
             loginResult.RequireOtpDuringLogin = user.RequireOTPDuringLogin;
             loginResult.UserId = user.Id;
+            loginResult.UserFullName = user.FullName;
 
             return Util_GenericResponse<DTO_LoginResult>.Response
             (
