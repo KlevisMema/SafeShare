@@ -1,5 +1,6 @@
 ﻿using MudBlazor;
 using Blazored.LocalStorage;
+using SafeShare.Client.Internal;
 using Microsoft.AspNetCore.Components;
 using SafeShare.ClientDTO.GroupManagment;
 using SafeShare.ClientServices.Interfaces;
@@ -10,6 +11,7 @@ namespace SafeShare.Client.Shared;
 
 public partial class MainLayout
 {
+    [Inject] private AppState _appState { get; set; } = null!;
     [Inject] private ISnackbar _snackbar { get; set; } = null!;
     [Inject] private IAuthenticationService authService { get; set; } = null!;
     [Inject] private ILocalStorageService _localStorage { get; set; } = null!;
@@ -43,6 +45,14 @@ public partial class MainLayout
     private async Task
     LogoutUser()
     {
+        if (await _localStorage.ContainKeyAsync("SessionExpired"))
+            await _localStorage.RemoveItemAsync("SessionExpired");
+
+        if (await _localStorage.ContainKeyAsync("FullName"))
+            await _localStorage.RemoveItemAsync("FullName");
+
+        _appState.LogOut();
+
         LogOutText = "Logging Out";
         hideLogOutBtn = true;
         _snackbar.Add("Logging you out", Severity.Success, config => { config.CloseAfterNavigation = true; });

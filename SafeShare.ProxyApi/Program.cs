@@ -21,8 +21,6 @@ app.UseHttpsRedirection();
 
 app.UseMiddleware<API_Helper_ProxyForwardUserIpMiddleware>();
 
-app.UseMiddleware<API_Helper_ProxyForwardAntiForgeryToken>();
-
 app.UseCors(builder.Configuration.GetSection("Cors:Policy:Name").Value!);
 
 app.UseMiddleware<API_Helper_JwtCookieToHeaderMiddleware>();
@@ -30,6 +28,8 @@ app.UseMiddleware<API_Helper_JwtCookieToHeaderMiddleware>();
 app.UseAuthentication();
 
 app.UseAuthorization();
+
+app.UseMiddleware<API_Helper_ProxyForwardAntiForgeryToken>();
 
 app.MapControllers();
 

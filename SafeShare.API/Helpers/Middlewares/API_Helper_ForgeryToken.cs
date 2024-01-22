@@ -3,29 +3,37 @@
 namespace SafeShare.API.Helpers.Middlewares;
 
 /// <summary>
-/// A middleware that assigns a token to the client response.
+/// A middleware that assigns a token to the response.
 /// </summary>
 public class API_Helper_ForgeryToken(IAntiforgery antiforgery, RequestDelegate next)
 {
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="context"></param>
-    /// <returns></returns>
     public async Task InvokeAsync(HttpContext context)
     {
-        if (String.IsNullOrEmpty(context.Request.Cookies["XSRF-TOKEN"]) &&
-            context.User.Identity.IsAuthenticated)
+        if (context.User.Identity.IsAuthenticated)
         {
-            var token = antiforgery.GetAndStoreTokens(context);
+            string key = "XSRF-TOKEN-" + context.User.Identity.Name;
+            string key2 = "Cookie-XSRF-TOKEN-" + context.User.Identity.Name;
 
-            context.Response.Cookies.Append("XSRF-TOKEN", token.RequestToken, new CookieOptions
+            if (String.IsNullOrEmpty(context.Request.Cookies["X-XSRF-TOKEN"]))
             {
-                Secure = true,
-                HttpOnly = true,
-                IsEssential = true,
-                SameSite = SameSiteMode.Strict,
-            });
+                var token = antiforgery.GetTokens(context);
+
+                context.Response.Cookies.Append(key, token.RequestToken, new CookieOptions
+                {
+                    Secure = true,
+                    HttpOnly = true,
+                    IsEssential = true,
+                    SameSite = SameSiteMode.Strict,
+                });
+
+                context.Response.Cookies.Append(key2, token.CookieToken, new CookieOptions
+                {
+                    Secure = true,
+                    HttpOnly = true,
+                    IsEssential = true,
+                    SameSite = SameSiteMode.Strict,
+                });
+            }
         }
 
         await next(context);

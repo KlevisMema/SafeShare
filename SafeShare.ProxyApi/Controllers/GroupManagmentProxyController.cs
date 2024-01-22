@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using SafeShare.ProxyApi.Helpers;
+using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Authorization;
 using SafeShare.ClientServerShared.Routes;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -18,7 +19,11 @@ namespace SafeShare.ProxyApi.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize(AuthenticationSchemes = "Default")]
-public class GroupManagmentProxyController(IGroupManagmentProxyService groupManagmentProxyService) : ControllerBase
+public class GroupManagmentProxyController
+(
+    IGroupManagmentProxyService groupManagmentProxyService,
+    IOptions<API_Helper_RequestHeaderSettings> requestHeaderOptions
+) : ControllerBase
 {
     [HttpGet(Route_GroupManagmentRoutes.ProxyGroupTypes)]
     public async Task<ActionResult<Util_GenericResponse<DTO_GroupsTypes>>>
@@ -26,9 +31,9 @@ public class GroupManagmentProxyController(IGroupManagmentProxyService groupMana
     {
         var result = await groupManagmentProxyService.GetGroupTypes
         (
-            API_Helper_ExtractInfoFromRequestCookie.UserId(API_Helper_ExtractInfoFromRequestCookie.JwtToken(Request)),
-            API_Helper_ExtractInfoFromRequestCookie.GetUserIp(Request),
-            API_Helper_ExtractInfoFromRequestCookie.JwtToken(Request)
+            API_Helper_ExtractInfoFromRequestCookie.UserId(API_Helper_ExtractInfoFromRequestCookie.JwtToken(requestHeaderOptions.Value.AuthToken, Request)),
+            API_Helper_ExtractInfoFromRequestCookie.GetUserIp(requestHeaderOptions.Value.ClientIP, Request),
+            API_Helper_ExtractInfoFromRequestCookie.JwtToken(requestHeaderOptions.Value.AuthToken, Request)
         );
 
         SetCookiesInResponse(result.Item2);
@@ -45,9 +50,9 @@ public class GroupManagmentProxyController(IGroupManagmentProxyService groupMana
     {
         var result = await groupManagmentProxyService.GetGroupDetails
         (
-            API_Helper_ExtractInfoFromRequestCookie.UserId(API_Helper_ExtractInfoFromRequestCookie.JwtToken(Request)),
-            API_Helper_ExtractInfoFromRequestCookie.GetUserIp(Request),
-            API_Helper_ExtractInfoFromRequestCookie.JwtToken(Request),
+            API_Helper_ExtractInfoFromRequestCookie.UserId(API_Helper_ExtractInfoFromRequestCookie.JwtToken(requestHeaderOptions.Value.AuthToken, Request)),
+            API_Helper_ExtractInfoFromRequestCookie.GetUserIp(requestHeaderOptions.Value.ClientIP, Request),
+            API_Helper_ExtractInfoFromRequestCookie.JwtToken(requestHeaderOptions.Value.AuthToken, Request),
             groupId
         );
 
@@ -66,11 +71,11 @@ public class GroupManagmentProxyController(IGroupManagmentProxyService groupMana
 
         var result = await groupManagmentProxyService.CreateGroup
         (
-            API_Helper_ExtractInfoFromRequestCookie.UserId(API_Helper_ExtractInfoFromRequestCookie.JwtToken(Request)),
-            API_Helper_ExtractInfoFromRequestCookie.GetUserIp(Request),
-            API_Helper_ExtractInfoFromRequestCookie.JwtToken(Request),
-            API_Helper_ExtractInfoFromRequestCookie.GetForgeryToken(Request),
-            API_Helper_ExtractInfoFromRequestCookie.GetAspNetCoreForgeryToken(Request),
+            API_Helper_ExtractInfoFromRequestCookie.UserId(API_Helper_ExtractInfoFromRequestCookie.JwtToken(requestHeaderOptions.Value.AuthToken, Request)),
+            API_Helper_ExtractInfoFromRequestCookie.GetUserIp(requestHeaderOptions.Value.ClientIP, Request),
+            API_Helper_ExtractInfoFromRequestCookie.JwtToken(requestHeaderOptions.Value.AuthToken, Request),
+            API_Helper_ExtractInfoFromRequestCookie.GetForgeryToken(requestHeaderOptions.Value.Client_XSRF_TOKEN, Request),
+            API_Helper_ExtractInfoFromRequestCookie.GetAspNetCoreForgeryToken(requestHeaderOptions.Value.AspNetCoreAntiforgery, Request),
             createGroup
         );
 
@@ -90,11 +95,11 @@ public class GroupManagmentProxyController(IGroupManagmentProxyService groupMana
 
         var result = await groupManagmentProxyService.EditGroup
         (
-            API_Helper_ExtractInfoFromRequestCookie.UserId(API_Helper_ExtractInfoFromRequestCookie.JwtToken(Request)),
-            API_Helper_ExtractInfoFromRequestCookie.GetUserIp(Request),
-            API_Helper_ExtractInfoFromRequestCookie.GetForgeryToken(Request),
-            API_Helper_ExtractInfoFromRequestCookie.GetAspNetCoreForgeryToken(Request),
-            API_Helper_ExtractInfoFromRequestCookie.JwtToken(Request),
+            API_Helper_ExtractInfoFromRequestCookie.UserId(API_Helper_ExtractInfoFromRequestCookie.JwtToken(requestHeaderOptions.Value.AuthToken, Request)),
+            API_Helper_ExtractInfoFromRequestCookie.GetUserIp(requestHeaderOptions.Value.ClientIP, Request),
+            API_Helper_ExtractInfoFromRequestCookie.GetForgeryToken(requestHeaderOptions.Value.Client_XSRF_TOKEN, Request),
+            API_Helper_ExtractInfoFromRequestCookie.GetAspNetCoreForgeryToken(requestHeaderOptions.Value.AspNetCoreAntiforgery, Request),
+            API_Helper_ExtractInfoFromRequestCookie.JwtToken(requestHeaderOptions.Value.AuthToken, Request),
             groupId,
             editGroup
         );
@@ -111,11 +116,11 @@ public class GroupManagmentProxyController(IGroupManagmentProxyService groupMana
     {
         var result = await groupManagmentProxyService.DeleteGroup
         (
-            API_Helper_ExtractInfoFromRequestCookie.UserId(API_Helper_ExtractInfoFromRequestCookie.JwtToken(Request)),
-            API_Helper_ExtractInfoFromRequestCookie.GetUserIp(Request),
-            API_Helper_ExtractInfoFromRequestCookie.GetForgeryToken(Request),
-            API_Helper_ExtractInfoFromRequestCookie.GetAspNetCoreForgeryToken(Request),
-            API_Helper_ExtractInfoFromRequestCookie.JwtToken(Request),
+            API_Helper_ExtractInfoFromRequestCookie.UserId(API_Helper_ExtractInfoFromRequestCookie.JwtToken(requestHeaderOptions.Value.AuthToken, Request)),
+            API_Helper_ExtractInfoFromRequestCookie.GetUserIp(requestHeaderOptions.Value.ClientIP, Request),
+            API_Helper_ExtractInfoFromRequestCookie.GetForgeryToken(requestHeaderOptions.Value.Client_XSRF_TOKEN, Request),
+            API_Helper_ExtractInfoFromRequestCookie.GetAspNetCoreForgeryToken(requestHeaderOptions.Value.AspNetCoreAntiforgery, Request),
+            API_Helper_ExtractInfoFromRequestCookie.JwtToken(requestHeaderOptions.Value.AuthToken, Request),
             groupId
         );
 
@@ -128,9 +133,9 @@ public class GroupManagmentProxyController(IGroupManagmentProxyService groupMana
     {
         var result = await groupManagmentProxyService.GetGroupsInvitations
         (
-            API_Helper_ExtractInfoFromRequestCookie.UserId(API_Helper_ExtractInfoFromRequestCookie.JwtToken(Request)),
-            API_Helper_ExtractInfoFromRequestCookie.GetUserIp(Request),
-            API_Helper_ExtractInfoFromRequestCookie.JwtToken(Request)
+            API_Helper_ExtractInfoFromRequestCookie.UserId(API_Helper_ExtractInfoFromRequestCookie.JwtToken(requestHeaderOptions.Value.AuthToken, Request)),
+            API_Helper_ExtractInfoFromRequestCookie.GetUserIp(requestHeaderOptions.Value.ClientIP, Request),
+            API_Helper_ExtractInfoFromRequestCookie.JwtToken(requestHeaderOptions.Value.AuthToken, Request)
         );
 
         return Util_GenericControllerResponse<List<DTO_RecivedInvitations>>.ControllerResponse(result);
@@ -142,9 +147,9 @@ public class GroupManagmentProxyController(IGroupManagmentProxyService groupMana
     {
         var result = await groupManagmentProxyService.GetSentGroupInvitations
         (
-            API_Helper_ExtractInfoFromRequestCookie.UserId(API_Helper_ExtractInfoFromRequestCookie.JwtToken(Request)),
-            API_Helper_ExtractInfoFromRequestCookie.GetUserIp(Request),
-            API_Helper_ExtractInfoFromRequestCookie.JwtToken(Request)
+            API_Helper_ExtractInfoFromRequestCookie.UserId(API_Helper_ExtractInfoFromRequestCookie.JwtToken(requestHeaderOptions.Value.AuthToken, Request)),
+            API_Helper_ExtractInfoFromRequestCookie.GetUserIp(requestHeaderOptions.Value.ClientIP, Request),
+            API_Helper_ExtractInfoFromRequestCookie.JwtToken(requestHeaderOptions.Value.AuthToken, Request)
         );
 
         return Util_GenericControllerResponse<List<DTO_SentInvitations>>.ControllerResponse(result);
@@ -162,11 +167,11 @@ public class GroupManagmentProxyController(IGroupManagmentProxyService groupMana
 
         var result = await groupManagmentProxyService.SendInvitation
         (
-            API_Helper_ExtractInfoFromRequestCookie.UserId(API_Helper_ExtractInfoFromRequestCookie.JwtToken(Request)),
-            API_Helper_ExtractInfoFromRequestCookie.GetUserIp(Request),
-            API_Helper_ExtractInfoFromRequestCookie.JwtToken(Request),
-            API_Helper_ExtractInfoFromRequestCookie.GetForgeryToken(Request),
-            API_Helper_ExtractInfoFromRequestCookie.GetAspNetCoreForgeryToken(Request),
+            API_Helper_ExtractInfoFromRequestCookie.UserId(API_Helper_ExtractInfoFromRequestCookie.JwtToken(requestHeaderOptions.Value.AuthToken, Request)),
+            API_Helper_ExtractInfoFromRequestCookie.GetUserIp(requestHeaderOptions.Value.ClientIP, Request),
+            API_Helper_ExtractInfoFromRequestCookie.JwtToken(requestHeaderOptions.Value.AuthToken, Request),
+            API_Helper_ExtractInfoFromRequestCookie.GetForgeryToken(requestHeaderOptions.Value.Client_XSRF_TOKEN, Request),
+            API_Helper_ExtractInfoFromRequestCookie.GetAspNetCoreForgeryToken(requestHeaderOptions.Value.AspNetCoreAntiforgery, Request),
             dTO_SendInvitation
         );
 
@@ -185,11 +190,11 @@ public class GroupManagmentProxyController(IGroupManagmentProxyService groupMana
 
         var result = await groupManagmentProxyService.AcceptInvitation
         (
-            API_Helper_ExtractInfoFromRequestCookie.UserId(API_Helper_ExtractInfoFromRequestCookie.JwtToken(Request)),
-            API_Helper_ExtractInfoFromRequestCookie.GetUserIp(Request),
-            API_Helper_ExtractInfoFromRequestCookie.JwtToken(Request),
-            API_Helper_ExtractInfoFromRequestCookie.GetForgeryToken(Request),
-            API_Helper_ExtractInfoFromRequestCookie.GetAspNetCoreForgeryToken(Request),
+            API_Helper_ExtractInfoFromRequestCookie.UserId(API_Helper_ExtractInfoFromRequestCookie.JwtToken(requestHeaderOptions.Value.AuthToken, Request)),
+            API_Helper_ExtractInfoFromRequestCookie.GetUserIp(requestHeaderOptions.Value.ClientIP, Request),
+            API_Helper_ExtractInfoFromRequestCookie.JwtToken(requestHeaderOptions.Value.AuthToken, Request),
+            API_Helper_ExtractInfoFromRequestCookie.GetForgeryToken(requestHeaderOptions.Value.Client_XSRF_TOKEN, Request),
+            API_Helper_ExtractInfoFromRequestCookie.GetAspNetCoreForgeryToken(requestHeaderOptions.Value.AspNetCoreAntiforgery, Request),
             acceptInvitationRequest
         );
 
@@ -209,11 +214,11 @@ public class GroupManagmentProxyController(IGroupManagmentProxyService groupMana
         var result = await groupManagmentProxyService.RejectInvitation
         (
 
-            API_Helper_ExtractInfoFromRequestCookie.UserId(API_Helper_ExtractInfoFromRequestCookie.JwtToken(Request)),
-            API_Helper_ExtractInfoFromRequestCookie.GetUserIp(Request),
-            API_Helper_ExtractInfoFromRequestCookie.JwtToken(Request),
-            API_Helper_ExtractInfoFromRequestCookie.GetForgeryToken(Request),
-            API_Helper_ExtractInfoFromRequestCookie.GetAspNetCoreForgeryToken(Request),
+            API_Helper_ExtractInfoFromRequestCookie.UserId(API_Helper_ExtractInfoFromRequestCookie.JwtToken(requestHeaderOptions.Value.AuthToken, Request)),
+            API_Helper_ExtractInfoFromRequestCookie.GetUserIp(requestHeaderOptions.Value.ClientIP, Request),
+            API_Helper_ExtractInfoFromRequestCookie.JwtToken(requestHeaderOptions.Value.AuthToken, Request),
+            API_Helper_ExtractInfoFromRequestCookie.GetForgeryToken(requestHeaderOptions.Value.Client_XSRF_TOKEN, Request),
+            API_Helper_ExtractInfoFromRequestCookie.GetAspNetCoreForgeryToken(requestHeaderOptions.Value.AspNetCoreAntiforgery, Request),
             rejectInvitationRequest
         );
 
@@ -232,11 +237,11 @@ public class GroupManagmentProxyController(IGroupManagmentProxyService groupMana
 
         var result = await groupManagmentProxyService.DeleteInvitation
         (
-            API_Helper_ExtractInfoFromRequestCookie.UserId(API_Helper_ExtractInfoFromRequestCookie.JwtToken(Request)),
-            API_Helper_ExtractInfoFromRequestCookie.GetUserIp(Request),
-            API_Helper_ExtractInfoFromRequestCookie.JwtToken(Request),
-            API_Helper_ExtractInfoFromRequestCookie.GetForgeryToken(Request),
-            API_Helper_ExtractInfoFromRequestCookie.GetAspNetCoreForgeryToken(Request),
+            API_Helper_ExtractInfoFromRequestCookie.UserId(API_Helper_ExtractInfoFromRequestCookie.JwtToken(requestHeaderOptions.Value.AuthToken, Request)),
+            API_Helper_ExtractInfoFromRequestCookie.GetUserIp(requestHeaderOptions.Value.ClientIP, Request),
+            API_Helper_ExtractInfoFromRequestCookie.JwtToken(requestHeaderOptions.Value.AuthToken, Request),
+            API_Helper_ExtractInfoFromRequestCookie.GetForgeryToken(requestHeaderOptions.Value.Client_XSRF_TOKEN, Request),
+            API_Helper_ExtractInfoFromRequestCookie.GetAspNetCoreForgeryToken(requestHeaderOptions.Value.AspNetCoreAntiforgery, Request),
             deleteInvitationRequest
         );
 
@@ -256,11 +261,11 @@ public class GroupManagmentProxyController(IGroupManagmentProxyService groupMana
 
         var result = await groupManagmentProxyService.DeleteUsersFromGroup
         (
-            API_Helper_ExtractInfoFromRequestCookie.UserId(API_Helper_ExtractInfoFromRequestCookie.JwtToken(Request)),
-            API_Helper_ExtractInfoFromRequestCookie.GetUserIp(Request),
-            API_Helper_ExtractInfoFromRequestCookie.JwtToken(Request),
-            API_Helper_ExtractInfoFromRequestCookie.GetForgeryToken(Request),
-            API_Helper_ExtractInfoFromRequestCookie.GetAspNetCoreForgeryToken(Request),
+            API_Helper_ExtractInfoFromRequestCookie.UserId(API_Helper_ExtractInfoFromRequestCookie.JwtToken(requestHeaderOptions.Value.AuthToken, Request)),
+            API_Helper_ExtractInfoFromRequestCookie.GetUserIp(requestHeaderOptions.Value.ClientIP, Request),
+            API_Helper_ExtractInfoFromRequestCookie.JwtToken(requestHeaderOptions.Value.AuthToken, Request),
+            API_Helper_ExtractInfoFromRequestCookie.GetForgeryToken(requestHeaderOptions.Value.Client_XSRF_TOKEN, Request),
+            API_Helper_ExtractInfoFromRequestCookie.GetAspNetCoreForgeryToken(requestHeaderOptions.Value.AspNetCoreAntiforgery, Request),
             groupId,
             UsersToRemoveFromGroup
         );

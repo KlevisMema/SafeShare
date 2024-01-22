@@ -136,8 +136,6 @@ public class AccountManagment
             getUser.RequireOTPDuringLogin = dtoUser.Enable2FA;
             getUser.Age = DateTime.UtcNow.Year - dtoUser.Birthday.Year;
 
-            //await _db.SaveChangesAsync();
-
             await DeleteUserRefreshTokens(getUser.Id);
 
             var token = await GetToken(getUser);
@@ -1207,7 +1205,7 @@ public class AccountManagment
                 """
                     [UserManagment Module]-[AccountManagment Class]-[RequestChangeEmailAddress Method] => 
                     [IP] {IP} user with email {CurrentEmailAddress} 
-                    changed his email address succsessfully.
+                    requested to change the email address.
                     DTO {@DTO} | User {@User}
                  """,
                 await Util_GetIpAddres.GetLocation(_httpContextAccessor),
@@ -1325,15 +1323,10 @@ public class AccountManagment
                 LogLevel.Information,
                 """
                     [UserManagment Module]-[AccountManagment Class]-[ConfirmRequestChangeEmailAddress Method] => 
-                    [IP] {IP} user with email {EmailAddress}
-                    tried to confirm the request for changing the email but confirmTokenResult failed with {@ErrorsDescription}.
-                    DTO {@DTO} | User {@User}
+                    [IP] {IP} user with email {EmailAddress} succsessfully changed his email.
                  """,
                 await Util_GetIpAddres.GetLocation(_httpContextAccessor),
-                changeEmailAddressConfirmDto.EmailAddress,
-                confirmTokenResult.Errors.Select(x => x.Description),
-                changeEmailAddressConfirmDto,
-                user
+                changeEmailAddressConfirmDto.EmailAddress
             );
 
             return Util_GenericResponse<DTO_Token>.Response

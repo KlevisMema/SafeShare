@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
+using SafeShare.ProxyApi.Helpers;
+using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Authorization;
 using SafeShare.ClientServerShared.Routes;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -10,13 +12,16 @@ using SafeShare.ProxyApi.Container.Interfaces;
 using SafeShare.Utilities.SafeShareApi.Responses;
 using SafeShare.DataTransormObject.SafeShareApi.Security;
 using SafeShare.DataTransormObject.SafeShareApi.Authentication;
-using SafeShare.ProxyApi.Helpers;
 
 namespace SafeShare.ProxyApi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class AuthProxyController(IProxyAuthentication authenticationService) : ControllerBase
+public class AuthProxyController
+(
+    IProxyAuthentication authenticationService,
+    IOptions<API_Helper_RequestHeaderSettings> requestHeaderOptions
+) : ControllerBase
 {
     [AllowAnonymous]
     [HttpPost(Route_AuthenticationRoute.Register)]
@@ -124,7 +129,8 @@ public class AuthProxyController(IProxyAuthentication authenticationService) : C
     {
         var jwtToken = Request.Cookies["AuthToken"] ?? string.Empty;
 
-        bool isUserId = Guid.TryParse(API_Helper_ExtractInfoFromRequestCookie.UserId(API_Helper_ExtractInfoFromRequestCookie.JwtToken(Request)), out var userId);
+        bool isUserId = Guid.TryParse(API_Helper_ExtractInfoFromRequestCookie.UserId
+            (API_Helper_ExtractInfoFromRequestCookie.JwtToken(requestHeaderOptions.Value.AuthToken, Request)), out var userId);
 
         if (!isUserId)
             return NotFound();
@@ -141,6 +147,14 @@ public class AuthProxyController(IProxyAuthentication authenticationService) : C
         return Ok();
     }
 
+    [HttpGet(Route_AuthenticationRoute.JwtToken)]
+    [Authorize(AuthenticationSchemes = "Default")]
+    public ActionResult<string>
+    GetJwtToken()
+    {
+        return Ok(API_Helper_ExtractInfoFromRequestCookie.JwtToken(requestHeaderOptions.Value.AuthToken, Request));
+    }
+
     [AllowAnonymous]
     [HttpPost(Route_AuthenticationRoute.RefreshToken)]
     public async Task<ActionResult<Util_GenericResponse<DTO_Token>>>
@@ -152,7 +166,7 @@ public class AuthProxyController(IProxyAuthentication authenticationService) : C
 
         var result = await authenticationService.RefreshToken(jwtToken, refreshToken, refreshTokenId);
 
-        if (result.Item2.Headers.Contains("Set-Cookie"))
+        if (result.Item1.Succsess && result.Item2.Headers.Contains("Set-Cookie"))
         {
             var cookies = result.Item2.Headers.GetValues("Set-Cookie");
             foreach (var cookie in cookies)
@@ -189,14 +203,5 @@ public class AuthProxyController(IProxyAuthentication authenticationService) : C
             SameSite = SameSiteMode.Strict,
             Expires = DateTimeOffset.UtcNow.AddDays(-1)
         });
-    }
-
-    private static string
-    UserId
-    (
-        string jwtToken
-    )
-    {
-        return Helper_JwtToken.GetUserIdDirectlyFromJwtToken(jwtToken);
     }
 }

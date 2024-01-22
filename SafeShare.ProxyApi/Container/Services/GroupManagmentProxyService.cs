@@ -5,6 +5,7 @@ using System.Text.Json;
 using Newtonsoft.Json.Linq;
 using System.Net.Http.Headers;
 using SafeShare.ProxyApi.Helpers;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using SafeShare.ClientServerShared.Routes;
@@ -16,7 +17,6 @@ using SafeShare.DataTransormObject.SafeShareApi.UserManagment;
 using SafeShare.DataTransormObject.SafeShareApi.GroupManagment;
 using SafeShare.DataTransormObject.SafeShareApi.ExpenseManagment;
 using SafeShare.DataTransormObject.SafeShareApi.GroupManagment.GroupInvitations;
-using Microsoft.AspNetCore.SignalR;
 
 namespace SafeShare.ProxyApi.Container.Services;
 
@@ -42,6 +42,7 @@ public class GroupManagmentProxyService
             API_Helper_ParamsStringChecking.CheckNullOrEmpty
             (
                 (nameof(userId), userId),
+                (nameof(userIp), userIp),
                 (nameof(jwtToken), jwtToken)
             );
 
@@ -177,7 +178,9 @@ public class GroupManagmentProxyService
             (
                 requestConfigurationProxyService.GetBaseAddrOfMainApi(),
                 aspNetForgeryToken,
-                fogeryToken
+                fogeryToken,
+                requestHeaderOptions.Value.AspNetCoreAntiforgery,
+                requestHeaderOptions.Value.XSRF_TOKEN
             );
 
             var expense = new Dictionary<string, string>
@@ -256,7 +259,9 @@ public class GroupManagmentProxyService
             (
                 requestConfigurationProxyService.GetBaseAddrOfMainApi(),
                 aspNetForgeryToken,
-                fogeryToken
+                fogeryToken,
+                requestHeaderOptions.Value.AspNetCoreAntiforgery,
+                requestHeaderOptions.Value.XSRF_TOKEN
             );
 
             var expense = new Dictionary<string, string>
@@ -335,7 +340,9 @@ public class GroupManagmentProxyService
             (
                 requestConfigurationProxyService.GetBaseAddrOfMainApi(),
                 aspNetForgeryToken,
-                fogeryToken
+                fogeryToken,
+                requestHeaderOptions.Value.AspNetCoreAntiforgery,
+                requestHeaderOptions.Value.XSRF_TOKEN
             );
 
             var content = new StringContent(JsonSerializer.Serialize(new { userId, groupId }), Encoding.UTF8, "application/json");
@@ -527,7 +534,9 @@ public class GroupManagmentProxyService
             (
                 requestConfigurationProxyService.GetBaseAddrOfMainApi(),
                 aspNetForgeryToken,
-                fogeryToken
+                fogeryToken,
+                requestHeaderOptions.Value.AspNetCoreAntiforgery,
+                requestHeaderOptions.Value.XSRF_TOKEN
             );
 
             dTO_SendInvitation.InvitingUserId = Guid.Parse(userId);
@@ -604,7 +613,9 @@ public class GroupManagmentProxyService
             (
                 requestConfigurationProxyService.GetBaseAddrOfMainApi(),
                 aspNetForgeryToken,
-                fogeryToken
+                fogeryToken,
+                requestHeaderOptions.Value.AspNetCoreAntiforgery,
+                requestHeaderOptions.Value.XSRF_TOKEN
             );
 
             acceptInvitationRequest.InvitedUserId = Guid.Parse(userId);
@@ -685,7 +696,9 @@ public class GroupManagmentProxyService
             (
                 requestConfigurationProxyService.GetBaseAddrOfMainApi(),
                 aspNetForgeryToken,
-                fogeryToken
+                fogeryToken,
+                requestHeaderOptions.Value.AspNetCoreAntiforgery,
+                requestHeaderOptions.Value.XSRF_TOKEN
             );
 
             rejectInvitationRequest.InvitedUserId = Guid.Parse(userId);
@@ -759,7 +772,9 @@ public class GroupManagmentProxyService
             (
                 requestConfigurationProxyService.GetBaseAddrOfMainApi(),
                 aspNetForgeryToken,
-                fogeryToken
+                fogeryToken,
+                requestHeaderOptions.Value.AspNetCoreAntiforgery,
+                requestHeaderOptions.Value.XSRF_TOKEN
             );
 
             deleteInvitationRequest.InvitingUserId = Guid.Parse(userId);
@@ -834,7 +849,9 @@ public class GroupManagmentProxyService
             (
                 requestConfigurationProxyService.GetBaseAddrOfMainApi(),
                 aspNetForgeryToken,
-                fogeryToken
+                fogeryToken,
+                requestHeaderOptions.Value.AspNetCoreAntiforgery,
+                requestHeaderOptions.Value.XSRF_TOKEN
             );
 
             var content = new StringContent(JsonSerializer.Serialize(UsersToRemoveFromGroup), Encoding.UTF8, "application/json");
@@ -866,7 +883,7 @@ public class GroupManagmentProxyService
             if (readResult.Succsess)
                 await _hubContext.Clients
                                  .Users(UsersToRemoveFromGroup.Select(x => x.UserId))
-                                 .SendAsync("RemovedFromTheGroup", UsersToRemoveFromGroup.Select(x => x.GroupName).FirstOrDefault());
+                                 .SendAsync("RemovedFromTheGroup", UsersToRemoveFromGroup.Select(x => x.GroupName).FirstOrDefault(), groupId);
 
             return readResult;
         }

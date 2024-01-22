@@ -1,4 +1,5 @@
 ﻿using MudBlazor;
+using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components;
 using SafeShare.ClientServices.Interfaces;
 using SafeShare.ClientDTO.AccountManagment;
@@ -12,8 +13,9 @@ public partial class DeactivateAccount
     [CascadingParameter]
     MudDialogInstance MudDialog { get; set; }
     [Inject] private ISnackbar _snackbar { get; set; } = null!;
-    [Inject] private IClientService_UserManagment _userManagmentService { get; set; } = null!;
     [Inject] NavigationManager _navigationManager { get; set; } = null!;
+    [Inject] private ILocalStorageService _localStorage { get; set; } = null!;
+    [Inject] private IClientService_UserManagment _userManagmentService { get; set; } = null!;
 
     private ClientDto_DeactivateAccount Dto_DeactivateAccount { get; set; } = new();
     private EditForm? deactivateAccountForm;
@@ -54,6 +56,9 @@ public partial class DeactivateAccount
         }
         else
         {
+            if (await _localStorage.ContainKeyAsync("FullName"))
+                await _localStorage.RemoveItemAsync("FullName");
+
             _snackbar.Add(updateDataResult.Message, Severity.Success, config => { config.CloseAfterNavigation = true; });
             _snackbar.Add("Logging you out", Severity.Success, config => { config.CloseAfterNavigation = true; });
             await Task.Delay(2000);

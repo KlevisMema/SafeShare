@@ -10,6 +10,7 @@ public class API_Helper_RequestHeaderSettings
     public string AuthToken { get; set; } = string.Empty;
     public string XSRF_TOKEN { get; set; } = string.Empty;
     public string RefreshAuthToken { get; set; } = string.Empty;
+    public string Client_XSRF_TOKEN { get; set; } = string.Empty;
     public string RefreshAuthTokenId { get; set; } = string.Empty;
     public string AspNetCoreAntiforgery { get; set; } = string.Empty;
 }

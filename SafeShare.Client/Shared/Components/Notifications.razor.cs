@@ -1,40 +1,44 @@
 ﻿using MudBlazor;
 using System.Net;
 using Newtonsoft.Json.Linq;
-using SafeShare.Client.Helpers;
+using Blazored.LocalStorage;
+using SafeShare.Client.Internal;
 using SafeShare.Client.Pages.Group;
 using Microsoft.AspNetCore.Components;
 using SafeShare.ClientDTO.Notification;
 using SafeShare.ClientDTO.GroupManagment;
+using SafeShare.ClientServices.Interfaces;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.AspNetCore.Components.Forms;
 using SafeShare.ClientServices.GroupManagment;
-using Blazored.LocalStorage;
 
 namespace SafeShare.Client.Shared.Components;
 
-public partial class Notifications
+public partial class Notifications : IAsyncDisposable, IDisposable
 {
-    [Inject] IClientService_GroupManagment _groupManagmentService { get; set; } = null!;
-    [Inject] private ISnackbar _snackbar { get; set; } = null!;
     [Inject] AppState _appState { get; set; } = null!;
+    [Inject] private ISnackbar _snackbar { get; set; } = null!;
+    [Inject] private SignalRService _signalR { get; set; } = null!;
     [Inject] private ILocalStorageService _localStorage { get; set; } = null!;
+    [Inject] private NavigationManager _navigationManager { get; set; } = null!;
+    [Inject] IAuthenticationService _authenticationService { get; set; } = null!;
+    [Inject] IClientService_GroupManagment _groupManagmentService { get; set; } = null!;
 
     public bool _isOpen = false;
     private bool _processing = false;
     private bool badgeVisible = false;
     private bool _processingNotificationDelete = false;
+
     private List<ClientDto_RecivedInvitations> Invitations { get; set; } = [];
-
     private List<ClientDto_Notification> NotificationsList { get; set; } = [];
-
-    private HubConnection? _hubConnection;
 
     private string BtnText { get; set; } = "Accept";
 
     protected override async Task OnInitializedAsync()
     {
-        await ConnectToSignalR();
+        _appState.OnLogOut += HandleLogOut;
+
+        HandleSignalR();
 
         var getInvitationsResult = await _groupManagmentService.GetGroupsInvitations();
 
@@ -42,26 +46,15 @@ public partial class Notifications
             Invitations = getInvitationsResult.Value!.Where(x => x.InvitationStatus == ClientDTO.Enums.InvitationStatus.Pending).ToList();
     }
 
-    private async Task
-    ConnectToSignalR()
+    private void
+    HandleSignalR()
     {
-        _hubConnection = new HubConnectionBuilder().WithUrl("https://localhost:7280/notifications", options =>
+        if (_signalR.HubConnection is not null)
         {
-            string? token = "";
-
-            if (_appState is not null)
-                token = _appState.GetClientSecrests()?.Token.Token;
-
-            if (!String.IsNullOrEmpty(token))
-                options.AccessTokenProvider = () => Task.FromResult(token)!;
-
-        }).Build();
-
-        _hubConnection.On("ReceiveGroupInvitation", HandleGroupInvitationIndication);
-        _hubConnection.On<string>("RemovedFromTheGroup", HandleRemovedFromTheGroup);
-        _hubConnection.On<string, string>("AcceptedInvitation", HandleAcceptedInvitation);
-
-        await _hubConnection.StartAsync();
+            _signalR.HubConnection.On("ReceiveGroupInvitation", HandleGroupInvitationIndication);
+            _signalR.HubConnection.On<string, Guid>("RemovedFromTheGroup", HandleRemovedFromTheGroup);
+            _signalR.HubConnection.On<string, string>("AcceptedInvitation", HandleAcceptedInvitation);
+        }
     }
 
     private async Task
@@ -83,7 +76,8 @@ public partial class Notifications
     private void
     HandleRemovedFromTheGroup
     (
-        string groupName
+        string groupName,
+        Guid groupId
     )
     {
         _snackbar.Add($"You have been removed a group!", Severity.Info, config =>
@@ -101,6 +95,8 @@ public partial class Notifications
             NotificationId = Guid.NewGuid(),
             NotificationMessage = $"You have been removed from {groupName} group",
         });
+
+        _appState.RemovedFromGroup(groupId);
 
         StateHasChanged();
     }
@@ -129,6 +125,12 @@ public partial class Notifications
         });
 
         StateHasChanged();
+    }
+
+    private async void
+    HandleLogOut()
+    {
+        await _signalR.DisconnectAsync();
     }
 
     public async Task
@@ -205,13 +207,13 @@ public partial class Notifications
     {
         switch (httpStatusCode)
         {
-            case System.Net.HttpStatusCode.OK:
+            case HttpStatusCode.OK:
                 _snackbar.Add(message, Severity.Success, config => { config.CloseAfterNavigation = true; config.VisibleStateDuration = 3000; });
                 break;
-            case System.Net.HttpStatusCode.BadRequest:
+            case HttpStatusCode.BadRequest:
                 _snackbar.Add(message, Severity.Warning, config => { config.CloseAfterNavigation = true; config.VisibleStateDuration = 3000; });
                 break;
-            case System.Net.HttpStatusCode.InternalServerError:
+            case HttpStatusCode.InternalServerError:
                 _snackbar.Add(message, Severity.Error, config => { config.CloseAfterNavigation = true; config.VisibleStateDuration = 3000; });
                 break;
             default:
@@ -237,5 +239,17 @@ public partial class Notifications
         _processingNotificationDelete = false;
 
         StateHasChanged();
+    }
+
+    public void
+    Dispose()
+    {
+        _appState.OnLogOut -= HandleLogOut;
+    }
+
+    public async ValueTask
+    DisposeAsync()
+    {
+        await _signalR.DisposeAsync();
     }
 }

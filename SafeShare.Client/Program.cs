@@ -4,7 +4,7 @@ using MudBlazor.Services;
 using System.Text.Unicode;
 using System.Net.Http.Json;
 using Blazored.LocalStorage;
-using SafeShare.Client.Helpers;
+using SafeShare.Client.Internal;
 using System.Text.Encodings.Web;
 using Microsoft.Extensions.Configuration;
 using SafeShare.ClientServices.Interfaces;
@@ -40,8 +40,9 @@ builder.Services.AddHttpClient("MyHttpClient", client =>
 })
 .AddHttpMessageHandler<TokenExpiryHandler>();
 
-builder.Services.AddSingleton<AppState>();
+builder.Services.AddScoped<AppState>();
 builder.Services.AddBlazoredLocalStorage();
+builder.Services.AddScoped<SignalRService>();
 builder.Services.AddScoped<TokenExpiryHandler>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IClientService_UserManagment, ClientService_UserManagment>();

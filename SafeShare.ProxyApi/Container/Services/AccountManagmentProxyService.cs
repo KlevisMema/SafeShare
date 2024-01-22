@@ -1,65 +1,127 @@
-﻿using System.Text;
+﻿using System.Net;
+using System.Text;
 using System.Net.Http;
 using System.Text.Json;
 using Newtonsoft.Json.Linq;
 using System.Net.Http.Headers;
+using SafeShare.ProxyApi.Helpers;
+using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.SignalR;
 using SafeShare.ClientServerShared.Routes;
 using SafeShare.ProxyApi.Container.Interfaces;
 using SafeShare.Utilities.SafeShareApi.Responses;
 using SafeShare.DataTransormObject.SafeShareApi.UserManagment;
 using SafeShare.DataTransormObject.SafeShareApi.Authentication;
+using SafeShare.DataTransormObject.SafeShareApi.GroupManagment;
+using SafeShare.DataTransormObject.SafeShareApi.GroupManagment.GroupInvitations;
 
 namespace SafeShare.ProxyApi.Container.Services;
 
-public class AccountManagmentProxyService(IHttpClientFactory httpClientFactory) : IAccountManagmentProxyService
+public class AccountManagmentProxyService
+(
+    IHttpClientFactory httpClientFactory,
+    ILogger<AccountManagmentProxyService> logger,
+     IHubContext<NotificationHubProxyService> _hubContext,
+    IOptions<API_Helper_RequestHeaderSettings> requestHeaderOptions,
+    IRequestConfigurationProxyService requestConfigurationProxyService
+) : IAccountManagmentProxyService
 {
-    private const string Client = "ProxyHttpClient";
-    private readonly string ApiKey = Environment.GetEnvironmentVariable("SAFE_SHARE_API_KEY") ?? string.Empty;
-
     public async Task<Util_GenericResponse<DTO_UserUpdatedInfo>>
     GetUser
     (
         string userId,
+        string userIp,
         string jwtToken
     )
     {
-        var httpClient = httpClientFactory.CreateClient(Client);
+        HttpResponseMessage response = new();
 
-        var content = new StringContent(JsonSerializer.Serialize(new { userId }), Encoding.UTF8, "application/json");
-
-        var requestMessage = new HttpRequestMessage(HttpMethod.Get, BaseRoute.RouteAccountManagmentForClient + Route_AccountManagmentRoute.GetUser.Replace("{userId}", userId.ToString()))
+        try
         {
-            Content = content
-        };
+            API_Helper_ParamsStringChecking.CheckNullOrEmpty
+            (
+                (nameof(userId), userId),
+                (nameof(userIp), userIp),
+                (nameof(jwtToken), jwtToken)
+            );
 
-        requestMessage.Headers.Add("X-Api-Key", $"{ApiKey}");
+            var httpClient = API_Helper_HttpClient.CreateClientInstance(requestConfigurationProxyService.GetClient(), httpClientFactory);
 
-        httpClient.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", jwtToken);
+            var content = new StringContent(JsonSerializer.Serialize(new { userId }), Encoding.UTF8, "application/json");
 
-        var response = await httpClient.SendAsync(requestMessage);
+            var requestMessage = new HttpRequestMessage(HttpMethod.Get, BaseRoute.RouteAccountManagmentForClient + Route_AccountManagmentRoute.GetUser.Replace("{userId}", userId.ToString()))
+            {
+                Content = content
+            };
 
-        var responseContent = await response.Content.ReadAsStringAsync();
+            API_Helper_HttpClient.AddHeadersToTheRequest
+             (
+                 jwtToken,
+                 requestMessage,
+                 new KeyValuePair<string, string>(requestHeaderOptions.Value.ClientIP, userIp),
+                 new KeyValuePair<string, string>(requestHeaderOptions.Value.ApiKey, requestConfigurationProxyService.GetApiKey())
+             );
 
-        var readResult = JsonSerializer.Deserialize<Util_GenericResponse<DTO_UserUpdatedInfo>>(responseContent, new JsonSerializerOptions
+            response = await httpClient.SendAsync(requestMessage);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            var readResult = JsonSerializer.Deserialize<Util_GenericResponse<DTO_UserUpdatedInfo>>(responseContent, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            }) ?? throw new ArgumentNullException("Failed to deserialize the server response. The content may not match the expected format.");
+
+            return readResult;
+        }
+        catch (Exception ex)
         {
-            PropertyNameCaseInsensitive = true
-        });
+            logger.LogCritical(ex, "Exception in GetUser.");
 
-        return readResult ?? new Util_GenericResponse<DTO_UserUpdatedInfo>();
+            return new Util_GenericResponse<DTO_UserUpdatedInfo>
+            {
+                Errors = null,
+                Message = "Something went wrong",
+                StatusCode = response.StatusCode,
+                Succsess = false,
+                Value = null
+            };
+        }
     }
 
     public async Task<Tuple<Util_GenericResponse<DTO_UserUpdatedInfo>, HttpResponseMessage>>
     UpdateUser
     (
         string userId,
+        string userIp,
         string jwtToken,
+        string fogeryToken,
+        string aspNetForgeryToken,
         DTO_UserInfo userInfo
     )
     {
-        var httpClient = httpClientFactory.CreateClient(Client);
+        HttpResponseMessage response = new();
 
-        var registerData = new Dictionary<string, string>
+        try
+        {
+            API_Helper_ParamsStringChecking.CheckNullOrEmpty
+            (
+                (nameof(userId), userId),
+                (nameof(userIp), userIp),
+                (nameof(jwtToken), jwtToken),
+                (nameof(fogeryToken), fogeryToken),
+                (nameof(aspNetForgeryToken), aspNetForgeryToken)
+            );
+
+            var httpClient = API_Helper_HttpClient.NewClientWithCookies
+            (
+                requestConfigurationProxyService.GetBaseAddrOfMainApi(),
+                aspNetForgeryToken,
+                fogeryToken,
+                requestHeaderOptions.Value.AspNetCoreAntiforgery,
+                requestHeaderOptions.Value.XSRF_TOKEN
+            );
+
+            var registerData = new Dictionary<string, string>
         {
             { nameof(DTO_UserInfo.FullName), userInfo.FullName },
             { nameof(DTO_UserInfo.UserName), userInfo.UserName },
@@ -69,394 +131,775 @@ public class AccountManagmentProxyService(IHttpClientFactory httpClientFactory) 
             { nameof(DTO_UserInfo.Enable2FA), userInfo.Enable2FA.ToString() },
         };
 
-        var contentForm = new FormUrlEncodedContent(registerData);
+            var contentForm = new FormUrlEncodedContent(registerData);
 
-        var requestMessage = new HttpRequestMessage(HttpMethod.Put, BaseRoute.RouteAccountManagmentForClient + Route_AccountManagmentRoute.UpdateUser.Replace("{userId}", userId))
-        {
-            Content = contentForm
-        };
-
-        requestMessage.Headers.Add("X-Api-Key", $"{ApiKey}");
-
-        httpClient.DefaultRequestHeaders.Authorization = new("Bearer", jwtToken);
-
-        var response = await httpClient.SendAsync(requestMessage);
-
-        var responseContent = await response.Content.ReadAsStringAsync();
-
-        var readResult = JsonSerializer.Deserialize<Util_GenericResponse<DTO_UserUpdatedInfo>>(responseContent, new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        });
-
-        return Tuple.Create(readResult!, response) ?? Tuple.Create(
-            new Util_GenericResponse<DTO_UserUpdatedInfo>()
+            var requestMessage = new HttpRequestMessage(HttpMethod.Put, BaseRoute.RouteAccountManagmentForClient + Route_AccountManagmentRoute.UpdateUser.Replace("{userId}", userId))
             {
-                Message = "Something went wrong",
+                Content = contentForm
+            };
+
+            API_Helper_HttpClient.AddHeadersToTheRequest
+            (
+                jwtToken,
+                requestMessage,
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.XSRF_TOKEN, fogeryToken),
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.AspNetCoreAntiforgery, aspNetForgeryToken),
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.ClientIP, userIp),
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.ApiKey, requestConfigurationProxyService.GetApiKey())
+            );
+
+            response = await httpClient.SendAsync(requestMessage);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            var readResult = JsonSerializer.Deserialize<Util_GenericResponse<DTO_UserUpdatedInfo>>(responseContent, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            })
+                ?? throw new ArgumentNullException("Failed to deserialize the server response. The content may not match the expected format.");
+
+            return Tuple.Create(readResult, response);
+        }
+        catch (Exception ex)
+        {
+            logger.LogCritical(ex, "Exception in UpdateUser.");
+
+            return Tuple.Create(new Util_GenericResponse<DTO_UserUpdatedInfo>
+            {
                 Errors = null,
-                StatusCode = System.Net.HttpStatusCode.InternalServerError,
+                Message = "Something went wrong",
+                StatusCode = response.StatusCode,
                 Succsess = false,
                 Value = null
             }, new HttpResponseMessage());
+        }
     }
 
     public async Task<Util_GenericResponse<bool>>
     ChangePassword
     (
         string userId,
+        string userIp,
         string jwtToken,
+        string fogeryToken,
+        string aspNetForgeryToken,
         DTO_UserChangePassword changePassword
     )
     {
-        var httpClient = httpClientFactory.CreateClient(Client);
+        HttpResponseMessage response = new();
 
-        var registerData = new Dictionary<string, string>
+        try
         {
-            { nameof(DTO_UserChangePassword.OldPassword), changePassword.OldPassword },
-            { nameof(DTO_UserChangePassword.NewPassword), changePassword.NewPassword },
-            { nameof(DTO_UserChangePassword.ConfirmNewPassword), changePassword.ConfirmNewPassword},
-        };
+            API_Helper_ParamsStringChecking.CheckNullOrEmpty
+            (
+                (nameof(userId), userId),
+                (nameof(userIp), userIp),
+                (nameof(jwtToken), jwtToken),
+                (nameof(fogeryToken), fogeryToken),
+                (nameof(aspNetForgeryToken), aspNetForgeryToken)
+            );
 
-        var contentForm = new FormUrlEncodedContent(registerData);
+            var httpClient = API_Helper_HttpClient.NewClientWithCookies
+            (
+                requestConfigurationProxyService.GetBaseAddrOfMainApi(),
+                aspNetForgeryToken,
+                fogeryToken,
+                requestHeaderOptions.Value.AspNetCoreAntiforgery,
+                requestHeaderOptions.Value.XSRF_TOKEN
+            );
 
-        var requestMessage = new HttpRequestMessage(HttpMethod.Put, BaseRoute.RouteAccountManagmentForClient + Route_AccountManagmentRoute.ChangePassword.Replace("{userId}", userId))
+            var registerData = new Dictionary<string, string>
+            {
+                { nameof(DTO_UserChangePassword.OldPassword), changePassword.OldPassword },
+                { nameof(DTO_UserChangePassword.NewPassword), changePassword.NewPassword },
+                { nameof(DTO_UserChangePassword.ConfirmNewPassword), changePassword.ConfirmNewPassword},
+            };
+
+            var contentForm = new FormUrlEncodedContent(registerData);
+
+            var requestMessage = new HttpRequestMessage(HttpMethod.Put, BaseRoute.RouteAccountManagmentForClient + Route_AccountManagmentRoute.ChangePassword.Replace("{userId}", userId))
+            {
+                Content = contentForm
+            };
+
+            API_Helper_HttpClient.AddHeadersToTheRequest
+            (
+                jwtToken,
+                requestMessage,
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.XSRF_TOKEN, fogeryToken),
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.AspNetCoreAntiforgery, aspNetForgeryToken),
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.ClientIP, userIp),
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.ApiKey, requestConfigurationProxyService.GetApiKey())
+            );
+
+            response = await httpClient.SendAsync(requestMessage);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            var readResult = JsonSerializer.Deserialize<Util_GenericResponse<bool>>(responseContent, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            }) ?? throw new ArgumentNullException("Failed to deserialize the server response. The content may not match the expected format.");
+
+            return readResult;
+        }
+        catch (Exception ex)
         {
-            Content = contentForm
-        };
+            logger.LogCritical(ex, "Exception in ChangePassword.");
 
-        requestMessage.Headers.Add("X-Api-Key", $"{ApiKey}");
-
-        httpClient.DefaultRequestHeaders.Authorization = new("Bearer", jwtToken);
-
-        var response = await httpClient.SendAsync(requestMessage);
-
-        var responseContent = await response.Content.ReadAsStringAsync();
-
-        var readResult = JsonSerializer.Deserialize<Util_GenericResponse<bool>>(responseContent, new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        });
-
-        return readResult ?? new Util_GenericResponse<bool>();
+            return new Util_GenericResponse<bool>
+            {
+                Errors = null,
+                Message = "Something went wrong",
+                StatusCode = response.StatusCode,
+                Succsess = false,
+                Value = false
+            };
+        }
     }
 
     public async Task<Tuple<Util_GenericResponse<bool>, HttpResponseMessage>>
     DeactivateAccount
     (
         string userId,
+        string userIp,
         string jwtToken,
+        string fogeryToken,
+        string aspNetForgeryToken,
         DTO_DeactivateAccount deactivateAccount
     )
     {
-        var httpClient = httpClientFactory.CreateClient(Client);
+        HttpResponseMessage response = new();
 
-        var registerData = new Dictionary<string, string>
+        try
         {
-            { nameof(DTO_DeactivateAccount.Email), deactivateAccount.Email },
-            { nameof(DTO_DeactivateAccount.Password), deactivateAccount.Password },
-        };
+            API_Helper_ParamsStringChecking.CheckNullOrEmpty
+            (
+                (nameof(userId), userId),
+                (nameof(userIp), userIp),
+                (nameof(jwtToken), jwtToken),
+                (nameof(fogeryToken), fogeryToken),
+                (nameof(aspNetForgeryToken), aspNetForgeryToken)
+            );
 
-        var contentForm = new FormUrlEncodedContent(registerData);
+            var httpClient = API_Helper_HttpClient.NewClientWithCookies
+            (
+                requestConfigurationProxyService.GetBaseAddrOfMainApi(),
+                aspNetForgeryToken,
+                fogeryToken,
+                requestHeaderOptions.Value.AspNetCoreAntiforgery,
+                requestHeaderOptions.Value.XSRF_TOKEN
+            );
 
-        var requestMessage = new HttpRequestMessage(HttpMethod.Post, BaseRoute.RouteAccountManagmentForClient + Route_AccountManagmentRoute.DeactivateAccount.Replace("{userId}", userId))
+            var registerData = new Dictionary<string, string>
+            {
+                { nameof(DTO_DeactivateAccount.Email), deactivateAccount.Email },
+                { nameof(DTO_DeactivateAccount.Password), deactivateAccount.Password },
+            };
+
+            var contentForm = new FormUrlEncodedContent(registerData);
+
+            var requestMessage = new HttpRequestMessage(HttpMethod.Post, BaseRoute.RouteAccountManagmentForClient + Route_AccountManagmentRoute.DeactivateAccount.Replace("{userId}", userId))
+            {
+                Content = contentForm
+            };
+
+            API_Helper_HttpClient.AddHeadersToTheRequest
+            (
+                jwtToken,
+                requestMessage,
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.XSRF_TOKEN, fogeryToken),
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.AspNetCoreAntiforgery, aspNetForgeryToken),
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.ClientIP, userIp),
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.ApiKey, requestConfigurationProxyService.GetApiKey())
+            );
+
+            response = await httpClient.SendAsync(requestMessage);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            var readResult = JsonSerializer.Deserialize<Util_GenericResponse<bool>>(responseContent, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            }) ?? throw new ArgumentNullException("Failed to deserialize the server response. The content may not match the expected format.");
+
+            return Tuple.Create(readResult, response);
+        }
+        catch (Exception ex)
         {
-            Content = contentForm
-        };
+            logger.LogCritical(ex, "Exception in DeactivateAccount.");
 
-        requestMessage.Headers.Add("X-Api-Key", $"{ApiKey}");
-
-        httpClient.DefaultRequestHeaders.Authorization = new("Bearer", jwtToken);
-
-        var response = await httpClient.SendAsync(requestMessage);
-
-        var responseContent = await response.Content.ReadAsStringAsync();
-
-        var readResult = JsonSerializer.Deserialize<Util_GenericResponse<bool>>(responseContent, new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        });
-
-        return Tuple.Create(readResult ?? new Util_GenericResponse<bool>(), response);
+            return Tuple.Create(new Util_GenericResponse<bool>
+            {
+                Errors = null,
+                Message = "Something went wrong",
+                StatusCode = response.StatusCode,
+                Succsess = false,
+                Value = false
+            }, new HttpResponseMessage());
+        }
     }
 
     public async Task<Util_GenericResponse<bool>>
     ActivateAccountRequest
     (
-        string email
+        string email,
+        string userIp
     )
     {
-        var httpClient = httpClientFactory.CreateClient(Client);
+        HttpResponseMessage response = new();
 
-        var content = new StringContent(JsonSerializer.Serialize(new { email }), Encoding.UTF8, "application/json");
-
-        var requestMessage = new HttpRequestMessage(HttpMethod.Post, BaseRoute.RouteAccountManagmentForClient + Route_AccountManagmentRoute.ActivateAccountRequest + $"?email={email}")
+        try
         {
-            Content = content
-        };
+            API_Helper_ParamsStringChecking.CheckNullOrEmpty
+            (
+                (nameof(userIp), userIp)
+            );
 
-        requestMessage.Headers.Add("X-Api-Key", $"{ApiKey}");
+            var httpClient = API_Helper_HttpClient.CreateClientInstance(requestConfigurationProxyService.GetClient(), httpClientFactory);
 
-        var response = await httpClient.SendAsync(requestMessage);
+            var content = new StringContent(JsonSerializer.Serialize(new { email }), Encoding.UTF8, "application/json");
 
-        var responseContent = await response.Content.ReadAsStringAsync();
+            var requestMessage = new HttpRequestMessage(HttpMethod.Post, BaseRoute.RouteAccountManagmentForClient + Route_AccountManagmentRoute.ActivateAccountRequest + $"?email={email}")
+            {
+                Content = content
+            };
 
-        var readResult = JsonSerializer.Deserialize<Util_GenericResponse<bool>>(responseContent, new JsonSerializerOptions
+            API_Helper_HttpClient.AddHeadersToTheRequest
+            (
+                string.Empty,
+                requestMessage,
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.ClientIP, userIp),
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.ApiKey, requestConfigurationProxyService.GetApiKey())
+            );
+
+            response = await httpClient.SendAsync(requestMessage);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            var readResult = JsonSerializer.Deserialize<Util_GenericResponse<bool>>(responseContent, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            }) ?? throw new ArgumentNullException("Failed to deserialize the server response. The content may not match the expected format.");
+
+            return readResult;
+        }
+        catch (Exception ex)
         {
-            PropertyNameCaseInsensitive = true
-        });
+            logger.LogCritical(ex, "Exception in ActivateAccountRequest.");
 
-        return readResult ?? new Util_GenericResponse<bool>();
+            return new Util_GenericResponse<bool>
+            {
+                Errors = null,
+                Message = "Something went wrong",
+                StatusCode = response.StatusCode,
+                Succsess = false,
+                Value = false
+            };
+        }
     }
 
     public async Task<Util_GenericResponse<bool>>
     ActivateAccountRequestConfirmation
     (
+        string userIp,
         DTO_ActivateAccountConfirmation activateAccountConfirmationDto
     )
     {
-        var httpClient = httpClientFactory.CreateClient(Client);
+        HttpResponseMessage response = new();
 
-        var json = JsonSerializer.Serialize(activateAccountConfirmationDto);
-
-        var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-        var requestMessage = new HttpRequestMessage(HttpMethod.Post, BaseRoute.RouteAccountManagmentForClient + Route_AccountManagmentRoute.ActivateAccountRequestConfirmation)
+        try
         {
-            Content = content
-        };
+            API_Helper_ParamsStringChecking.CheckNullOrEmpty
+            (
+                (nameof(userIp), userIp)
+            );
 
-        requestMessage.Headers.Add("X-Api-Key", $"{ApiKey}");
+            var httpClient = API_Helper_HttpClient.CreateClientInstance(requestConfigurationProxyService.GetClient(), httpClientFactory);
 
-        var response = await httpClient.SendAsync(requestMessage);
+            var json = JsonSerializer.Serialize(activateAccountConfirmationDto);
 
-        var responseContent = await response.Content.ReadAsStringAsync();
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-        var readResult = JsonSerializer.Deserialize<Util_GenericResponse<bool>>(responseContent, new JsonSerializerOptions
+            var requestMessage = new HttpRequestMessage(HttpMethod.Post, BaseRoute.RouteAccountManagmentForClient + Route_AccountManagmentRoute.ActivateAccountRequestConfirmation)
+            {
+                Content = content
+            };
+
+            API_Helper_HttpClient.AddHeadersToTheRequest
+            (
+                string.Empty,
+                requestMessage,
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.ClientIP, userIp),
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.ApiKey, requestConfigurationProxyService.GetApiKey())
+            );
+
+            response = await httpClient.SendAsync(requestMessage);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            var readResult = JsonSerializer.Deserialize<Util_GenericResponse<bool>>(responseContent, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            }) ?? throw new ArgumentNullException("Failed to deserialize the server response. The content may not match the expected format.");
+
+            return readResult;
+        }
+        catch (Exception ex)
         {
-            PropertyNameCaseInsensitive = true
-        });
+            logger.LogCritical(ex, "Exception in ActivateAccountRequestConfirmation.");
 
-        return readResult ?? new Util_GenericResponse<bool>();
+            return new Util_GenericResponse<bool>
+            {
+                Errors = null,
+                Message = "Something went wrong",
+                StatusCode = response.StatusCode,
+                Succsess = false,
+                Value = false
+            };
+        }
     }
 
     public async Task<Util_GenericResponse<bool>>
     ForgotPassword
     (
+        string userIp,
         DTO_ForgotPassword forgotPassword
     )
     {
-        var httpClient = httpClientFactory.CreateClient(Client);
+        HttpResponseMessage response = new();
 
-        var registerData = new Dictionary<string, string>
+        try
         {
-            { nameof(DTO_ForgotPassword.Email), forgotPassword.Email }
-        };
+            API_Helper_ParamsStringChecking.CheckNullOrEmpty
+            (
+                (nameof(userIp), userIp)
+            );
 
-        var contentForm = new FormUrlEncodedContent(registerData);
+            var httpClient = API_Helper_HttpClient.CreateClientInstance(requestConfigurationProxyService.GetClient(), httpClientFactory);
 
-        var requestMessage = new HttpRequestMessage(HttpMethod.Post, BaseRoute.RouteAccountManagmentForClient + Route_AccountManagmentRoute.ForgotPassword)
+            var registerData = new Dictionary<string, string>
+            {
+                { nameof(DTO_ForgotPassword.Email), forgotPassword.Email }
+            };
+
+            var contentForm = new FormUrlEncodedContent(registerData);
+
+            var requestMessage = new HttpRequestMessage(HttpMethod.Post, BaseRoute.RouteAccountManagmentForClient + Route_AccountManagmentRoute.ForgotPassword)
+            {
+                Content = contentForm
+            };
+
+            API_Helper_HttpClient.AddHeadersToTheRequest
+            (
+                string.Empty,
+                requestMessage,
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.ClientIP, userIp),
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.ApiKey, requestConfigurationProxyService.GetApiKey())
+            );
+
+            response = await httpClient.SendAsync(requestMessage);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            var readResult = JsonSerializer.Deserialize<Util_GenericResponse<bool>>(responseContent, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            }) ?? throw new ArgumentNullException("Failed to deserialize the server response. The content may not match the expected format.");
+
+            return readResult;
+        }
+        catch (Exception ex)
         {
-            Content = contentForm
-        };
+            logger.LogCritical(ex, "Exception in ForgotPassword.");
 
-        requestMessage.Headers.Add("X-Api-Key", $"{ApiKey}");
-
-        var response = await httpClient.SendAsync(requestMessage);
-
-        var responseContent = await response.Content.ReadAsStringAsync();
-
-        var readResult = JsonSerializer.Deserialize<Util_GenericResponse<bool>>(responseContent, new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        });
-
-        return readResult ?? new Util_GenericResponse<bool>();
+            return new Util_GenericResponse<bool>
+            {
+                Errors = null,
+                Message = "Something went wrong",
+                StatusCode = response.StatusCode,
+                Succsess = false,
+                Value = false
+            };
+        }
     }
 
     public async Task<Util_GenericResponse<bool>>
     ResetPassword
     (
+        string userIp,
         DTO_ResetPassword resetPassword
     )
     {
-        var httpClient = httpClientFactory.CreateClient(Client);
+        HttpResponseMessage response = new();
 
-        var registerData = new Dictionary<string, string>
+        try
         {
-            { nameof(DTO_ResetPassword.Email), resetPassword.Email },
-            { nameof(DTO_ResetPassword.NewPassword), resetPassword.NewPassword },
-            { nameof(DTO_ResetPassword.Token), resetPassword.Token },
-            { nameof(DTO_ResetPassword.ConfirmNewPassword), resetPassword.ConfirmNewPassword },
-        };
+            API_Helper_ParamsStringChecking.CheckNullOrEmpty
+            (
+                (nameof(userIp), userIp)
+            );
 
-        var contentForm = new FormUrlEncodedContent(registerData);
+            var httpClient = API_Helper_HttpClient.CreateClientInstance(requestConfigurationProxyService.GetClient(), httpClientFactory);
 
-        var requestMessage = new HttpRequestMessage(HttpMethod.Post, BaseRoute.RouteAccountManagmentForClient + Route_AccountManagmentRoute.ResetPassword)
+            var registerData = new Dictionary<string, string>
+            {
+                { nameof(DTO_ResetPassword.Email), resetPassword.Email },
+                { nameof(DTO_ResetPassword.NewPassword), resetPassword.NewPassword },
+                { nameof(DTO_ResetPassword.Token), resetPassword.Token },
+                { nameof(DTO_ResetPassword.ConfirmNewPassword), resetPassword.ConfirmNewPassword },
+            };
+
+            var contentForm = new FormUrlEncodedContent(registerData);
+
+            var requestMessage = new HttpRequestMessage(HttpMethod.Post, BaseRoute.RouteAccountManagmentForClient + Route_AccountManagmentRoute.ResetPassword)
+            {
+                Content = contentForm
+            };
+
+            API_Helper_HttpClient.AddHeadersToTheRequest
+            (
+                string.Empty,
+                requestMessage,
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.ClientIP, userIp),
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.ApiKey, requestConfigurationProxyService.GetApiKey())
+            );
+
+            response = await httpClient.SendAsync(requestMessage);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            var readResult = JsonSerializer.Deserialize<Util_GenericResponse<bool>>(responseContent, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            }) ?? throw new ArgumentNullException("Failed to deserialize the server response. The content may not match the expected format.");
+
+            return readResult;
+        }
+        catch (Exception ex)
         {
-            Content = contentForm
-        };
+            logger.LogCritical(ex, "Exception in ResetPassword.");
 
-        requestMessage.Headers.Add("X-Api-Key", $"{ApiKey}");
-
-        var response = await httpClient.SendAsync(requestMessage);
-
-        var responseContent = await response.Content.ReadAsStringAsync();
-
-        var readResult = JsonSerializer.Deserialize<Util_GenericResponse<bool>>(responseContent, new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        });
-
-        return readResult ?? new Util_GenericResponse<bool>();
+            return new Util_GenericResponse<bool>
+            {
+                Errors = null,
+                Message = "Something went wrong",
+                StatusCode = response.StatusCode,
+                Succsess = false,
+                Value = false
+            };
+        }
     }
 
     public async Task<Util_GenericResponse<bool>>
     RequestChangeEmail
     (
         string userId,
+        string userIp,
         string jwtToken,
+        string fogeryToken,
+        string aspNetForgeryToken,
         DTO_ChangeEmailAddressRequest emailAddress
     )
     {
-        var httpClient = httpClientFactory.CreateClient(Client);
+        HttpResponseMessage response = new();
 
-        var registerData = new Dictionary<string, string>
+        try
         {
-            { nameof(DTO_ChangeEmailAddressRequest.ConfirmNewEmailAddress), emailAddress.ConfirmNewEmailAddress },
-            { nameof(DTO_ChangeEmailAddressRequest.NewEmailAddress), emailAddress.NewEmailAddress },
-            { nameof(DTO_ChangeEmailAddressRequest.CurrentEmailAddress), emailAddress.CurrentEmailAddress }
-        };
+            API_Helper_ParamsStringChecking.CheckNullOrEmpty
+            (
+                (nameof(userId), userId),
+                (nameof(userIp), userIp),
+                (nameof(jwtToken), jwtToken),
+                (nameof(fogeryToken), fogeryToken),
+                (nameof(aspNetForgeryToken), aspNetForgeryToken)
+            );
 
-        var contentForm = new FormUrlEncodedContent(registerData);
+            var httpClient = API_Helper_HttpClient.NewClientWithCookies
+            (
+                requestConfigurationProxyService.GetBaseAddrOfMainApi(),
+                aspNetForgeryToken,
+                fogeryToken,
+                requestHeaderOptions.Value.AspNetCoreAntiforgery,
+                requestHeaderOptions.Value.XSRF_TOKEN
+            );
 
-        var requestMessage = new HttpRequestMessage(HttpMethod.Post, BaseRoute.RouteAccountManagmentForClient + Route_AccountManagmentRoute.RequestChangeEmail.Replace("{userId}", userId))
+            var registerData = new Dictionary<string, string>
+            {
+                { nameof(DTO_ChangeEmailAddressRequest.ConfirmNewEmailAddress), emailAddress.ConfirmNewEmailAddress },
+                { nameof(DTO_ChangeEmailAddressRequest.NewEmailAddress), emailAddress.NewEmailAddress },
+                { nameof(DTO_ChangeEmailAddressRequest.CurrentEmailAddress), emailAddress.CurrentEmailAddress }
+            };
+
+            var contentForm = new FormUrlEncodedContent(registerData);
+
+            var requestMessage = new HttpRequestMessage(HttpMethod.Post, BaseRoute.RouteAccountManagmentForClient + Route_AccountManagmentRoute.RequestChangeEmail.Replace("{userId}", userId))
+            {
+                Content = contentForm
+            };
+
+            API_Helper_HttpClient.AddHeadersToTheRequest
+            (
+                jwtToken,
+                requestMessage,
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.XSRF_TOKEN, fogeryToken),
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.AspNetCoreAntiforgery, aspNetForgeryToken),
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.ClientIP, userIp),
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.ApiKey, requestConfigurationProxyService.GetApiKey())
+            );
+
+            response = await httpClient.SendAsync(requestMessage);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            var readResult = JsonSerializer.Deserialize<Util_GenericResponse<bool>>(responseContent, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            }) ?? throw new ArgumentNullException("Failed to deserialize the server response. The content may not match the expected format.");
+
+            return readResult;
+        }
+        catch (Exception ex)
         {
-            Content = contentForm
-        };
+            logger.LogCritical(ex, "Exception in RequestChangeEmail.");
 
-        requestMessage.Headers.Add("X-Api-Key", $"{ApiKey}");
-
-        httpClient.DefaultRequestHeaders.Authorization = new("Bearer", jwtToken);
-
-        var response = await httpClient.SendAsync(requestMessage);
-
-        var responseContent = await response.Content.ReadAsStringAsync();
-
-        var readResult = JsonSerializer.Deserialize<Util_GenericResponse<bool>>(responseContent, new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        });
-
-        return readResult ?? new Util_GenericResponse<bool>();
+            return new Util_GenericResponse<bool>
+            {
+                Errors = null,
+                Message = "Something went wrong",
+                StatusCode = response.StatusCode,
+                Succsess = false,
+                Value = false
+            };
+        }
     }
 
     public async Task<Tuple<Util_GenericResponse<bool>, HttpResponseMessage>>
     ConfirmChangeEmailAddressRequest
     (
         string userId,
+        string userIp,
         string jwtToken,
+        string fogeryToken,
+        string aspNetForgeryToken,
         DTO_ChangeEmailAddressRequestConfirm changeEmailAddressConfirmDto
     )
     {
-        var httpClient = httpClientFactory.CreateClient(Client);
+        HttpResponseMessage response = new();
 
-        var json = JsonSerializer.Serialize(changeEmailAddressConfirmDto);
-
-        var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-        var requestMessage = new HttpRequestMessage(HttpMethod.Post, BaseRoute.RouteAccountManagmentForClient + Route_AccountManagmentRoute.ConfirmChangeEmailRequest.Replace("{userId}", userId))
+        try
         {
-            Content = content
-        };
+            API_Helper_ParamsStringChecking.CheckNullOrEmpty
+            (
+                (nameof(userId), userId),
+                (nameof(userIp), userIp),
+                (nameof(jwtToken), jwtToken),
+                (nameof(fogeryToken), fogeryToken),
+                (nameof(aspNetForgeryToken), aspNetForgeryToken)
+            );
 
-        requestMessage.Headers.Add("X-Api-Key", $"{ApiKey}");
+            var httpClient = API_Helper_HttpClient.NewClientWithCookies
+            (
+                requestConfigurationProxyService.GetBaseAddrOfMainApi(),
+                aspNetForgeryToken,
+                fogeryToken,
+                requestHeaderOptions.Value.AspNetCoreAntiforgery,
+                requestHeaderOptions.Value.XSRF_TOKEN
+            );
 
-        httpClient.DefaultRequestHeaders.Authorization = new("Bearer", jwtToken);
+            var json = JsonSerializer.Serialize(changeEmailAddressConfirmDto);
 
-        var response = await httpClient.SendAsync(requestMessage);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-        var responseContent = await response.Content.ReadAsStringAsync();
+            var requestMessage = new HttpRequestMessage(HttpMethod.Post, BaseRoute.RouteAccountManagmentForClient + Route_AccountManagmentRoute.ConfirmChangeEmailRequest.Replace("{userId}", userId))
+            {
+                Content = content
+            };
 
-        var readResult = JsonSerializer.Deserialize<Util_GenericResponse<bool>>(responseContent, new JsonSerializerOptions
+            API_Helper_HttpClient.AddHeadersToTheRequest
+            (
+                jwtToken,
+                requestMessage,
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.XSRF_TOKEN, fogeryToken),
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.AspNetCoreAntiforgery, aspNetForgeryToken),
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.ClientIP, userIp),
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.ApiKey, requestConfigurationProxyService.GetApiKey())
+            );
+
+            response = await httpClient.SendAsync(requestMessage);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            var readResult = JsonSerializer.Deserialize<Util_GenericResponse<bool>>(responseContent, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            }) ?? throw new ArgumentNullException("Failed to deserialize the server response. The content may not match the expected format.");
+
+            if (readResult.Succsess)
+                await _hubContext.Clients.User(userId).SendAsync("EmailChanged", changeEmailAddressConfirmDto.EmailAddress);
+
+            return Tuple.Create(readResult, response);
+        }
+        catch (Exception ex)
         {
-            PropertyNameCaseInsensitive = true
-        });
+            logger.LogCritical(ex, "Exception in ConfirmChangeEmailAddressRequest.");
 
-        return Tuple.Create(readResult ?? new Util_GenericResponse<bool>(), response);
+            return Tuple.Create(new Util_GenericResponse<bool>
+            {
+                Errors = null,
+                Message = "Something went wrong",
+                StatusCode = response.StatusCode,
+                Succsess = false,
+                Value = false
+            }, new HttpResponseMessage());
+        }
     }
 
     public async Task<Util_GenericResponse<List<DTO_UserSearched>>>
     SearchUserByUserName
     (
         string userId,
+        string userIp,
         string jwtToken,
         string userName,
         CancellationToken cancellationToken
     )
     {
-        var httpClient = httpClientFactory.CreateClient(Client);
+        HttpResponseMessage response = new();
 
-        var content = new StringContent(JsonSerializer.Serialize(new { userName }), Encoding.UTF8, "application/json");
-
-        var requestMessage = new HttpRequestMessage(HttpMethod.Get, BaseRoute.RouteAccountManagmentForClient + Route_AccountManagmentRoute.SearchUserByUserName.Replace("{userId}", userId.ToString()) + $"?username={userName}")
+        try
         {
-            Content = content,
+            API_Helper_ParamsStringChecking.CheckNullOrEmpty
+            (
+                (nameof(userId), userId),
+                (nameof(userIp), userIp),
+                (nameof(jwtToken), jwtToken)
+            );
 
-        };
+            var httpClient = API_Helper_HttpClient.CreateClientInstance(requestConfigurationProxyService.GetClient(), httpClientFactory);
 
-        requestMessage.Headers.Add("X-Api-Key", $"{ApiKey}");
+            var content = new StringContent(JsonSerializer.Serialize(new { userName }), Encoding.UTF8, "application/json");
 
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
+            var requestMessage = new HttpRequestMessage(HttpMethod.Get, BaseRoute.RouteAccountManagmentForClient + Route_AccountManagmentRoute.SearchUserByUserName.Replace("{userId}", userId.ToString()) + $"?username={userName}")
+            {
+                Content = content,
 
-        var response = await httpClient.SendAsync(requestMessage, cancellationToken);
+            };
 
-        var responseContent = await response.Content.ReadAsStringAsync();
+            API_Helper_HttpClient.AddHeadersToTheRequest
+            (
+                jwtToken,
+                requestMessage,
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.ClientIP, userIp),
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.ApiKey, requestConfigurationProxyService.GetApiKey())
+            );
 
-        var readResult = JsonSerializer.Deserialize<Util_GenericResponse<List<DTO_UserSearched>>>(responseContent, new JsonSerializerOptions
+            response = await httpClient.SendAsync(requestMessage, cancellationToken);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            var readResult = JsonSerializer.Deserialize<Util_GenericResponse<List<DTO_UserSearched>>>(responseContent, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            }) ?? throw new ArgumentNullException("Failed to deserialize the server response. The content may not match the expected format.");
+
+            return readResult ?? new Util_GenericResponse<List<DTO_UserSearched>>();
+        }
+        catch (Exception ex)
         {
-            PropertyNameCaseInsensitive = true
-        });
+            logger.LogCritical(ex, "Exception in SearchUserByUserName.");
 
-        return readResult ?? new Util_GenericResponse<List<DTO_UserSearched>>();
+            return new Util_GenericResponse<List<DTO_UserSearched>>
+            {
+                Errors = null,
+                Message = "Something went wrong",
+                StatusCode = response.StatusCode,
+                Succsess = false,
+                Value = null
+            };
+        }
     }
 
     public async Task<Util_GenericResponse<byte[]>>
     UploadProfilePicture
     (
         string userId,
+        string userIp,
         string jwtToken,
+        string fogeryToken,
+        string aspNetForgeryToken,
         IFormFile image
     )
     {
-        var httpClient = httpClientFactory.CreateClient(Client);
+        HttpResponseMessage response = new();
 
-        var fileContent = new StreamContent(image.OpenReadStream());
-        fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse(image.ContentType);
-
-        var formData = new MultipartFormDataContent
+        try
         {
-            { new StringContent(userId), "userId" },
-            { fileContent, "image", image.FileName }
-        };
+            API_Helper_ParamsStringChecking.CheckNullOrEmpty
+            (
+                (nameof(userId), userId),
+                (nameof(userIp), userIp),
+                (nameof(jwtToken), jwtToken),
+                (nameof(fogeryToken), fogeryToken),
+                (nameof(aspNetForgeryToken), aspNetForgeryToken)
+            );
 
-        var requestMessage = new HttpRequestMessage(HttpMethod.Post, BaseRoute.RouteAccountManagmentForClient + Route_AccountManagmentRoute.UploadProfilePicture.Replace("{userId}", userId.ToString()))
+            var httpClient = API_Helper_HttpClient.NewClientWithCookies
+            (
+                requestConfigurationProxyService.GetBaseAddrOfMainApi(),
+                aspNetForgeryToken,
+                fogeryToken,
+                requestHeaderOptions.Value.AspNetCoreAntiforgery,
+                requestHeaderOptions.Value.XSRF_TOKEN
+            );
+
+            var fileContent = new StreamContent(image.OpenReadStream());
+            fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse(image.ContentType);
+
+            var formData = new MultipartFormDataContent
+            {
+                { new StringContent(userId), "userId" },
+                { fileContent, "image", image.FileName }
+            };
+
+            var requestMessage = new HttpRequestMessage(HttpMethod.Post, BaseRoute.RouteAccountManagmentForClient + Route_AccountManagmentRoute.UploadProfilePicture.Replace("{userId}", userId.ToString()))
+            {
+                Content = formData
+            };
+
+            API_Helper_HttpClient.AddHeadersToTheRequest
+            (
+                jwtToken,
+                requestMessage,
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.XSRF_TOKEN, fogeryToken),
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.AspNetCoreAntiforgery, aspNetForgeryToken),
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.ClientIP, userIp),
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.ApiKey, requestConfigurationProxyService.GetApiKey())
+            );
+
+            response = await httpClient.SendAsync(requestMessage);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            var readResult = JsonSerializer.Deserialize<Util_GenericResponse<byte[]>>(responseContent, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            }) ?? throw new ArgumentNullException("Failed to deserialize the server response. The content may not match the expected format.");
+
+            return readResult;
+        }
+        catch (Exception ex)
         {
-            Content = formData
-        };
+            logger.LogCritical(ex, "Exception in UploadProfilePicture.");
 
-        requestMessage.Headers.Add("X-Api-Key", $"{ApiKey}");
-
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
-
-        var response = await httpClient.SendAsync(requestMessage);
-
-        var responseContent = await response.Content.ReadAsStringAsync();
-
-        var readResult = JsonSerializer.Deserialize<Util_GenericResponse<byte[]>>(responseContent, new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        });
-
-        return readResult ?? new Util_GenericResponse<byte[]>();
+            return new Util_GenericResponse<byte[]>
+            {
+                Errors = null,
+                Message = "Something went wrong",
+                StatusCode = response.StatusCode,
+                Succsess = false,
+                Value = null
+            };
+        }
     }
 }

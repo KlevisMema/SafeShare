@@ -1,4 +1,6 @@
-﻿<style>
+﻿@implements IAsyncDisposable
+
+<style>
     .notifications-container {
         max-width: 300px;
         min-width: 250px;
@@ -40,7 +42,7 @@
         color: white !important;
     }
 
-    .mud-paper-outlined{
+    .mud-paper-outlined {
         border: none;
     }
 </style>
@@ -51,7 +53,7 @@
 <MudPopover Open="_isOpen" OverflowBehavior="OverflowBehavior.FlipAlways" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.BottomRight" Paper="true">
     <MudPaper Outlined="true" Class="notifications-container">
         <ul class="mud-list">
-            @if (Invitations != null && NotificationsList != null)
+            @if (Invitations != null && Invitations.Any() || NotificationsList != null && NotificationsList.Any())
             {
                 @foreach (var invitation in Invitations)
                 {

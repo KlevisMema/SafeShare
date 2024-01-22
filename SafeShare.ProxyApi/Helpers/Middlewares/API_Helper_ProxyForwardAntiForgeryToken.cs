@@ -8,16 +8,20 @@ internal class API_Helper_ProxyForwardAntiForgeryToken(RequestDelegate next)
         HttpContext context
     )
     {
-        if (context.Request.Cookies.TryGetValue(".AspNetCore.Antiforgery.NcD0snFZIjg", out var forgeryTokenIdentifier) &&
-            context.Request.Cookies.TryGetValue("XSRF-TOKEN", out var forgeryToken))
+        if (context.User.Identity.IsAuthenticated)
         {
-            if (context.Request.Method == "POST" || context.Request.Method == "PUT" || context.Request.Method == "DELETE")
+            string key = "XSRF-TOKEN-" + context.User.Identity.Name;
+
+            if (context.Request.Cookies.TryGetValue(".AspNetCore.Antiforgery.NcD0snFZIjg", out var forgeryTokenIdentifier) &&
+            context.Request.Cookies.TryGetValue(key, out var forgeryToken))
             {
-                context.Request.Headers.Append("XSRF-TOKEN", forgeryToken);
-                context.Request.Headers.Append(".AspNetCore.Antiforgery.NcD0snFZIjg", forgeryTokenIdentifier);
+                if (context.Request.Method == "POST" || context.Request.Method == "PUT" || context.Request.Method == "DELETE")
+                {
+                    context.Request.Headers.Append(key, forgeryToken);
+                    context.Request.Headers.Append(".AspNetCore.Antiforgery.NcD0snFZIjg", forgeryTokenIdentifier);
+                }
             }
         }
-
         await next(context);
     }
 }

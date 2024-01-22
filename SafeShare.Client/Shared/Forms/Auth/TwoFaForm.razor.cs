@@ -1,7 +1,7 @@
 ﻿using MudBlazor;
 using System.Net;
 using Blazored.LocalStorage;
-using SafeShare.Client.Helpers;
+using SafeShare.Client.Internal;
 using Microsoft.AspNetCore.Components;
 using SafeShare.ClientDTO.Authentication;
 using Microsoft.AspNetCore.Components.Forms;

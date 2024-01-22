@@ -79,8 +79,8 @@ internal static class API_Helper_ProgramStartup
             {
                 options.HeaderName = "X-XSRF-TOKEN";
                 options.Cookie.HttpOnly = true;
-                options.Cookie.SameSite = SameSiteMode.Strict;
                 options.Cookie.IsEssential = true;
+                options.Cookie.Name = "Cookie-XSRF-TOKEN";
             });
 
             Services.AddScoped<API_Helper_AntiforgeryValidationFilter>();

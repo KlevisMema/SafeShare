@@ -480,11 +480,18 @@
                     </ToolBarContent>
 
                     <Columns>
-                        <PropertyColumn Property="x => x.GroupName" Title="Group Name" Sortable="true" Filterable="true" />
-                        <PropertyColumn Property="x => x.GroupAdmin" Title="Group Admin" Sortable="true" Filterable="true" />
-                        <PropertyColumn Property="x => x.GroupCreationDate" Title="Group Creation Date" Sortable="true" Filterable="true" />
+                        <PropertyColumn Property="x => x.GroupName" Title="Name" Sortable="true" Filterable="true" />
+                        <PropertyColumn Property="x => x.GroupAdmin" Title="Admin" Sortable="true" Filterable="true" />
+                        <PropertyColumn Property="x => x.GroupCreationDate" Title="Creation Date" Sortable="true" Filterable="true" />
                         <PropertyColumn Property="x => x.Description" Title="Description" Sortable="true" Filterable="true" />
-                        <PropertyColumn Property="x => x.NumberOfMembers" Title="Nr Of Members" Sortable="true" Filterable="true" />
+                        <PropertyColumn Property="x => x.NumberOfMembers" Title="Nr.Members" Sortable="true" Filterable="true" />
+                        <TemplateColumn CellClass="d-flex justify-end" Sortable="false" Filterable="false" DragAndDropEnabled="false" Groupable="false" ShowColumnOptions="false">
+                            <CellTemplate>
+                                <MudStack Row>
+                                 <MudButton Size="@Size.Small" Variant="@Variant.Filled" Color="@Color.Primary" Href=@($"/Group/{context.Item.GroupId}")>Navigate</MudButton>
+                             </MudStack>
+                         </CellTemplate>
+                     </TemplateColumn>
                     </Columns>
 
                     <PagerContent>

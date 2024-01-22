@@ -215,6 +215,10 @@
         .forgot-passwd:hover {
             color: rgba(89,74,226,1);
         }
+
+    .colorChange {
+        color: white !important;
+    }
 </style>
 
 <MudSnackbarProvider />
@@ -267,8 +271,8 @@
 
                 @if (_processingRegistering)
                 {
-                    <MudProgressCircular Class="ms-n1" Size="MudBlazor.Size.Small" Indeterminate="true" Color="Color.Primary" />
-                    <MudText Class="ms-2" Color="Color.Primary">Registering</MudText>
+                    <MudProgressCircular Class="ms-n1 colorChange" Size="MudBlazor.Size.Small" Indeterminate="true" />
+                    <MudText Class="ms-2 colorChange">Registering</MudText>
                 }
                 else
                 {

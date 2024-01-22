@@ -48,9 +48,9 @@ public class AuthenticationService(IHttpClientFactory httpClientFactory) : IAuth
             var readResult = JsonSerializer.Deserialize<ClientUtil_ApiResponse<bool>>(responseContent, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
-            });
+            }) ?? throw new ArgumentNullException("Failed to deserialize the server response. The content may not match the expected format.");
 
-            return readResult!;
+            return readResult;
 
         }
         catch (Exception)
@@ -58,7 +58,7 @@ public class AuthenticationService(IHttpClientFactory httpClientFactory) : IAuth
             return new ClientUtil_ApiResponse<bool>
             {
                 Errors = null,
-                Message = "Something went wrong, could not login",
+                Message = "Something went wrong, could not register!",
                 StatusCode = response.StatusCode,
                 Succsess = false,
                 Value = false
@@ -94,15 +94,15 @@ public class AuthenticationService(IHttpClientFactory httpClientFactory) : IAuth
             var readResult = JsonSerializer.Deserialize<ClientUtil_ApiResponse<ClientDto_LoginResult>>(responseContent, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
-            });
+            }) ?? throw new ArgumentNullException("Failed to deserialize the server response. The content may not match the expected format.");
 
-            return readResult!;
+            return readResult;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             return new ClientUtil_ApiResponse<ClientDto_LoginResult>()
             {
-                Message = "Something went wrong",
+                Message = "Something went wrong, could not login!",
                 Errors = null,
                 StatusCode = response.StatusCode,
                 Succsess = false,
@@ -114,17 +114,37 @@ public class AuthenticationService(IHttpClientFactory httpClientFactory) : IAuth
     public async Task
     LogoutUser
     (
-        
+
     )
     {
+        var httpClient = httpClientFactory.CreateClient(Client);
+
+        await httpClient.PostAsync(BaseRoute.RouteAuthenticationProxy + Route_AuthenticationRoute.LogOut, null);
+    }
+
+    public async Task<string>
+    GetJwtToken()
+    {
+        HttpResponseMessage response = new();
+
         try
         {
             var httpClient = httpClientFactory.CreateClient(Client);
 
-            await httpClient.PostAsync(BaseRoute.RouteAuthenticationProxy + Route_AuthenticationRoute.LogOut, null);
+            response = await httpClient.GetAsync(BaseRoute.RouteAuthenticationProxy + Route_AuthenticationRoute.JwtToken);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            var readResult = JsonSerializer.Deserialize<string>(responseContent, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            }) ?? throw new ArgumentNullException("Failed to deserialize the server response. The content may not match the expected format.");
+
+            return readResult;
         }
         catch (Exception)
         {
+            return string.Empty;
         }
     }
 
@@ -153,10 +173,9 @@ public class AuthenticationService(IHttpClientFactory httpClientFactory) : IAuth
             var readResult = JsonSerializer.Deserialize<ClientUtil_ApiResponse<bool>>(responseContent, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
-            });
+            }) ?? throw new ArgumentNullException("Failed to deserialize the server response. The content may not match the expected format.");
 
-            return readResult!;
-
+            return readResult;
         }
         catch (Exception)
         {
@@ -196,9 +215,9 @@ public class AuthenticationService(IHttpClientFactory httpClientFactory) : IAuth
             var readResult = JsonSerializer.Deserialize<ClientUtil_ApiResponse<bool>>(responseContent, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
-            });
+            }) ?? throw new ArgumentNullException("Failed to deserialize the server response. The content may not match the expected format.");
 
-            return readResult!;
+            return readResult;
         }
         catch (Exception)
         {
@@ -238,9 +257,9 @@ public class AuthenticationService(IHttpClientFactory httpClientFactory) : IAuth
             var readResult = JsonSerializer.Deserialize<ClientUtil_ApiResponse<ClientDto_LoginResult>>(responseContent, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
-            });
+            }) ?? throw new ArgumentNullException("Failed to deserialize the server response. The content may not match the expected format.");
 
-            return readResult!;
+            return readResult;
         }
         catch (Exception)
         {

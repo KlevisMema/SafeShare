@@ -23,6 +23,7 @@ using SafeShare.MediatR.Actions.Commands.UserManagment;
 using SafeShare.DataTransormObject.SafeShareApi.Security;
 using SafeShare.DataTransormObject.SafeShareApi.UserManagment;
 using SafeShare.MediatR.Handlers.CommandsHandlers.UserManagment;
+using SafeShare.API.Helpers.AttributeFilters;
 
 namespace SafeShare.API.Controllers;
 
@@ -65,8 +66,9 @@ public class AccountManagmentController
     /// <param name="userId">Unique identifier of the user to be updated.</param>
     /// <param name="userInfo">User's new information.</param>
     /// <returns>Returns user's updated information.</returns>
-    [HttpPut(Route_AccountManagmentRoute.UpdateUser)]
     [ServiceFilter(typeof(VerifyUser))]
+    [HttpPut(Route_AccountManagmentRoute.UpdateUser)]
+    [ServiceFilter(typeof(API_Helper_AntiforgeryValidationFilter))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<DTO_UserUpdatedInfo>))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<DTO_UserUpdatedInfo>))]
@@ -99,6 +101,7 @@ public class AccountManagmentController
     /// <returns>Returns a boolean indicating the success of the password change operation.</returns>
     [ServiceFilter(typeof(VerifyUser))]
     [HttpPut(Route_AccountManagmentRoute.ChangePassword)]
+    [ServiceFilter(typeof(API_Helper_AntiforgeryValidationFilter))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<bool>))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<bool>))]
@@ -124,6 +127,7 @@ public class AccountManagmentController
     /// <returns>Returns a boolean indicating the success of the deactivation operation.</returns>
     [ServiceFilter(typeof(VerifyUser))]
     [HttpPost(Route_AccountManagmentRoute.DeactivateAccount)]
+    [ServiceFilter(typeof(API_Helper_AntiforgeryValidationFilter))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<bool>))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<bool>))]
@@ -242,6 +246,7 @@ public class AccountManagmentController
     /// <returns>A response indicating the success or failure of the email change request.</returns>
     [ServiceFilter(typeof(VerifyUser))]
     [HttpPost(Route_AccountManagmentRoute.RequestChangeEmail)]
+    [ServiceFilter(typeof(API_Helper_AntiforgeryValidationFilter))]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<bool>))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
     [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<bool>))]
@@ -266,6 +271,7 @@ public class AccountManagmentController
     /// <param name="changeEmailAddressConfirmDto">The DTO containing confirmation details for the email change.</param>
     /// <returns>A response indicating the success or failure of the email change confirmation.</returns>
     [ServiceFilter(typeof(VerifyUser))]
+    [ServiceFilter(typeof(API_Helper_AntiforgeryValidationFilter))]
     [HttpPost(Route_AccountManagmentRoute.ConfirmChangeEmailRequest)]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<bool>))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
@@ -327,6 +333,7 @@ public class AccountManagmentController
     /// <returns>A response indicating the success or failure the operation.</returns>
     [ServiceFilter(typeof(VerifyUser))]
     [HttpPost(Route_AccountManagmentRoute.UploadProfilePicture)]
+    [ServiceFilter(typeof(API_Helper_AntiforgeryValidationFilter))]
     [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<byte[]>))]
     [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(Util_GenericResponse<byte[]>))]
@@ -399,8 +406,10 @@ public class AccountManagmentController
     private void
     ClearCookies()
     {
+        ClearCookie("XSRF-TOKEN");
         ClearCookie(".AspNetCore.Identity.Application");
         ClearCookie(cookieOpt.Value.AuthTokenCookieName);
+        ClearCookie(".AspNetCore.Antiforgery.NcD0snFZIjg");
         ClearCookie(cookieOpt.Value.RefreshAuthTokenCookieName);
         ClearCookie(cookieOpt.Value.RefreshAuthTokenIdCookieName);
     }

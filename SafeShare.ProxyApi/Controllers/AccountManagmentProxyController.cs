@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
+using SafeShare.ProxyApi.Helpers;
+using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Authorization;
 using SafeShare.ClientServerShared.Routes;
 using SafeShare.Security.API.ActionFilters;
@@ -15,14 +17,22 @@ namespace SafeShare.ProxyApi.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize(AuthenticationSchemes = "Default")]
-public class AccountManagmentProxyController(IAccountManagmentProxyService accountManagmentProxyService) : ControllerBase
+public class AccountManagmentProxyController
+(
+    IAccountManagmentProxyService accountManagmentProxyService,
+    IOptions<API_Helper_RequestHeaderSettings> requestHeaderOptions
+) : ControllerBase
 {
     [HttpGet(Route_AccountManagmentRoute.ProxyGetUser)]
     public async Task<ActionResult<Util_GenericResponse<DTO_UserUpdatedInfo>>>
     GetUser()
     {
-        var jwtToken = JwtToken();
-        var result = await accountManagmentProxyService.GetUser(UserId(jwtToken), jwtToken);
+        var result = await accountManagmentProxyService.GetUser
+        (
+            API_Helper_ExtractInfoFromRequestCookie.UserId(API_Helper_ExtractInfoFromRequestCookie.JwtToken(requestHeaderOptions.Value.AuthToken, Request)),
+            API_Helper_ExtractInfoFromRequestCookie.GetUserIp(requestHeaderOptions.Value.ClientIP, Request),
+            API_Helper_ExtractInfoFromRequestCookie.JwtToken(requestHeaderOptions.Value.AuthToken, Request)
+        );
         return Util_GenericControllerResponse<DTO_UserUpdatedInfo>.ControllerResponse(result);
     }
 
@@ -36,8 +46,15 @@ public class AccountManagmentProxyController(IAccountManagmentProxyService accou
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var jwtToken = JwtToken();
-        var result = await accountManagmentProxyService.UpdateUser(UserId(jwtToken), jwtToken, userInfo);
+        var result = await accountManagmentProxyService.UpdateUser
+        (
+            API_Helper_ExtractInfoFromRequestCookie.UserId(API_Helper_ExtractInfoFromRequestCookie.JwtToken(requestHeaderOptions.Value.AuthToken, Request)),
+            API_Helper_ExtractInfoFromRequestCookie.GetUserIp(requestHeaderOptions.Value.ClientIP, Request),
+            API_Helper_ExtractInfoFromRequestCookie.JwtToken(requestHeaderOptions.Value.AuthToken, Request),
+            API_Helper_ExtractInfoFromRequestCookie.GetForgeryToken(requestHeaderOptions.Value.Client_XSRF_TOKEN, Request),
+            API_Helper_ExtractInfoFromRequestCookie.GetAspNetCoreForgeryToken(requestHeaderOptions.Value.AspNetCoreAntiforgery, Request),
+            userInfo
+        );
 
         if (result.Item2.Headers.Contains("Set-Cookie"))
         {
@@ -59,10 +76,15 @@ public class AccountManagmentProxyController(IAccountManagmentProxyService accou
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-
-        var jwtToken = JwtToken();
-
-        var result = await accountManagmentProxyService.ChangePassword(UserId(jwtToken), jwtToken, changePassword);
+        var result = await accountManagmentProxyService.ChangePassword
+        (
+            API_Helper_ExtractInfoFromRequestCookie.UserId(API_Helper_ExtractInfoFromRequestCookie.JwtToken(requestHeaderOptions.Value.AuthToken, Request)),
+            API_Helper_ExtractInfoFromRequestCookie.GetUserIp(requestHeaderOptions.Value.ClientIP, Request),
+            API_Helper_ExtractInfoFromRequestCookie.JwtToken(requestHeaderOptions.Value.AuthToken, Request),
+            API_Helper_ExtractInfoFromRequestCookie.GetForgeryToken(requestHeaderOptions.Value.Client_XSRF_TOKEN, Request),
+            API_Helper_ExtractInfoFromRequestCookie.GetAspNetCoreForgeryToken(requestHeaderOptions.Value.AspNetCoreAntiforgery, Request),
+            changePassword
+        );
 
         return Util_GenericControllerResponse<bool>.ControllerResponse(result);
     }
@@ -77,9 +99,15 @@ public class AccountManagmentProxyController(IAccountManagmentProxyService accou
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var jwtToken = JwtToken();
-
-        var result = await accountManagmentProxyService.DeactivateAccount(UserId(jwtToken), jwtToken, deactivateAccount);
+        var result = await accountManagmentProxyService.DeactivateAccount
+        (
+            API_Helper_ExtractInfoFromRequestCookie.UserId(API_Helper_ExtractInfoFromRequestCookie.JwtToken(requestHeaderOptions.Value.AuthToken, Request)),
+            API_Helper_ExtractInfoFromRequestCookie.GetUserIp(requestHeaderOptions.Value.ClientIP, Request),
+            API_Helper_ExtractInfoFromRequestCookie.JwtToken(requestHeaderOptions.Value.AuthToken, Request),
+            API_Helper_ExtractInfoFromRequestCookie.GetForgeryToken(requestHeaderOptions.Value.Client_XSRF_TOKEN, Request),
+            API_Helper_ExtractInfoFromRequestCookie.GetAspNetCoreForgeryToken(requestHeaderOptions.Value.AspNetCoreAntiforgery, Request),
+            deactivateAccount
+        );
 
         if (result.Item2.Headers.Contains("Set-Cookie"))
         {
@@ -99,7 +127,11 @@ public class AccountManagmentProxyController(IAccountManagmentProxyService accou
         string email
     )
     {
-        var result = await accountManagmentProxyService.ActivateAccountRequest(email);
+        var result = await accountManagmentProxyService.ActivateAccountRequest
+        (
+            email,
+            API_Helper_ExtractInfoFromRequestCookie.GetUserIp(requestHeaderOptions.Value.ClientIP, Request)
+        );
 
         return Util_GenericControllerResponse<bool>.ControllerResponse(result);
     }
@@ -115,7 +147,11 @@ public class AccountManagmentProxyController(IAccountManagmentProxyService accou
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var result = await accountManagmentProxyService.ActivateAccountRequestConfirmation(activateAccountConfirmationDto);
+        var result = await accountManagmentProxyService.ActivateAccountRequestConfirmation
+        (
+            API_Helper_ExtractInfoFromRequestCookie.GetUserIp(requestHeaderOptions.Value.ClientIP, Request),
+            activateAccountConfirmationDto
+        );
 
         return Util_GenericControllerResponse<bool>.ControllerResponse(result);
     }
@@ -131,7 +167,11 @@ public class AccountManagmentProxyController(IAccountManagmentProxyService accou
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var result = await accountManagmentProxyService.ForgotPassword(forgotPassword);
+        var result = await accountManagmentProxyService.ForgotPassword
+        (
+            API_Helper_ExtractInfoFromRequestCookie.GetUserIp(requestHeaderOptions.Value.ClientIP, Request),
+            forgotPassword
+        );
 
         return Util_GenericControllerResponse<bool>.ControllerResponse(result);
     }
@@ -148,7 +188,11 @@ public class AccountManagmentProxyController(IAccountManagmentProxyService accou
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var result = await accountManagmentProxyService.ResetPassword(resetPassword);
+        var result = await accountManagmentProxyService.ResetPassword
+        (
+            API_Helper_ExtractInfoFromRequestCookie.GetUserIp(requestHeaderOptions.Value.ClientIP, Request),
+            resetPassword
+        );
 
         return Util_GenericControllerResponse<bool>.ControllerResponse(result);
     }
@@ -163,9 +207,15 @@ public class AccountManagmentProxyController(IAccountManagmentProxyService accou
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var jwtToken = JwtToken();
-
-        var result = await accountManagmentProxyService.RequestChangeEmail(UserId(jwtToken), jwtToken, emailAddress);
+        var result = await accountManagmentProxyService.RequestChangeEmail
+        (
+            API_Helper_ExtractInfoFromRequestCookie.UserId(API_Helper_ExtractInfoFromRequestCookie.JwtToken(requestHeaderOptions.Value.AuthToken, Request)),
+            API_Helper_ExtractInfoFromRequestCookie.GetUserIp(requestHeaderOptions.Value.ClientIP, Request),
+            API_Helper_ExtractInfoFromRequestCookie.JwtToken(requestHeaderOptions.Value.AuthToken, Request),
+            API_Helper_ExtractInfoFromRequestCookie.GetForgeryToken(requestHeaderOptions.Value.Client_XSRF_TOKEN, Request),
+            API_Helper_ExtractInfoFromRequestCookie.GetAspNetCoreForgeryToken(requestHeaderOptions.Value.AspNetCoreAntiforgery, Request),
+            emailAddress
+        );
 
         return Util_GenericControllerResponse<bool>.ControllerResponse(result);
     }
@@ -180,9 +230,17 @@ public class AccountManagmentProxyController(IAccountManagmentProxyService accou
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var jwtToken = JwtToken();
 
-        var result = await accountManagmentProxyService.ConfirmChangeEmailAddressRequest(UserId(jwtToken), jwtToken, changeEmailAddressConfirmDto);
+
+        var result = await accountManagmentProxyService.ConfirmChangeEmailAddressRequest
+        (
+            API_Helper_ExtractInfoFromRequestCookie.UserId(API_Helper_ExtractInfoFromRequestCookie.JwtToken(requestHeaderOptions.Value.AuthToken, Request)),
+            API_Helper_ExtractInfoFromRequestCookie.GetUserIp(requestHeaderOptions.Value.ClientIP, Request),
+            API_Helper_ExtractInfoFromRequestCookie.JwtToken(requestHeaderOptions.Value.AuthToken, Request),
+            API_Helper_ExtractInfoFromRequestCookie.GetForgeryToken(requestHeaderOptions.Value.Client_XSRF_TOKEN, Request),
+            API_Helper_ExtractInfoFromRequestCookie.GetAspNetCoreForgeryToken(requestHeaderOptions.Value.AspNetCoreAntiforgery, Request),
+            changeEmailAddressConfirmDto
+        );
 
         if (result.Item2.Headers.Contains("Set-Cookie"))
         {
@@ -202,9 +260,14 @@ public class AccountManagmentProxyController(IAccountManagmentProxyService accou
         CancellationToken cancellationToken
     )
     {
-        var jwtToken = JwtToken();
-
-        var result = await accountManagmentProxyService.SearchUserByUserName(UserId(jwtToken), jwtToken, userName, cancellationToken);
+        var result = await accountManagmentProxyService.SearchUserByUserName
+        (
+            API_Helper_ExtractInfoFromRequestCookie.UserId(API_Helper_ExtractInfoFromRequestCookie.JwtToken(requestHeaderOptions.Value.AuthToken, Request)),
+            API_Helper_ExtractInfoFromRequestCookie.GetUserIp(requestHeaderOptions.Value.ClientIP, Request),
+            API_Helper_ExtractInfoFromRequestCookie.JwtToken(requestHeaderOptions.Value.AuthToken, Request),
+            userName,
+            cancellationToken
+        );
 
         return Util_GenericControllerResponse<DTO_UserSearched>.ControllerResponseList(result);
     }
@@ -216,25 +279,16 @@ public class AccountManagmentProxyController(IAccountManagmentProxyService accou
         [FromForm] IFormFile image
     )
     {
-        var jwtToken = JwtToken();
-
-        var result = await accountManagmentProxyService.UploadProfilePicture(UserId(jwtToken), jwtToken, image);
+        var result = await accountManagmentProxyService.UploadProfilePicture
+        (
+            API_Helper_ExtractInfoFromRequestCookie.UserId(API_Helper_ExtractInfoFromRequestCookie.JwtToken(requestHeaderOptions.Value.AuthToken, Request)),
+            API_Helper_ExtractInfoFromRequestCookie.GetUserIp(requestHeaderOptions.Value.ClientIP, Request),
+            API_Helper_ExtractInfoFromRequestCookie.JwtToken(requestHeaderOptions.Value.AuthToken, Request),
+            API_Helper_ExtractInfoFromRequestCookie.GetForgeryToken(requestHeaderOptions.Value.Client_XSRF_TOKEN, Request),
+            API_Helper_ExtractInfoFromRequestCookie.GetAspNetCoreForgeryToken(requestHeaderOptions.Value.AspNetCoreAntiforgery, Request),
+            image
+        );
 
         return Util_GenericControllerResponse<byte[]>.ControllerResponse(result);
-    }
-
-    private static string
-    UserId
-    (
-        string jwtToken
-    )
-    {
-        return Helper_JwtToken.GetUserIdDirectlyFromJwtToken(jwtToken);
-    }
-
-    private string
-    JwtToken()
-    {
-        return Request.Cookies["AuthToken"] ?? string.Empty;
     }
 }

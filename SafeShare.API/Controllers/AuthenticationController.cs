@@ -48,7 +48,7 @@ namespace SafeShare.API.Controllers;
 public class AuthenticationController
 (
     IMediator mediator,
-    IOptions<API_Helper_CookieSettings> cookieOpt, 
+    IOptions<API_Helper_CookieSettings> cookieOpt,
     ISecurity_UserDataProtectionService _userDataProtection
 ) : ControllerBase
 {
@@ -129,7 +129,7 @@ public class AuthenticationController
             }
 
             SetCookiesResposne(result.Value.Token, result.Value.UserId);
-            //result.Value.Token = null;
+            result.Value.Token = null;
         }
 
         return Util_GenericControllerResponse<DTO_LoginResult>.ControllerResponse(result);
@@ -264,7 +264,7 @@ public class AuthenticationController
         catch (Exception)
         {
             ClearCookies();
-            return Problem("Something went wrong in refresh token", null, 500,"Error", null);
+            return Problem("Something went wrong in refresh token", null, 500, "Error", null);
         }
     }
     /// <summary>
@@ -349,9 +349,12 @@ public class AuthenticationController
     private void
     ClearCookies()
     {
-        ClearCookie("XSRF-TOKEN");
+        string key = "XSRF-TOKEN-" + HttpContext.User.Identity.Name;
+        string key2 = "Cookie-XSRF-TOKEN-" + HttpContext.User.Identity.Name;
+
+        ClearCookie(key);
+        ClearCookie(key2);
         ClearCookie(".AspNetCore.Identity.Application");
-        ClearCookie(".AspNetCore.Antiforgery.NcD0snFZIjg");
         ClearCookie(cookieOpt.Value.AuthTokenCookieName);
         ClearCookie(cookieOpt.Value.RefreshAuthTokenCookieName);
         ClearCookie(cookieOpt.Value.RefreshAuthTokenIdCookieName);

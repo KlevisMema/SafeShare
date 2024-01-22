@@ -51,8 +51,8 @@
             <MudNavGroup Title="Profile" Icon="@Icons.Material.Filled.Person" IconColor="Color.Inherit" Expanded="true">
                 <MudNavLink Match="NavLinkMatch.All" Href="/Profile" Icon="@Icons.Material.Filled.RemoveRedEye" IconColor="Color.Inherit">See profile</MudNavLink>
                 <MudNavLink Match="NavLinkMatch.All" Href="/Profile/Edit" Icon="@Icons.Material.Filled.Edit" IconColor="Color.Inherit">Update Data</MudNavLink>
-                <MudNavLink OnClick="OpenPopUpChangeEmailForm" Icon="@Icons.Material.Filled.Password" IconColor="Color.Inherit">Change Email</MudNavLink>
-                <MudNavLink OnClick="OpenPopUpChangePasswordForm" Icon="@Icons.Material.Filled.Email" IconColor="Color.Inherit">Change Password</MudNavLink>
+                <MudNavLink OnClick="OpenPopUpChangeEmailForm" Icon="@Icons.Material.Filled.Email" IconColor="Color.Inherit">Change Email</MudNavLink>
+                <MudNavLink OnClick="OpenPopUpChangePasswordForm" Icon="@Icons.Material.Filled.Password" IconColor="Color.Inherit">Change Password</MudNavLink>
                 <MudNavLink OnClick="OpenPopUpDeactivateAccountForm" Icon="@Icons.Material.Filled.Delete" IconColor="Color.Inherit">Deactivate Account</MudNavLink>
             </MudNavGroup>
         }
@@ -77,10 +77,6 @@
             <div class="mud-skeleton-nav-btn">
                 <MudTooltip Text="Create group" Color="Color.Primary" Placement="MudBlazor.Placement.Top" Arrow="true" Inline="false">
                     <MudFab OnClick="OpenPopUpCreateGroup" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Size="MudBlazor.Size.Small" Class="m-sm-2" />
-                </MudTooltip>
-
-                <MudTooltip Text="Search" Color="Color.Primary" Placement="MudBlazor.Placement.Right">
-                    <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Search" Size="MudBlazor.Size.Small" Class="m-sm-2" />
                 </MudTooltip>
             </div>
 

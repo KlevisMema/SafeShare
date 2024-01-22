@@ -1,13 +1,12 @@
-﻿using SafeShare.ClientDTO.Authentication;
-using SafeShare.ClientDTO.Expense;
+﻿using SafeShare.ClientDTO.Expense;
+using SafeShare.ClientDTO.Authentication;
 using SafeShare.ClientDTO.GroupManagment;
 
-namespace SafeShare.Client.Helpers;
+namespace SafeShare.Client.Internal;
 
 public class AppState
 {
     private ClientDto_LoginResult? ClientSecrests { get; set; }
-
 
     public void
     SetClientSecrests
@@ -24,7 +23,9 @@ public class AppState
         return ClientSecrests;
     }
 
+    public event Action? OnLogOut;
     public event Action<Guid>? OnGroupDeleted;
+    public event Action<Guid>? OnRemovedFromGroup;
     public event Action<ClientDto_Expense>? OnExpenseEditted;
     public event Action<ClientDto_GroupType?>? OnGroupEdited;
     public event Action<ClientDto_GroupDetails?>? OnGroupDetails;
@@ -33,7 +34,9 @@ public class AppState
     public event Action<decimal>? OnExpenseCreatedOnGroupsCreated;
     public event Action<ClientDto_GroupType?>? OnGroupInvitationAccepted;
 
+    public void LogOut() => OnLogOut?.Invoke();
     public void GroupDeleted(Guid groupId) => OnGroupDeleted?.Invoke(groupId);
+    public void RemovedFromGroup(Guid groupId) => OnRemovedFromGroup?.Invoke(groupId);
     public void ExpenseEditted(ClientDto_Expense expense) => OnExpenseEditted?.Invoke(expense);
     public void GroupEdited(ClientDto_GroupType? groupType) => OnGroupEdited?.Invoke(groupType);
     public void NewGroupAdded(ClientDto_GroupType? groupType) => OnNewGroupCreated?.Invoke(groupType);

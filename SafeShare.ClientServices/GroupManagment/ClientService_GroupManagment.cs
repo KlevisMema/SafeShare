@@ -28,9 +28,9 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
             var readResult = JsonSerializer.Deserialize<ClientUtil_ApiResponse<ClientDto_GroupTypes>>(responseContent, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
-            });
+            }) ?? throw new ArgumentNullException("Failed to deserialize the server response. The content may not match the expected format.");
 
-            return readResult!;
+            return readResult;
         }
         catch (Exception)
         {
@@ -64,9 +64,9 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
             var readResult = JsonSerializer.Deserialize<ClientUtil_ApiResponse<ClientDto_GroupDetails>>(responseContent, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
-            });
+            }) ?? throw new ArgumentNullException("Failed to deserialize the server response. The content may not match the expected format.");
 
-            return readResult!;
+            return readResult;
         }
         catch (Exception)
         {
@@ -113,9 +113,9 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
             var readResult = JsonSerializer.Deserialize<ClientUtil_ApiResponse<ClientDto_GroupType>>(responseContent, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
-            });
+            }) ?? throw new ArgumentNullException("Failed to deserialize the server response. The content may not match the expected format.");
 
-            return readResult!;
+            return readResult;
         }
         catch (Exception)
         {
@@ -159,9 +159,9 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
             var readResult = JsonSerializer.Deserialize<ClientUtil_ApiResponse<ClientDto_GroupType>>(responseContent, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
-            });
+            }) ?? throw new ArgumentNullException("Failed to deserialize the server response. The content may not match the expected format.");
 
-            return readResult!;
+            return readResult;
         }
         catch (Exception)
         {
@@ -195,9 +195,9 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
             var readResult = JsonSerializer.Deserialize<ClientUtil_ApiResponse<bool>>(responseContent, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
-            });
+            }) ?? throw new ArgumentNullException("Failed to deserialize the server response. The content may not match the expected format.");
 
-            return readResult!;
+            return readResult;
         }
         catch (Exception)
         {
@@ -228,9 +228,9 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
             var readResult = JsonSerializer.Deserialize<ClientUtil_ApiResponse<List<ClientDto_RecivedInvitations>>>(responseContent, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
-            });
+            }) ?? throw new ArgumentNullException("Failed to deserialize the server response. The content may not match the expected format.");
 
-            return readResult!;
+            return readResult;
         }
         catch (Exception)
         {
@@ -261,9 +261,9 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
             var readResult = JsonSerializer.Deserialize<ClientUtil_ApiResponse<List<ClientDto_SentInvitations>>>(responseContent, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
-            });
+            }) ?? throw new ArgumentNullException("Failed to deserialize the server response. The content may not match the expected format.");
 
-            return readResult!;
+            return readResult;
         }
         catch (Exception)
         {
@@ -301,9 +301,9 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
             var readResult = JsonSerializer.Deserialize<ClientUtil_ApiResponse<bool>>(responseContent, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
-            });
+            }) ?? throw new ArgumentNullException("Failed to deserialize the server response. The content may not match the expected format.");
 
-            return readResult!;
+            return readResult;
         }
         catch (Exception ex)
         {
@@ -341,9 +341,9 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
             var readResult = JsonSerializer.Deserialize<ClientUtil_ApiResponse<bool>>(responseContent, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
-            });
+            }) ?? throw new ArgumentNullException("Failed to deserialize the server response. The content may not match the expected format.");
 
-            return readResult!;
+            return readResult;
         }
         catch (Exception)
         {
@@ -381,9 +381,9 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
             var readResult = JsonSerializer.Deserialize<ClientUtil_ApiResponse<bool>>(responseContent, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
-            });
+            }) ?? throw new ArgumentNullException("Failed to deserialize the server response. The content may not match the expected format.");
 
-            return readResult!;
+            return readResult;
         }
         catch (Exception)
         {
@@ -424,9 +424,9 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
             var readResult = JsonSerializer.Deserialize<ClientUtil_ApiResponse<bool>>(responseContent, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
-            });
+            }) ?? throw new ArgumentNullException("Failed to deserialize the server response. The content may not match the expected format.");
 
-            return readResult!;
+            return readResult;
         }
         catch (Exception)
         {
@@ -468,9 +468,9 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
             var readResult = JsonSerializer.Deserialize<ClientUtil_ApiResponse<bool>>(responseContent, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
-            });
+            }) ?? throw new ArgumentNullException("Failed to deserialize the server response. The content may not match the expected format.");
 
-            return readResult!;
+            return readResult;
         }
         catch (Exception)
         {

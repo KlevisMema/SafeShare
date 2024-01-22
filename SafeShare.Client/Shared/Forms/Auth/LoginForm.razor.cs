@@ -2,7 +2,7 @@
 using MudBlazor;
 using Microsoft.JSInterop;
 using Blazored.LocalStorage;
-using SafeShare.Client.Helpers;
+using SafeShare.Client.Internal;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Components;
 using SafeShare.ClientDTO.Authentication;
@@ -57,7 +57,7 @@ public partial class LoginForm
 
         if (await _localStorage.GetItemAsync<bool>("SessionExpired"))
         {
-            _snackbar.Add("Session Expired!", Severity.Error, config => { config.CloseAfterNavigation = true; });
+            _snackbar.Add("Session Expired!", Severity.Error, config => { config.CloseAfterNavigation = false; });
             await _localStorage.RemoveItemAsync("SessionExpired");
             await InvokeAsync(StateHasChanged);
             clientDto_Login = new();
@@ -67,6 +67,9 @@ public partial class LoginForm
     private async Task
     SubmitLoginForm()
     {
+        if (showActivateAccountRequestBtn)
+            showActivateAccountRequestBtn = false;
+
         _snackbar.Add(SnackbarMessage1, Severity.Info, config => { config.CloseAfterNavigation = true; });
 
         _processing = true;
@@ -82,19 +85,19 @@ public partial class LoginForm
                 return;
             }
 
-            AppState.SetClientSecrests(loginResult.Value);
-
             await _localStorage.SetItemAsStringAsync("FullName", loginResult.Value.UserFullName);
 
             await RedirectToDashboardPage(loginResult.Message, loginResult.Value);
         }
         else
         {
-            _snackbar.Add(loginResult.Message, Severity.Error);
+            _snackbar.Add(loginResult.Message, Severity.Error, options =>
+            {
+                options.CloseAfterNavigation = true;
+            });
 
-            if (loginResult.Message.Contains("deactivated"))
+            if (loginResult.Message!.Contains("deactivated"))
                 showActivateAccountRequestBtn = true;
-
         }
 
         _processing = false;

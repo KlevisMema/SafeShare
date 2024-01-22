@@ -1,4 +1,5 @@
 ﻿using MudBlazor;
+using SafeShare.Client.Internal;
 using Microsoft.AspNetCore.Components;
 using SafeShare.ClientServices.Interfaces;
 using SafeShare.ClientDTO.AccountManagment;
@@ -7,6 +8,7 @@ namespace SafeShare.Client.Pages.Account;
 
 public partial class ChangeEmailAddressConfirmation
 {
+    [Inject] private AppState _appState { get; set; } = null!;
     [Inject] private ISnackbar _snackbar { get; set; } = null!;
     [Inject] private NavigationManager _navigationManager { get; set; } = null!;
     [Inject] private IClientService_UserManagment _userManagmentService { get; set; } = null!;
@@ -14,7 +16,6 @@ public partial class ChangeEmailAddressConfirmation
     private string? token;
     private string? email;
     private bool isVisible = true;
-    private bool buttonDisabled = false;
     private string ActivateAccountMessage { get; set; } = string.Empty;
 
     private ClientDto_ChangeEmailAddressRequestConfirm? ClientDto_ChangeEmailRequestConfirm { get; set; }
@@ -42,14 +43,13 @@ public partial class ChangeEmailAddressConfirmation
 
             if (!confirmChangeEmailAddressRequest.Succsess)
             {
-                buttonDisabled = false;
                 ActivateAccountMessage = "New email was not confirmed, if this message persists please make another request!!";
                 _snackbar.Add(confirmChangeEmailAddressRequest.Message, Severity.Warning, config => { config.CloseAfterNavigation = true; });
             }
             else
             {
-                buttonDisabled = true;
                 ActivateAccountMessage = "Your email was succsessfully changed, you may close this page";
+                _snackbar.Add(confirmChangeEmailAddressRequest.Message, Severity.Success, config => { config.CloseAfterNavigation = true; });
             }
 
             await InvokeAsync(StateHasChanged);

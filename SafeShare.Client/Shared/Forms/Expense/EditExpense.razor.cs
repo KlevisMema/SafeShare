@@ -1,5 +1,5 @@
 ﻿using MudBlazor;
-using SafeShare.Client.Helpers;
+using SafeShare.Client.Internal;
 using SafeShare.ClientDTO.Expense;
 using Microsoft.AspNetCore.Components;
 using SafeShare.ClientServices.Interfaces;

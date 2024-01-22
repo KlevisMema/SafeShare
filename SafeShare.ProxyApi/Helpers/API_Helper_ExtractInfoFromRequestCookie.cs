@@ -8,10 +8,11 @@ internal static class API_Helper_ExtractInfoFromRequestCookie
     public static string
     GetUserIp
     (
+        string headerName,
         HttpRequest Request
     )
     {
-        return Request.Headers["X-Original-Client-IP"].ToString();
+        return Request.Headers[headerName].ToString();
     }
 
     public static string
@@ -26,27 +27,32 @@ internal static class API_Helper_ExtractInfoFromRequestCookie
     public static string
     JwtToken
     (
+        string cookieName,
         HttpRequest Request
     )
     {
-        return Request.Cookies["AuthToken"] ?? string.Empty;
+        return Request.Cookies[cookieName] ?? string.Empty;
     }
 
     public static string
     GetForgeryToken
     (
+        string cookieName,
         HttpRequest Request
     )
     {
-        return Request.Cookies["XSRF-TOKEN"]?.ToString() ?? string.Empty;
+        string key = $"{cookieName}-{Request.HttpContext.User.Identity.Name}";
+        return Request.Cookies[key]?.ToString() ?? string.Empty;
     }
 
     public static string
     GetAspNetCoreForgeryToken
     (
+        string cookieName,
         HttpRequest Request
     )
     {
-        return Request.Cookies[".AspNetCore.Antiforgery.NcD0snFZIjg"]?.ToString() ?? string.Empty;
+        string key = $"{cookieName}-{Request.HttpContext.User.Identity.Name}";
+        return Request.Cookies[key]?.ToString() ?? string.Empty;
     }
 }

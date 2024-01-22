@@ -21,15 +21,17 @@ internal static class API_Helper_HttpClient
     (
         string baseMainApiAddr,
         string aspNetForgeryToken,
-        string fogeryToken
+        string fogeryToken,
+        string cookieXsrfTokenName,
+        string xsrfTokenName
     )
     {
         var httpClientHandler = new HttpClientHandler();
 
         var cookieContainer = new CookieContainer();
 
-        cookieContainer.Add(new Uri(baseMainApiAddr), new Cookie(".AspNetCore.Antiforgery.NcD0snFZIjg", aspNetForgeryToken));
-        cookieContainer.Add(new Uri(baseMainApiAddr), new Cookie("X-XSRF-TOKEN", fogeryToken));
+        cookieContainer.Add(new Uri(baseMainApiAddr), new Cookie(cookieXsrfTokenName, aspNetForgeryToken));
+        cookieContainer.Add(new Uri(baseMainApiAddr), new Cookie(xsrfTokenName, fogeryToken));
 
         httpClientHandler.CookieContainer = cookieContainer;
 
@@ -52,7 +54,8 @@ internal static class API_Helper_HttpClient
         foreach (var header in headers)
             httpRequestMessage.Headers.Add(header.Key, header.Value);
 
-        httpRequestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
+        if (!String.IsNullOrEmpty(jwtToken))
+            httpRequestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
     }
     /// <summary>
     ///     Creates a client based on a name and client factory.

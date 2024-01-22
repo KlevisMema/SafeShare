@@ -1,6 +1,6 @@
 ﻿using MudBlazor;
 using System.Net;
-using SafeShare.Client.Helpers;
+using SafeShare.Client.Internal;
 using Microsoft.Extensions.Options;
 using SafeShare.Client.Shared.Forms;
 using Microsoft.AspNetCore.Components;
@@ -31,6 +31,7 @@ public partial class NavMenu
         _appState.OnNewGroupCreated += HandleNewGroupCreated;
         _appState.OnGroupEdited += HandleGroupEdited;
         _appState.OnGroupDeleted += HandleGroupDeleted;
+        _appState.OnRemovedFromGroup += HandleRemovedFromGroup;
         _appState.OnGroupInvitationAccepted += HandleGroupInvitationAccepted;
         return base.OnInitializedAsync();
     }
@@ -71,8 +72,27 @@ public partial class NavMenu
 
         if (deletedGroup is not null)
             GroupTypes.GroupsCreated.Remove(deletedGroup);
-        
+
         _navigationManager.NavigateTo("/Dashboard");
+    }
+
+    private void
+    HandleRemovedFromGroup
+    (
+        Guid groupId
+    )
+    {
+        var deletedGroup = GroupTypes.GroupsJoined.Find(x => x.GroupId == groupId);
+
+        if (deletedGroup is not null)
+            GroupTypes.GroupsJoined.Remove(deletedGroup);
+
+        var route = _navigationManager.BaseUri + "Group" + $"/{groupId}";
+
+        if (_navigationManager.Uri == route)
+            _navigationManager.NavigateTo("/Dashboard");
+
+        StateHasChanged();
     }
 
     private void
@@ -90,9 +110,10 @@ public partial class NavMenu
 
     public void Dispose()
     {
-        _appState.OnNewGroupCreated -= HandleNewGroupCreated;
         _appState.OnGroupEdited -= HandleGroupEdited;
         _appState.OnGroupDeleted -= HandleGroupDeleted;
+        _appState.OnNewGroupCreated -= HandleNewGroupCreated;
+        _appState.OnRemovedFromGroup -= HandleRemovedFromGroup;
         _appState.OnGroupInvitationAccepted -= HandleGroupInvitationAccepted;
     }
 

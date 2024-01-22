@@ -1,6 +1,5 @@
 ﻿using SafeShare.Utilities.SafeShareApi.Responses;
 using SafeShare.DataTransormObject.SafeShareApi.UserManagment;
-using Microsoft.AspNetCore.Mvc;
 
 namespace SafeShare.ProxyApi.Container.Interfaces;
 
@@ -10,6 +9,7 @@ public interface IAccountManagmentProxyService
     GetUser
     (
         string userId,
+        string userIp,
         string jwtToken
     );
 
@@ -17,7 +17,10 @@ public interface IAccountManagmentProxyService
     UpdateUser
     (
         string userId,
+        string userIp,
         string jwtToken,
+        string fogeryToken,
+        string aspNetForgeryToken,
         DTO_UserInfo userInfo
     );
 
@@ -25,7 +28,10 @@ public interface IAccountManagmentProxyService
     ChangePassword
     (
         string userId,
+        string userIp,
         string jwtToken,
+        string fogeryToken,
+        string aspNetForgeryToken,
         DTO_UserChangePassword changePassword
     );
 
@@ -33,31 +39,38 @@ public interface IAccountManagmentProxyService
     DeactivateAccount
     (
         string userId,
+        string userIp,
         string jwtToken,
+        string fogeryToken,
+        string aspNetForgeryToken,
         DTO_DeactivateAccount deactivateAccount
     );
 
     Task<Util_GenericResponse<bool>>
     ActivateAccountRequest
     (
-        string email
+        string email,
+        string userIp
     );
 
     Task<Util_GenericResponse<bool>>
     ActivateAccountRequestConfirmation
     (
+        string userIp,
         DTO_ActivateAccountConfirmation activateAccountConfirmationDto
     );
 
     Task<Util_GenericResponse<bool>>
     ForgotPassword
     (
-        [FromForm] DTO_ForgotPassword forgotPassword
+        string userIp,
+        DTO_ForgotPassword forgotPassword
     );
 
     Task<Util_GenericResponse<bool>>
     ResetPassword
     (
+        string userIp,
         DTO_ResetPassword resetPassword
     );
 
@@ -65,7 +78,10 @@ public interface IAccountManagmentProxyService
     RequestChangeEmail
     (
         string userId,
+        string userIp,
         string jwtToken,
+        string fogeryToken,
+        string aspNetForgeryToken,
         DTO_ChangeEmailAddressRequest emailAddress
     );
 
@@ -73,7 +89,10 @@ public interface IAccountManagmentProxyService
     ConfirmChangeEmailAddressRequest
     (
         string userId,
+        string userIp,
         string jwtToken,
+        string fogeryToken,
+        string aspNetForgeryToken,
         DTO_ChangeEmailAddressRequestConfirm changeEmailAddressConfirmDto
     );
 
@@ -81,6 +100,7 @@ public interface IAccountManagmentProxyService
     SearchUserByUserName
     (
         string userId,
+        string userIp,
         string jwtToken,
         string userName,
         CancellationToken cancellationToken
@@ -90,7 +110,10 @@ public interface IAccountManagmentProxyService
     UploadProfilePicture
     (
         string userId,
+        string userIp,
         string jwtToken,
+        string fogeryToken,
+        string aspNetForgeryToken,
         IFormFile image
     );
 }

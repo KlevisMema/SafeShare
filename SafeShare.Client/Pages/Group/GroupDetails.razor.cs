@@ -2,7 +2,7 @@
 using System.Web;
 using System.Text;
 using Microsoft.JSInterop;
-using SafeShare.Client.Helpers;
+using SafeShare.Client.Internal;
 using SafeShare.ClientDTO.Expense;
 using Microsoft.AspNetCore.Components;
 using SafeShare.ClientDTO.GroupManagment;
@@ -59,6 +59,8 @@ public partial class GroupDetails
     {
         _appState.OnExpenseEditted += ExpenseEdited;
         GroupDetailsDto = new();
+
+       
 
         return base.OnInitializedAsync();
     }

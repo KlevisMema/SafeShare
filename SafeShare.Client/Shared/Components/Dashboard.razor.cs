@@ -1,5 +1,5 @@
 ﻿using System.Linq;
-using SafeShare.Client.Helpers;
+using SafeShare.Client.Internal;
 using SafeShare.Client.Pages.Group;
 using Microsoft.AspNetCore.Components;
 using SafeShare.ClientDTO.GroupManagment;
@@ -40,6 +40,7 @@ namespace SafeShare.Client.Shared.Components
         {
             _appState.OnGroupDeleted += HandleGroupDeleted;
             _appState.OnNewGroupCreated += HandleNewGroupCreated;
+            _appState.OnRemovedFromGroup += HandleRemovedFromGroup;
             _appState.OnGroupInvitationAccepted += HandleGroupInvitationAccepted;
             _appState.OnGroupDetails += HandleGroupDetails;
 
@@ -50,6 +51,22 @@ namespace SafeShare.Client.Shared.Components
         RefreshData()
         {
             _navigationManager.NavigateTo("/Dashboard", true);
+        }
+
+        private void
+        HandleRemovedFromGroup
+        (
+            Guid groupId
+        )
+        {
+            var groupToDeleteFromDom = GroupsDetails.FirstOrDefault(x => x.GroupId == groupId);
+
+            if (groupToDeleteFromDom is not null)
+                GroupsDetails.Remove(groupToDeleteFromDom);
+
+            NrGroupsJoined--;
+
+            StateHasChanged();
         }
 
         private void
@@ -71,10 +88,10 @@ namespace SafeShare.Client.Shared.Components
             Guid groupId
         )
         {
-            var groupToDeleteFromDrom = GroupsDetails.FirstOrDefault(x => x.GroupId == groupId);
+            var groupToDeleteFromDom = GroupsDetails.FirstOrDefault(x => x.GroupId == groupId);
 
-            if (groupToDeleteFromDrom != null)
-                GroupsDetails.Remove(groupToDeleteFromDrom);
+            if (groupToDeleteFromDom != null)
+                GroupsDetails.Remove(groupToDeleteFromDom);
 
             NrGroupsCreated--;
             StateHasChanged();
@@ -111,6 +128,7 @@ namespace SafeShare.Client.Shared.Components
             _appState.OnGroupDetails -= HandleGroupDetails;
             _appState.OnGroupDeleted -= HandleGroupDeleted;
             _appState.OnNewGroupCreated -= HandleNewGroupCreated;
+            _appState.OnRemovedFromGroup += HandleRemovedFromGroup;
             _appState.OnGroupInvitationAccepted -= HandleGroupInvitationAccepted;
         }
 

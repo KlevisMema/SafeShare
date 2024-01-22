@@ -1,9 +1,11 @@
 ﻿using MudBlazor;
 using System.Net.Http.Headers;
+using SafeShare.Client.Internal;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Http.Internal;
 using SafeShare.ClientDTO.Authentication;
 using SafeShare.ClientServices.Interfaces;
+using Microsoft.AspNetCore.SignalR.Client;
 using SafeShare.ClientDTO.AccountManagment;
 using Microsoft.AspNetCore.Components.Forms;
 
@@ -12,31 +14,34 @@ namespace SafeShare.Client.Shared.Forms.Account;
 public partial class EditProfileForm
 {
     [Inject] private ISnackbar _snackbar { get; set; } = null!;
+    [Inject] private SignalRService? _signalR { get; set; } = null!;
+    [Inject] IAuthenticationService _authenticationService { get; set; } = null!;
+    [Inject] private IClientService_UserManagment _userManagmentService { get; set; } = null!;
 
-    [Inject]
-    private IClientService_UserManagment _userManagmentService { get; set; } = null!;
-
-    private ClientDto_UserInfo? UserInfo { get; set; }
-
-    private ClientDto_UpdateUser UpdateUser { get; set; } = new();
 
     private EditForm? editProfileForm;
+    private ClientDto_UserInfo UserInfo { get; set; }
+    private ClientDto_UpdateUser UpdateUser { get; set; } = new();
 
-    private bool _processing = false;
-    private bool _processingUploadProfilePic = false;
+
     private IBrowserFile? file;
-    private const string EditUserDataModeInvalidGender = "Register - Please select a valid gender";
-    private string BtnMessage { get; set; }
-
     private string? CurrentUserName;
+    private bool _processing = false;
+    private string BtnMessage { get; set; } = string.Empty;
+    private bool _processingUploadProfilePic = false;
+    private const string EditUserDataModeInvalidGender = "Register - Please select a valid gender";
+
 
     protected override async Task OnInitializedAsync()
     {
+        if (_signalR is not null)
+            HandleSignalR();
+
         UserInfo ??= new();
 
         var getUserInfo = await _userManagmentService.GetUser();
 
-        if (getUserInfo.Succsess)
+        if (getUserInfo.Succsess && getUserInfo.Value is not null)
         {
             UserInfo = getUserInfo.Value;
 
@@ -54,6 +59,49 @@ public partial class EditProfileForm
             else
                 BtnMessage = "Edit profile picture";
         }
+    }
+
+    private void
+       HandleSignalR()
+    {
+        if (_signalR!.HubConnection is not null)
+            _signalR.HubConnection.On<string>("EmailChanged", _HandleEmailChanged);
+    }
+
+    private void
+    _HandleEmailChanged
+    (
+        string newEmail
+    )
+    {
+        if (UserInfo is not null)
+        {
+            UserInfo.Email = newEmail;
+            StateHasChanged();
+        }
+    }
+
+    private void
+    EmailChanged
+    (
+        string? newEmail
+    )
+    {
+        if (!String.IsNullOrEmpty(newEmail))
+            UserInfo.Email = newEmail;
+
+        StateHasChanged();
+    }
+
+    private void
+    HandleEmailChanged
+    (
+        string newEmail
+    )
+    {
+        UserInfo.Email = newEmail;
+
+        StateHasChanged();
     }
 
     private async Task
@@ -85,8 +133,8 @@ public partial class EditProfileForm
 
         if (!updateDataResult.Succsess)
         {
-            UpdateUser.UserName = CurrentUserName?? UpdateUser.UserName;
-            
+            UpdateUser.UserName = CurrentUserName ?? UpdateUser.UserName;
+
             _snackbar.Add(updateDataResult.Message, Severity.Warning, config => { config.CloseAfterNavigation = true; });
 
             if (updateDataResult.Errors is not null)

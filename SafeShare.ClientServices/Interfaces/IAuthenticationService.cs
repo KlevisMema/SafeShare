@@ -18,10 +18,10 @@ namespace SafeShare.ClientServices.Interfaces
         );
 
         Task
-        LogoutUser
-        (
-            
-        );
+        LogoutUser();
+
+        Task<string>
+        GetJwtToken();
 
         Task<ClientUtil_ApiResponse<bool>>
         ConfirmUserRegistration
