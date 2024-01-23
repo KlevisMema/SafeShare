@@ -64,6 +64,9 @@ public partial class ChangePassword
 
         UserChangePassword = new();
         _processing = false;
+        MudDialog.Close();
+
+        await InvokeAsync(StateHasChanged);
     }
 
     private void

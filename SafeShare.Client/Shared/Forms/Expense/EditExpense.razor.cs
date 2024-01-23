@@ -13,6 +13,7 @@ public partial class EditExpense
     [Parameter] public AppState? _appState { get; set; }
     [Parameter] public ClientDto_Expense? Expense { get; set; }
     [Parameter] public ISnackbar _snackbar { get; set; } = null!;
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
     [Parameter] public ClientDto_ExpenseCreate? EditExpenseDto { get; set; }
     [Parameter] public IClientService_ExpenseManagment _expenseManagmentService { get; set; } = null!;
 
@@ -41,6 +42,7 @@ public partial class EditExpense
 
         _snackbar.Add(editExpenseResult.Message, editExpenseResult.StatusCode == System.Net.HttpStatusCode.OK ? Severity.Success : Severity.Warning, config => { config.CloseAfterNavigation = true; config.VisibleStateDuration = 3000; });
         _processing = false;
+        MudDialog.Close();
         await InvokeAsync(StateHasChanged);
     }
 

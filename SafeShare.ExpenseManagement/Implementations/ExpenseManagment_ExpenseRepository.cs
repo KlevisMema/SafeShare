@@ -628,6 +628,36 @@ public class ExpenseManagment_ExpenseRepository
                 );
             }
 
+            var expenseDecrypted = await securityExpense.DecryptExpenseData(userId, expense, expense.Group.Tag);
+
+            bool canParseOldAmount = false;
+            decimal oldAmount = 0;
+
+            if (expenseDecrypted.Succsess && expenseDecrypted.Value is not null)
+                canParseOldAmount = decimal.TryParse(expenseDecrypted.Value.Amount, out oldAmount);
+
+            if (!canParseOldAmount)
+            {
+                _logger.Log
+                (
+                    LogLevel.Error,
+                    """
+                        [ExpenseManagment Module]-[ExpenseManagment_ExpenseRepository class]-[EditExpense Method] => 
+                        [RESULT] : The proccess to convert old expense amount of {expenseAmount} to a decimal failed.
+                    """,
+                    expenseEdit.Amount
+                );
+
+                return Util_GenericResponse<DTO_Expense>.Response
+                (
+                    null,
+                    false,
+                    "Expense was not edited. Could not get the old expense amount",
+                    null,
+                    HttpStatusCode.BadRequest
+                );
+            }
+
             var cpyOfDto = new DTO_Expense
             {
                 Amount = expenseEdit.Amount,
@@ -685,12 +715,12 @@ public class ExpenseManagment_ExpenseRepository
 
             _db.Expenses.Update(expense);
 
-            decimal shareAmount = amountParsed / (memberCount - 1);
+            decimal shareAmount = (amountParsed - oldAmount) / (memberCount - 1);
 
             foreach (var member in groupMembers)
             {
                 if (member.UserId == userId)
-                    member.Balance += (amountParsed - shareAmount);
+                    member.Balance += (amountParsed - oldAmount);
                 else
                     member.Balance -= shareAmount;
 

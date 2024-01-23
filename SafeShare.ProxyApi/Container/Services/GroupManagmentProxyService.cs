@@ -321,12 +321,13 @@ public class GroupManagmentProxyService
         string fogeryToken,
         string aspNetForgeryToken,
         string jwtToken,
-        Guid groupId
+        Guid groupId,
+        List<string> membersId,
+        string groupName
     )
     {
         try
         {
-
             API_Helper_ParamsStringChecking.CheckNullOrEmpty
             (
                 (nameof(userIp), userIp),
@@ -370,6 +371,9 @@ public class GroupManagmentProxyService
             {
                 PropertyNameCaseInsensitive = true
             }) ?? throw new ArgumentNullException("Failed to deserialize the server response. The content may not match the expected format.");
+
+            if (readResult.Succsess)
+                await _hubContext.Clients.Users(membersId).SendAsync("GroupDeleted", groupId, groupName);
 
             return readResult;
         }

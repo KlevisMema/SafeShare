@@ -66,6 +66,9 @@ public partial class DeactivateAccount
             _processing = false;
             _navigationManager.NavigateTo("/", true);
         }
+
+        MudDialog.Close();
+        await InvokeAsync(StateHasChanged);
     }
 
     private void

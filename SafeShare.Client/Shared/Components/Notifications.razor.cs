@@ -51,6 +51,7 @@ public partial class Notifications : IAsyncDisposable, IDisposable
     {
         if (_signalR.HubConnection is not null)
         {
+            _signalR.HubConnection.On<Guid, string>("GroupDeleted", HandleGroupDeleted);
             _signalR.HubConnection.On("ReceiveGroupInvitation", HandleGroupInvitationIndication);
             _signalR.HubConnection.On<string, Guid>("RemovedFromTheGroup", HandleRemovedFromTheGroup);
             _signalR.HubConnection.On<string, string>("AcceptedInvitation", HandleAcceptedInvitation);
@@ -94,6 +95,34 @@ public partial class Notifications : IAsyncDisposable, IDisposable
         {
             NotificationId = Guid.NewGuid(),
             NotificationMessage = $"You have been removed from {groupName} group",
+        });
+
+        _appState.RemovedFromGroup(groupId);
+
+        StateHasChanged();
+    }
+
+    private void
+    HandleGroupDeleted
+    (
+        Guid groupId,
+        string groupName
+    )
+    {
+        _snackbar.Add($"A group was deleted!", Severity.Info, config =>
+        {
+            config.CloseAfterNavigation = true;
+            config.VisibleStateDuration = 1000;
+            config.DuplicatesBehavior = SnackbarDuplicatesBehavior.Prevent;
+            config.InfoIcon = Icons.Material.Outlined.Notifications;
+        });
+
+        badgeVisible = true;
+
+        NotificationsList.Add(new ClientDto_Notification
+        {
+            NotificationId = Guid.NewGuid(),
+            NotificationMessage = $"Group {groupName} was just deleted!",
         });
 
         _appState.RemovedFromGroup(groupId);

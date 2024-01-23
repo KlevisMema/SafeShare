@@ -179,7 +179,9 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
     public async Task<ClientUtil_ApiResponse<bool>>
     DeleteGroup
     (
-        Guid groupId
+        Guid groupId,
+        string groupName,
+        List<string> membersId
     )
     {
         HttpResponseMessage response = new();
@@ -188,7 +190,17 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
         {
             var httpClient = httpClientFactory.CreateClient(Client);
 
-            response = await httpClient.DeleteAsync(BaseRoute.RouteGroupManagmentProxy + Route_GroupManagmentRoutes.ProxyDeleteGroup.Replace("{groupId}", groupId.ToString()));
+            var json = JsonSerializer.Serialize(membersId);
+
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            response = await httpClient.PostAsync
+            (
+                BaseRoute.RouteGroupManagmentProxy + 
+                Route_GroupManagmentRoutes.ProxyDeleteGroup.Replace("{groupId}", groupId.ToString()) + 
+                $"?groupName={groupName}", 
+                content
+            );
 
             var responseContent = await response.Content.ReadAsStringAsync();
 

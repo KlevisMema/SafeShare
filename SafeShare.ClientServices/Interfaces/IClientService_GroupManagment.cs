@@ -20,7 +20,9 @@ public interface IClientService_GroupManagment
     Task<ClientUtil_ApiResponse<bool>>
     DeleteGroup
     (
-        Guid groupId
+        Guid groupId,
+        string groupName,
+        List<string> membersId
     );
 
     Task<ClientUtil_ApiResponse<bool>>

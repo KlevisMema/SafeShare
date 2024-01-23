@@ -107,11 +107,13 @@ public class GroupManagmentProxyController
         return Util_GenericControllerResponse<DTO_GroupType>.ControllerResponse(result);
     }
 
-    [HttpDelete(Route_GroupManagmentRoutes.ProxyDeleteGroup)]
+    [HttpPost(Route_GroupManagmentRoutes.ProxyDeleteGroup)]
     public async Task<ActionResult<Util_GenericResponse<bool>>>
     DeleteGroup
     (
-        Guid groupId
+        Guid groupId,
+        [FromQuery] string groupName,
+        [FromBody] List<string> membersId
     )
     {
         var result = await groupManagmentProxyService.DeleteGroup
@@ -121,7 +123,9 @@ public class GroupManagmentProxyController
             API_Helper_ExtractInfoFromRequestCookie.GetForgeryToken(requestHeaderOptions.Value.Client_XSRF_TOKEN, Request),
             API_Helper_ExtractInfoFromRequestCookie.GetAspNetCoreForgeryToken(requestHeaderOptions.Value.AspNetCoreAntiforgery, Request),
             API_Helper_ExtractInfoFromRequestCookie.JwtToken(requestHeaderOptions.Value.AuthToken, Request),
-            groupId
+            groupId,
+            membersId,
+            groupName
         );
 
         return Util_GenericControllerResponse<bool>.ControllerResponse(result);

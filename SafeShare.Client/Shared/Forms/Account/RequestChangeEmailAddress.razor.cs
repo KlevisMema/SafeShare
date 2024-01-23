@@ -54,6 +54,8 @@ public partial class RequestChangeEmailAddress
 
         EmailAddressRequestDto = new();
         _processing = false;
+        MudDialog.Close();
+        await InvokeAsync(StateHasChanged);
     }
 
     private void

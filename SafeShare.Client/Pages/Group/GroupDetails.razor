@@ -170,7 +170,7 @@
         width: 100%;
     }
 
-    .balance{
+    .balance {
         margin: 0;
     }
 </style>
@@ -178,6 +178,12 @@
 <body>
 
     <div class="tabs">
+
+        <MudTooltip Text="Refresh Data" Color="Color.Primary" Placement="MudBlazor.Placement.Right" Arrow="true" Inline="false">
+            <MudFab OnClick="RefeshData" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Refresh" Size="MudBlazor.Size.Small" Class="m-sm-2" />
+        </MudTooltip>
+
+        <br />
 
         <MudTabs ApplyEffectsToContainer=true
                  Outlined=true
@@ -191,42 +197,75 @@
             <MudTabPanel Text="Group Details" Icon="@Icons.Material.Outlined.Details">
                 <div id="groupDetails" class="tab-content active">
 
-                    <div class="card">
-                        <div class="data-item">
-                            <MudIcon Icon="@Icons.Material.Filled.Label" Color="Color.Primary" /> <span class="data-label">Group Name:</span> @GroupDetailsDto.GroupName
-                        </div>
-                        <div class="data-item">
-                            <MudIcon Icon="@Icons.Material.Filled.Numbers" Color="Color.Primary" /> <span class="data-label">Number of Members:</span> @GroupDetailsDto.NumberOfMembers
-                        </div>
-                        <div class="data-item">
-                            <MudIcon Icon="@Icons.Material.Filled.Info" Color="Color.Primary" /> <span class="data-label">Description:</span> @GroupDetailsDto.Description
-                        </div>
-
-                    </div>
-
-                    <div class="card">
-                        <div class="data-item">
-                            <MudIcon Icon="@Icons.Material.Filled.AdminPanelSettings" Color="Color.Primary" /> <span class="data-label">Group Admin:</span> @GroupDetailsDto.GroupAdmin
-                        </div>
-                        <div class="data-item">
-                            <MudIcon Icon="@Icons.Material.Filled.DateRange" Color="Color.Primary" /> <span class="data-label">Group Creation Date:</span> @GroupDetailsDto.GroupCreationDate
-                        </div>
-                        @if (GroupDetailsDto.ImAdmin)
-                        {
+                    @if (_refreshData)
+                    {
+                        <div class="card">
                             <div class="data-item">
-                                <MudButton StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="OpenPopUpDeleteConfirmation" Variant="Variant.Filled">
-                                    Delete
-                                </MudButton>
+                                <MudIcon Icon="@Icons.Material.Filled.Label" Color="Color.Primary" /> <span class="data-label">Group Name:</span> <MudSkeleton Animation="Animation.Pulse" SkeletonType="SkeletonType.Text" class="topic" />
                             </div>
-                        }
-                    </div>
+                            <div class="data-item">
+                                <MudIcon Icon="@Icons.Material.Filled.Numbers" Color="Color.Primary" /> <span class="data-label">Number of Members:</span> <MudSkeleton Animation="Animation.Pulse" SkeletonType="SkeletonType.Text" class="topic" />
+                            </div>
+                            <div class="data-item">
+                                <MudIcon Icon="@Icons.Material.Filled.Info" Color="Color.Primary" /> <span class="data-label">Description:</span> <MudSkeleton Animation="Animation.Pulse" SkeletonType="SkeletonType.Text" class="topic" />
+                            </div>
+                        </div>
 
+                        <div class="card">
+                            <div class="data-item">
+                                <MudIcon Icon="@Icons.Material.Filled.AdminPanelSettings" Color="Color.Primary" /> <span class="data-label">Group Admin:</span> <MudSkeleton Animation="Animation.Pulse" SkeletonType="SkeletonType.Text" class="topic" />
+                            </div>
+                            <div class="data-item">
+                                <MudIcon Icon="@Icons.Material.Filled.DateRange" Color="Color.Primary" /> <span class="data-label">Group Creation Date:</span> <MudSkeleton Animation="Animation.Pulse" SkeletonType="SkeletonType.Text" class="topic" />
+                            </div>
+                            @if (GroupDetailsDto.ImAdmin)
+                            {
+                                <div class="data-item">
+                                    <MudButton StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" Variant="Variant.Filled">
+                                        <MudSkeleton Animation="Animation.Pulse" SkeletonType="SkeletonType.Text" class="topic" />
+                                    </MudButton>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="card">
+                            <div class="data-item">
+                                <MudIcon Icon="@Icons.Material.Filled.Label" Color="Color.Primary" /> <span class="data-label">Group Name:</span> @GroupDetailsDto.GroupName
+                            </div>
+                            <div class="data-item">
+                                <MudIcon Icon="@Icons.Material.Filled.Numbers" Color="Color.Primary" /> <span class="data-label">Number of Members:</span> @GroupDetailsDto.NumberOfMembers
+                            </div>
+                            <div class="data-item">
+                                <MudIcon Icon="@Icons.Material.Filled.Info" Color="Color.Primary" /> <span class="data-label">Description:</span> @GroupDetailsDto.Description
+                            </div>
+
+                        </div>
+
+                        <div class="card">
+                            <div class="data-item">
+                                <MudIcon Icon="@Icons.Material.Filled.AdminPanelSettings" Color="Color.Primary" /> <span class="data-label">Group Admin:</span> @GroupDetailsDto.GroupAdmin
+                            </div>
+                            <div class="data-item">
+                                <MudIcon Icon="@Icons.Material.Filled.DateRange" Color="Color.Primary" /> <span class="data-label">Group Creation Date:</span> @GroupDetailsDto.GroupCreationDate
+                            </div>
+                            @if (GroupDetailsDto.ImAdmin)
+                            {
+                                <div class="data-item">
+                                    <MudButton StartIcon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="OpenPopUpDeleteConfirmation" Variant="Variant.Filled">
+                                        Delete
+                                    </MudButton>
+                                </div>
+                            }
+                        </div>
+                    }
                 </div>
             </MudTabPanel>
 
             @if (GroupDetailsDto.ImAdmin)
             {
-                <MudTabPanel Text="Edit Group" Icon="@Icons.Material.Outlined.Edit">
+                <MudTabPanel Text="Edit Group" Icon="@Icons.Material.Outlined.Edit" Disabled="_refreshData">
                     <div class="editGrDetailsForm">
 
                         <EditForm @ref="@EditGroupForm" Model="@EditGroup" OnValidSubmit="OnValidSubmit" OnInvalidSubmit="OnInValidSubmit" class="col-xl-6">
@@ -238,7 +277,8 @@
                                           Adornment="Adornment.End"
                                           AdornmentIcon="@Icons.Material.Filled.Edit"
                                           AdornmentColor="Color.Primary"
-                                          Variant="Variant.Outlined" />
+                                          Variant="Variant.Outlined"
+                                          Disabled="_refreshData" />
 
                             <br />
 
@@ -246,11 +286,12 @@
                                           Adornment="Adornment.End"
                                           AdornmentIcon="@Icons.Material.Filled.Edit"
                                           AdornmentColor="Color.Primary"
-                                          Variant="Variant.Outlined" />
+                                          Variant="Variant.Outlined"
+                                          Disabled="_refreshData" />
 
                             <br />
 
-                            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Outlined" Color="Color.Primary">
+                            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Outlined" Color="Color.Primary" Disabled="_refreshData">
                                 @if (_processing)
                                 {
                                     <MudProgressCircular Class="ms-n1" Size="MudBlazor.Size.Small" Indeterminate="true" Color="Color.Primary" />
@@ -266,50 +307,58 @@
                 </MudTabPanel>
             }
 
-            <MudTabPanel Text="Members" Icon="@Icons.Material.Outlined.Groups">
-                <div class="users-container">
-                    @foreach (var user in GroupDetailsDto.UsersGroups)
-                    {
-                        <div class="user-card">
-                            <div class="user-image">
-                                @if (user.UserImage != null && user.UserImage.Length > 0)
-                                {
-                                    <img src="data:image/png;base64,@Convert.ToBase64String(user.UserImage)" alt="User Image" />
-                                }
-                                else
-                                {
-                                    <div class="avatar-circle">@user.UserName[0]</div>
-                                }
-                            </div>
-                            <div class="user-details">
-                                <p class="user-username">
-                                    @user.UserName
-                                    @if (user.IsAdmin)
+            <MudTabPanel Text="Members" Icon="@Icons.Material.Outlined.Groups" Disabled="_refreshData">
+
+                @if (_refreshData)
+                {
+                    <MudSkeleton Animation="Animation.Wave" Height="100%" Width="100%" SkeletonType="SkeletonType.Rectangle" />
+                }
+                else
+                {
+                    <div class="users-container">
+                        @foreach (var user in GroupDetailsDto.UsersGroups)
+                        {
+                            <div class="user-card">
+                                <div class="user-image">
+                                    @if (user.UserImage != null && user.UserImage.Length > 0)
                                     {
-                                        <MudIcon Icon="@Icons.Material.Filled.AdminPanelSettings" Color="Color.Primary" Title="Is Admin" />
+                                        <img src="data:image/png;base64,@Convert.ToBase64String(user.UserImage)" alt="User Image" />
                                     }
                                     else
                                     {
-                                        @string.Empty
+                                        <div class="avatar-circle">@user.UserName[0]</div>
                                     }
-                                </p>
-                                <p class="balance">Balance: @user.Balance.ToString("0.00") <MudIcon Icon="@Icons.Material.Filled.AttachMoney" /> </p>
-                            </div>
+                                </div>
+                                <div class="user-details">
+                                    <p class="user-username">
+                                        @user.UserName
+                                        @if (user.IsAdmin)
+                                        {
+                                            <MudIcon Icon="@Icons.Material.Filled.AdminPanelSettings" Color="Color.Primary" Title="Is Admin" />
+                                        }
+                                        else
+                                        {
+                                            @string.Empty
+                                        }
+                                    </p>
+                                    <p class="balance">Balance: @user.Balance.ToString("0.00") <MudIcon Icon="@Icons.Material.Filled.AttachMoney" /> </p>
+                                </div>
 
-                            @if (GroupDetailsDto.ImAdmin)
-                            {
-                                @if (!user.IsAdmin)
+                                @if (GroupDetailsDto.ImAdmin)
                                 {
-                                    <MudButton OnClick="() => UserChecked(user)" Disabled="@(!ReadOnly)" Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined" EndIcon="@iconSelected">
-                                        <MudText>@selectedUserBtnText</MudText>
-                                        </MudButton>
+                                    @if (!user.IsAdmin)
+                                    {
+                                        <MudButton OnClick="() => UserChecked(user)" Disabled="@(!ReadOnly)" Size="Size.Small" Color="Color.Primary" Variant="Variant.Outlined" EndIcon="@iconSelected">
+                                            <MudText>@selectedUserBtnText</MudText>
+                                            </MudButton>
+                                    }
                                 }
-                            }
-                        </div>
-                    }
-                </div>
+                            </div>
+                        }
+                    </div>
+                }
 
-                @if (GroupDetailsDto.ImAdmin)
+                @if (GroupDetailsDto.ImAdmin && !_refreshData)
                 {
                     <MudToolBar WrapContent="true" Class="group-details-users-toolbar">
                         <MudSwitch @bind-Value="@ReadOnly" Label="@(ReadOnly ? "Edit Mode" : "Read Mode")" LabelPosition="LabelPosition.Start" Color="Color.Info" />
@@ -324,7 +373,7 @@
                 }
             </MudTabPanel>
 
-            <MudTabPanel Text="Expenses" Icon="@Icons.Material.Outlined.AttachMoney">
+            <MudTabPanel Text="Expenses" Icon="@Icons.Material.Outlined.AttachMoney" Disabled="_refreshData">
 
                 <div class="subTabExpenses">
 
@@ -347,7 +396,8 @@
                                                   Adornment="Adornment.End"
                                                   AdornmentIcon="@Icons.Material.Filled.Title"
                                                   AdornmentColor="Color.Primary"
-                                                  Variant="Variant.Outlined" />
+                                                  Variant="Variant.Outlined"
+                                                  Disabled="_refreshData" />
 
                                     <br />
 
@@ -357,7 +407,8 @@
                                                   Adornment="Adornment.End"
                                                   AdornmentIcon="@Icons.Material.Filled.Money"
                                                   AdornmentColor="Color.Primary"
-                                                  Variant="Variant.Outlined" />
+                                                  Variant="Variant.Outlined"
+                                                  Disabled="_refreshData" />
 
                                     <br />
 
@@ -367,11 +418,12 @@
                                                   Adornment="Adornment.End"
                                                   AdornmentIcon="@Icons.Material.Filled.Description"
                                                   AdornmentColor="Color.Primary"
-                                                  Variant="Variant.Outlined" />
+                                                  Variant="Variant.Outlined"
+                                                  Disabled="_refreshData" />
 
                                     <br />
 
-                                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Outlined" Color="Color.Primary">
+                                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Outlined" Color="Color.Primary" Disabled="_refreshData">
                                         @if (_processingCreateExpense)
                                         {
                                             <MudProgressCircular Class="ms-n1" Size="MudBlazor.Size.Small" Indeterminate="true" Color="Color.Primary" />
@@ -387,7 +439,7 @@
                         </MudTabPanel>
 
                         <MudTabPanel Text="All Expenses"
-                                     Icon="@Icons.Material.Outlined.TableRows">
+                                     Icon="@Icons.Material.Outlined.TableRows" Disabled="_refreshData">
 
                             <MudDataGrid T="ClientDto_Expense"
                                          @ref="@dataGrid"
@@ -468,7 +520,7 @@
                         </MudTabPanel>
 
                         <MudTabPanel Text="Selected Expense"
-                                     Icon="@Icons.Material.Outlined.SelectAll">
+                                     Icon="@Icons.Material.Outlined.SelectAll" Disabled="_refreshData">
 
                             <div class="card">
                                 <div class="data-item">

@@ -45,6 +45,7 @@ public partial class GroupDetails
     private string _searchString;
     private bool _processing = false;
     private bool _checked { get; set; }
+    private bool _refreshData = false;
     public bool ReadOnly { get; set; } = false;
     private bool _processingDeleteGroup = false;
     private static bool _customizeGroupBy = true;
@@ -59,8 +60,6 @@ public partial class GroupDetails
     {
         _appState.OnExpenseEditted += ExpenseEdited;
         GroupDetailsDto = new();
-
-       
 
         return base.OnInitializedAsync();
     }
@@ -233,14 +232,17 @@ public partial class GroupDetails
     {
         _processingDeleteGroup = true;
 
-        var deleteResult = await _groupManagmentService.DeleteGroup(groupId);
+        var deleteResult = await _groupManagmentService.DeleteGroup
+        (
+            groupId,
+            GroupDetailsDto.GroupName,
+            GroupDetailsDto.UsersGroups.Where(x => !x.IsAdmin).Select(x => x.UserId).ToList()
+        );
 
         _snackbar.Add(deleteResult.Message, deleteResult.StatusCode == System.Net.HttpStatusCode.OK ? Severity.Success : Severity.Warning, config => { config.CloseAfterNavigation = true; config.VisibleStateDuration = 3000; });
 
         if (deleteResult.Succsess)
-        {
             _appState.GroupDeleted(groupId);
-        }
 
         _processingDeleteGroup = false;
         mbox.Close();
@@ -459,5 +461,14 @@ public partial class GroupDetails
     CancelingDeletion()
     {
         SelectedExpenseForDeletion = null;
+    }
+
+    private async Task
+    RefeshData()
+    {
+        _refreshData = true;
+        await OnParametersSetAsync();
+        _refreshData = false;
+        await InvokeAsync(StateHasChanged);
     }
 }

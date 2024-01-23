@@ -54,7 +54,9 @@ public interface IGroupManagmentProxyService
         string fogeryToken,
         string aspNetForgeryToken,
         string jwtToken,
-        Guid groupId
+        Guid groupId,
+        List<string> membersId,
+        string groupName
     );
 
     Task<Util_GenericResponse<List<DTO_RecivedInvitations>>>
