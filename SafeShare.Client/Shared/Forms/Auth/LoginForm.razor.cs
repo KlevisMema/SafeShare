@@ -46,6 +46,7 @@ public partial class LoginForm
     private const string RegisterModeInvalidGender = "Register - Please select a valid gender";
     private const string OtpSendMessage = "An email with the otp has been sent you!";
     private const string OtpRedirection = "Redirecting you to the otp validation!";
+    private const string FailGenerateKeys = "Something went wrong, please try again!";
     #endregion
 
     #region Functions
@@ -85,7 +86,21 @@ public partial class LoginForm
                 return;
             }
 
+            bool successGenerateKeys = await _jsInterop.InvokeAsync<bool>("generateKeys", clientDto_Login.Password, loginResult.Value.UserId);
+
+            if (!successGenerateKeys)
+            {
+                _snackbar.Add(FailGenerateKeys, Severity.Error, options =>
+                {
+                    options.CloseAfterNavigation = true;
+                });
+                clientDto_Login = new();
+                _processing = false;
+                return;
+            }
+
             await _localStorage.SetItemAsStringAsync("FullName", loginResult.Value.UserFullName);
+            await _localStorage.SetItemAsStringAsync("Id", loginResult.Value.UserId);
 
             await RedirectToDashboardPage(loginResult.Message, loginResult.Value);
         }

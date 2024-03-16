@@ -11,6 +11,7 @@ using SafeShare.ClientServices.Interfaces;
 using Microsoft.AspNetCore.Components.Forms;
 using SafeShare.Client.Shared.Forms.Expense;
 using SafeShare.ClientServices.GroupManagment;
+using Blazored.LocalStorage;
 
 namespace SafeShare.Client.Pages.Group;
 
@@ -22,6 +23,7 @@ public partial class GroupDetails
     [Inject] private ISnackbar _snackbar { get; set; } = null!;
     [Inject] IDialogService DialogService { get; set; } = null!;
     [Inject] NavigationManager _navManager { get; set; } = null!;
+    [Inject] private ILocalStorageService _localStorage { get; set; } = null!;
     [Inject] IClientService_GroupManagment _groupManagmentService { get; set; } = null!;
     [Inject] IClientService_ExpenseManagment _expenseManagmentService { get; set; } = null!;
 
@@ -343,7 +345,10 @@ public partial class GroupDetails
         CreateExpenseModel.Date = DateTime.UtcNow.ToString();
         CreateExpenseModel.GroupId = groupId;
 
+        ClientDto_ExpenseCreate encryptedExpense = await _jSRuntime.InvokeAsync<ClientDto_ExpenseCreate>("EncryptExpense", CreateExpenseModel, await _localStorage.GetItemAsStringAsync("Id"));
+        
         var createExpenseResult = await _expenseManagmentService.CreateExpense(CreateExpenseModel);
+
 
         if (createExpenseResult.Succsess && createExpenseResult.Value is not null)
         {

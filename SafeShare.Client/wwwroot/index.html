@@ -4,7 +4,6 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-
     <title>SafeShare.Client</title>
     <base href="/" />
     <link href="css/bootstrap/bootstrap.min.css" rel="stylesheet" />
@@ -46,14 +45,50 @@
 
         window.addEventListener("resize", function () {
             var screenWidth = window.innerWidth;
-            if (window.onScreenWidthChanged) {
+            if (window.onScreenWidthChanged)
                 window.onScreenWidthChanged(screenWidth);
-            }
         });
+
+        async function generateKeys(password, userId) {
+            const keyPairs = await generateKeyFromPasswordAndUserID(password, userId);
+
+            if (keyPairs === null || keyPairs === undefined) {
+                return false;
+            }
+
+            try {
+                await saveKeyPairInDatabase(userId, keyPairs);
+                return true;
+
+            } catch (error) {
+                console.log(error);
+                return false;
+            }
+        }
+
+        async function EncryptExpense(expense, userId) {
+            const keyPair = await getKeyPairFromDatabase(userId);
+
+            const encryptedExpense = await encryptExpense(expense, keyPair.publicKey, keyPair.privateKey);
+
+            return encryptedExpense;
+        }
+
+        async function decryptExpense(expense, userId) {
+            const keyPair = await getKeyPairFromDatabase(userId);
+
+            const decryptedExpense = await decryptExpense(expense, keyPair.privateKey, keyPair.publicKey);
+
+            return decryptedExpense;
+        }
+
     </script>
 
+    <script src="js/tweetnacl-js-1.0.3/nacl-fast.js"></script>
+    <script src="js/tweetnacl-util-js-master/nacl-util.js"></script>
+    <script src="js/crypto.js"></script>
+    <script src="js/dbOperations.js"></script>
     <script src="_framework/blazor.webassembly.js"></script>
-
     <script src="_content/MudBlazor/MudBlazor.min.js"></script>
 </body>
 

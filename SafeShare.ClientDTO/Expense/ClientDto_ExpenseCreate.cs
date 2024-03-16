@@ -16,4 +16,9 @@ public class ClientDto_ExpenseCreate
     [Required]
     [StringLength(200)]
     public string Description { get; set; } = string.Empty;
+
+    [StringLength(100)]
+    public string EncryptedAmount { get; set; } = string.Empty;
+
+    public string Nonce { get; set; } = string.Empty;
 }
