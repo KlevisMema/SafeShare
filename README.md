@@ -91,3 +91,19 @@ Ensure the following components are installed and configured on your system:
 
 ### 3. runall.sh
    - Runs the entire application, including the Blazor client, proxy API, and main API.
+
+
+
+# Screens of the web app : 
+
+![image](https://github.com/KlevisMema/SafeShare/assets/88836204/970ce0aa-1366-42bd-b91e-68e3aad2b85a)
+
+![image](https://github.com/KlevisMema/SafeShare/assets/88836204/95c4c3cc-922f-4034-bb34-53b164f4be0c)
+
+![image](https://github.com/KlevisMema/SafeShare/assets/88836204/c481c89c-8c0a-4921-b338-3a0151ad3d2c)
+
+![image](https://github.com/KlevisMema/SafeShare/assets/88836204/726b3f81-9fa2-4796-8b2c-38df01cdea35)
+
+![image](https://github.com/KlevisMema/SafeShare/assets/88836204/be9721d2-3f34-4e96-a042-56219572498c)
+
+![image](https://github.com/KlevisMema/SafeShare/assets/88836204/92df40b6-be55-408b-8852-3f063391aa8e)
