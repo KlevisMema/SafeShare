@@ -36,7 +36,7 @@ namespace SafeShare.ExpenseManagement.Implementations;
 /// Initializes a new instance of the ExpenseManagment_ExpenseRepository class with injected dependencies.
 /// </remarks>
 /// <param name="db">Database context for accessing the application's data.</param>
-/// <param name="mapper">Automapper instance for mapping between entities and DTOs.</param>
+/// <param name="mapper">AutoMap per instance for mapping between entities and DTOs.</param>
 /// <param name="logger">Logger instance for logging messages.</param>
 /// <param name="httpContextAccessor">HTTP context accessor for accessing the current HTTP context.</param>
 public class ExpenseManagment_ExpenseRepository
@@ -78,7 +78,7 @@ public class ExpenseManagment_ExpenseRepository
                    LogLevel.Error,
                    """
                         [ExpenseManagment Module]-[ExpenseManagment_ExpenseRepository class]-[GetAllExpensesForGroup Method] => 
-                        [RESULT] : [IP] {IP} user with [ID] {ID} is not a memeber of the group with [ID] {groupId}.
+                        [RESULT] : [IP] {IP} user with [ID] {ID} is not a member of the group with [ID] {groupId}.
                     """,
                    await Util_GetIpAddres.GetLocation(_httpContextAccessor),
                    userId,
@@ -209,7 +209,7 @@ public class ExpenseManagment_ExpenseRepository
                     LogLevel.Error,
                     """
                         [ExpenseManagment Module]-[ExpenseManagment_ExpenseRepository class]-[GetExpense Method] => 
-                        [RESULT] : [IP] {IP} user with [ID] {ID} does not have access for the expsense with [ID] {expenseId}.
+                        [RESULT] : [IP] {IP} user with [ID] {ID} does not have access for the expense with [ID] {expenseId}.
                      """,
                     await Util_GetIpAddres.GetLocation(_httpContextAccessor),
                     userId,
@@ -304,7 +304,7 @@ public class ExpenseManagment_ExpenseRepository
                     LogLevel.Error,
                     """
                         [ExpenseManagment Module]-[ExpenseManagment_ExpenseRepository class]-[CreateExpense Method] => 
-                        [RESULT] : User with id : {userId} tried to create an expense with no other memebers in the group.
+                        [RESULT] : User with id : {userId} tried to create an expense with no other members in the group.
                     """,
                     userId
                 );
@@ -328,7 +328,7 @@ public class ExpenseManagment_ExpenseRepository
                     LogLevel.Error,
                     """
                         [ExpenseManagment Module]-[ExpenseManagment_ExpenseRepository class]-[CreateExpense Method] => 
-                        [RESULT] : [IP] {IP}, user with [ID] {ID} is not a memeber of the group with [ID] {groupId}.
+                        [RESULT] : [IP] {IP}, user with [ID] {ID} is not a member of the group with [ID] {groupId}.
                      """,
                     await Util_GetIpAddres.GetLocation(_httpContextAccessor),
                     userId,
@@ -354,7 +354,7 @@ public class ExpenseManagment_ExpenseRepository
                     LogLevel.Error,
                     """
                         [ExpenseManagment Module]-[ExpenseManagment_ExpenseRepository class]-[CreateExpense Method] => 
-                        [RESULT] : The proccess to convert expense amount of {expenseAmount} to a decimal failed.
+                        [RESULT] : The process to convert expense amount of {expenseAmount} to a decimal failed.
                     """,
                     expenseDto.Amount
                 );
@@ -467,7 +467,7 @@ public class ExpenseManagment_ExpenseRepository
                 ex,
                 _logger,
                 $"""
-                    Somewthing went wrong in [ExpenseManagment Module]-[ExpenseManagment_ExpenseRepository class]-[CreateExpense Method],
+                    Something went wrong in [ExpenseManagment Module]-[ExpenseManagment_ExpenseRepository class]-[CreateExpense Method],
                     user with [ID] {userId} tried to create an expense in the group with [ID] {expenseDto.GroupId}.
                  """,
                 null,
@@ -508,7 +508,7 @@ public class ExpenseManagment_ExpenseRepository
                     LogLevel.Error,
                     """
                         [ExpenseManagment Module]-[ExpenseManagment_ExpenseRepository class]-[EditExpense Method] => 
-                        [RESULT] : User with id : {userId} tried to edit an expense with no other memebers in the group.
+                        [RESULT] : User with id : {userId} tried to edit an expense with no other members in the group.
                     """,
                     userId
                 );
@@ -532,7 +532,7 @@ public class ExpenseManagment_ExpenseRepository
                     LogLevel.Error,
                     """
                         [ExpenseManagment Module]-[ExpenseManagment_ExpenseRepository class]-[EditExpense Method] => 
-                        [RESULT] : [IP] {IP}, user with [ID] {ID} is not a memeber of the group with [ID] {groupId}.
+                        [RESULT] : [IP] {IP}, user with [ID] {ID} is not a member of the group with [ID] {groupId}.
                      """,
                     await Util_GetIpAddres.GetLocation(_httpContextAccessor),
                     userId,
@@ -613,7 +613,7 @@ public class ExpenseManagment_ExpenseRepository
                     LogLevel.Error,
                     """
                         [ExpenseManagment Module]-[ExpenseManagment_ExpenseRepository class]-[EditExpense Method] => 
-                        [RESULT] : The proccess to convert expense amount of {expenseAmount} to a decimal failed.
+                        [RESULT] : The process to convert expense amount of {expenseAmount} to a decimal failed.
                     """,
                     expenseEdit.Amount
                 );
@@ -643,7 +643,7 @@ public class ExpenseManagment_ExpenseRepository
                     LogLevel.Error,
                     """
                         [ExpenseManagment Module]-[ExpenseManagment_ExpenseRepository class]-[EditExpense Method] => 
-                        [RESULT] : The proccess to convert old expense amount of {expenseAmount} to a decimal failed.
+                        [RESULT] : The process to convert old expense amount of {expenseAmount} to a decimal failed.
                     """,
                     expenseEdit.Amount
                 );
@@ -693,7 +693,7 @@ public class ExpenseManagment_ExpenseRepository
                    LogLevel.Error,
                    """
                         [ExpenseManagment Module]-[ExpenseManagment_ExpenseRepository class]-[EditExpense Method] => 
-                        [RESULT] : The proccess to convert expense date : {cpyOfDtoDate} to a date time failed.
+                        [RESULT] : The process to convert expense date : {cpyOfDtoDate} to a date time failed.
                     """,
                    cpyOfDto.Date
                );
@@ -768,7 +768,7 @@ public class ExpenseManagment_ExpenseRepository
                 ex,
                 _logger,
                 $"""
-                    Somewthing went wrong in [ExpenseManagment Module]-[ExpenseManagment_ExpenseRepository class]-[EditExpense Method],
+                    Something went wrong in [ExpenseManagment Module]-[ExpenseManagment_ExpenseRepository class]-[EditExpense Method],
                     user with [ID] {userId} tried to edit an expense with [ID] {expenseId}.
                  """,
                 null,
@@ -806,7 +806,7 @@ public class ExpenseManagment_ExpenseRepository
                     LogLevel.Error,
                     """
                         [ExpenseManagment Module]-[ExpenseManagment_ExpenseRepository class]-[DeleteExpense Method] => 
-                        [RESULT] : [IP] {IP}, user with [ID] {ID} is not a memeber of the group with [ID] {groupId}.
+                        [RESULT] : [IP] {IP}, user with [ID] {ID} is not a member of the group with [ID] {groupId}.
                      """,
                     await Util_GetIpAddres.GetLocation(_httpContextAccessor),
                     expenseDelete.UserId,
@@ -946,7 +946,7 @@ public class ExpenseManagment_ExpenseRepository
                 ex,
                 _logger,
                 $"""
-                    Somewthing went wrong in [ExpenseManagment Module]-[ExpenseManagment_ExpenseRepository class]-[DeleteExpense Method],
+                    Something went wrong in [ExpenseManagment Module]-[ExpenseManagment_ExpenseRepository class]-[DeleteExpense Method],
                     user with [ID] {expenseDelete.UserId} tried to delete an expense with [ID] {expenseDelete.ExpenseId}.
                  """,
                 false,

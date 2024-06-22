@@ -68,7 +68,7 @@ public class GroupManagment_GroupRepository
                     LogLevel.Error,
                     """
                         [GroupManagment Module]-[GroupManagment_GroupRepository class]-[GetGroupsTypes Method] => 
-                        [RESULT] : [IP] {IP} user with [ID] {ID} doesnt exists.
+                        [RESULT] : [IP] {IP} user with [ID] {ID} doesn't exists.
                      """,
                     await Util_GetIpAddres.GetLocation(_httpContextAccessor),
                     userId
@@ -117,7 +117,7 @@ public class GroupManagment_GroupRepository
             (
                 groupTypes,
                 true,
-                "Group types retrieved succsessfully",
+                "Group types retrieved successfully",
                 null,
                 System.Net.HttpStatusCode.OK
             );
@@ -130,7 +130,7 @@ public class GroupManagment_GroupRepository
                 ex,
                 _logger,
                 $"""
-                    Somewthing went wrong in [GroupManagment Module]-[GroupManagment_GroupRepository class]-[GetGroupsTypes Method],
+                    Something went wrong in [GroupManagment Module]-[GroupManagment_GroupRepository class]-[GetGroupsTypes Method],
                     user with [ID] {userId} tried to get all the groups he is joined and created.
                  """,
                 null,
@@ -160,7 +160,7 @@ public class GroupManagment_GroupRepository
                     LogLevel.Error,
                     """
                         [GroupManagment Module]--[GroupManagment_GroupRepository class]--[GetGroupDetails Method] => 
-                        [RESULT] : [IP] {IP} user with [ID] {ID} doesnt exists.
+                        [RESULT] : [IP] {IP} user with [ID] {ID} doesn't exists.
                      """,
                     await Util_GetIpAddres.GetLocation(_httpContextAccessor),
                     userId
@@ -212,7 +212,7 @@ public class GroupManagment_GroupRepository
                     LogLevel.Error,
                     """
                         [GroupManagment Module]--[GroupManagment_GroupRepository class]--[GetGroupDetails Method] => 
-                        [RESULT] : [IP] {IP} group with [ID] {ID} doesnt exists.
+                        [RESULT] : [IP] {IP} group with [ID] {ID} doesn't exists.
                      """,
                     await Util_GetIpAddres.GetLocation(_httpContextAccessor),
                     groupId
@@ -235,7 +235,7 @@ public class GroupManagment_GroupRepository
                     LogLevel.Error,
                     """
                         [GroupManagment Module]--[GroupManagment_GroupRepository class]--[GetGroupDetails Method] => 
-                        [RESULT] : [IP] {IP} group with [ID] {ID} doesnt have an admin.
+                        [RESULT] : [IP] {IP} group with [ID] {ID} doesn't have an admin.
                      """,
                     await Util_GetIpAddres.GetLocation(_httpContextAccessor),
                     groupId
@@ -280,7 +280,7 @@ public class GroupManagment_GroupRepository
                 ex,
                 _logger,
                 $"""
-                    Somewthing went wrong in [GroupManagment Module]--[GroupManagment_GroupRepository class]--[GetGroupDetails Method], 
+                    Something went wrong in [GroupManagment Module]--[GroupManagment_GroupRepository class]--[GetGroupDetails Method], 
                     user with [ID] {userId} tried to get group with [ID] {groupId} details.
                  """,
                 null,
@@ -311,7 +311,7 @@ public class GroupManagment_GroupRepository
                     LogLevel.Error,
                     """
                         [GroupManagment Module]--[GroupManagment_GroupRepository class]--[CreateGroup Method] => 
-                        [RESULT] : [IP] {IP} user with id {ID} doesnt exists.
+                        [RESULT] : [IP] {IP} user with id {ID} doesn't exists.
                      """,
                     await Util_GetIpAddres.GetLocation(_httpContextAccessor),
                     ownerId
@@ -374,7 +374,7 @@ public class GroupManagment_GroupRepository
                 """
                     [GroupManagment Module]--[GroupManagment_GroupRepository class]--[CreateGroup Method] => 
                     [RESULT] : [IP] {IP} user with id {ID} create the group with [ID] {groupId} and is a 
-                    owner and a memeber of the group with.
+                    owner and a member of the group with.
                  """,
                 await Util_GetIpAddres.GetLocation(_httpContextAccessor),
                 ownerId,
@@ -387,7 +387,7 @@ public class GroupManagment_GroupRepository
             (
                 groupType,
                 true,
-                "Group was created succsessfully",
+                "Group was created successfully",
                 null,
                 System.Net.HttpStatusCode.OK
             );
@@ -402,7 +402,7 @@ public class GroupManagment_GroupRepository
                 ex,
                 _logger,
                 $"""
-                        Somewthing went wrong in [GroupManagment Module]--[GroupManagment_GroupRepository class]--[CreateGroup Method], 
+                        Something went wrong in [GroupManagment Module]--[GroupManagment_GroupRepository class]--[CreateGroup Method], 
                         user with [ID] {ownerId} tried to create a group.
                     """,
                 null,
@@ -499,7 +499,7 @@ public class GroupManagment_GroupRepository
                 """
                     [GroupManagment Module]--[GroupManagment_GroupRepository class]--[EditGroup Method] => 
                     [RESULT] : [IP] {IP}, group with id {groupId} 
-                    created by user with id {userId} editted succsessfully at {groupEdittedTime}.
+                    created by user with id {userId} edited successfully at {groupEdittedTime}.
                     DTO {@DTO}
                  """,
                 await Util_GetIpAddres.GetLocation(_httpContextAccessor),
@@ -513,7 +513,7 @@ public class GroupManagment_GroupRepository
             (
                 _group,
                 true,
-                $"Group {editGroup.GroupName} edited succsessfully",
+                $"Group {editGroup.GroupName} edited successfully",
                 null,
                 System.Net.HttpStatusCode.OK
             );
@@ -527,7 +527,7 @@ public class GroupManagment_GroupRepository
                ex,
                _logger,
                $"""
-                    Somewthing went wrong in [GroupManagment Module]--[GroupManagment_GroupRepository class]--[EditGroup Method], 
+                    Something went wrong in [GroupManagment Module]--[GroupManagment_GroupRepository class]--[EditGroup Method], 
                     user with [ID] {userId} tried to edit group with [ID] {groupId}.
                 """,
                null,
@@ -560,7 +560,7 @@ public class GroupManagment_GroupRepository
                     """
                         [GroupManagment Module]--[GroupManagment_GroupRepository class]--[EditGroup Method] => 
                         [RESULT] : [IP] {IP},
-                        user with [ID] {ownerId} doesnt exists.
+                        user with [ID] {ownerId} doesn't exists.
                      """,
                     await Util_GetIpAddres.GetLocation(_httpContextAccessor),
                     ownerId
@@ -685,7 +685,7 @@ public class GroupManagment_GroupRepository
             (
                 true,
                 true,
-                $"Group with id {groupId} was succsessfully deleted",
+                $"Group with id {groupId} was successfully deleted",
                 null,
                 System.Net.HttpStatusCode.OK
             );
@@ -700,7 +700,7 @@ public class GroupManagment_GroupRepository
                 ex,
                 _logger,
                 $"""
-                    Somewthing went wrong in [GroupManagment Module]--[GroupManagment_GroupRepository class]--[DeleteGroup Method], 
+                    Something went wrong in [GroupManagment Module]--[GroupManagment_GroupRepository class]--[DeleteGroup Method], 
                     owner with [ID] {ownerId} tried to delete group with [ID] {groupId}.
                  """,
                 false,
@@ -736,7 +736,7 @@ public class GroupManagment_GroupRepository
                     """
                         [GroupManagment Module]--[GroupManagment_GroupRepository class]--[RemoveUsersFromGroup Method] => 
                         [RESULT] : [IP] {IP},
-                        user with [ID] {ownerId} doesnt exists.
+                        user with [ID] {ownerId} doesn't exists.
                      """,
                     await Util_GetIpAddres.GetLocation(_httpContextAccessor),
                     ownerId
@@ -817,7 +817,7 @@ public class GroupManagment_GroupRepository
                         """
                             [GroupManagment Module]--[GroupManagment_GroupRepository class]--[RemoveUsersFromGroup Method] => 
                             [RESULT] : [IP] {IP},
-                            Owner of the group with id {ownerId} tried to delete a user that is already deleted exmember username : {memeberUsername}
+                            Owner of the group with id {ownerId} tried to delete a user that is already deleted remember username : {memberUsername}
                          """,
                         await Util_GetIpAddres.GetLocation(_httpContextAccessor),
                         ownerId,
@@ -954,7 +954,7 @@ public class GroupManagment_GroupRepository
             (
                 true,
                 true,
-                $"Users were succsessfully removed from the group",
+                $"Users were successfully removed from the group",
                 null,
                 System.Net.HttpStatusCode.OK
             );
@@ -970,7 +970,7 @@ public class GroupManagment_GroupRepository
                 ex,
                 _logger,
                 $"""
-                    Somewthing went wrong in [GroupManagment Module]--[GroupManagment_GroupRepository class]--[RemoveUsersFromGroup Method], 
+                    Something went wrong in [GroupManagment Module]--[GroupManagment_GroupRepository class]--[RemoveUsersFromGroup Method], 
                     owner with [ID] {ownerId} tried to delete group with [ID] {groupId}.
                  """,
                 false,

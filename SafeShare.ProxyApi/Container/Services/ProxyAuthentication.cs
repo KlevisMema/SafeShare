@@ -4,16 +4,25 @@ using System.Text.Json;
 using Newtonsoft.Json.Linq;
 using System.Net.Http.Headers;
 using Microsoft.Net.Http.Headers;
+using SafeShare.ProxyApi.Helpers;
 using System.Collections.Specialized;
 using SafeShare.ClientServerShared.Routes;
 using SafeShare.ProxyApi.Container.Interfaces;
 using SafeShare.Utilities.SafeShareApi.Responses;
 using SafeShare.DataTransormObject.SafeShareApi.Security;
 using SafeShare.DataTransormObject.SafeShareApi.Authentication;
+using Microsoft.Extensions.Options;
+using SafeShare.DataTransormObject.SafeShareApi.GroupManagment;
 
 namespace SafeShare.ProxyApi.Container.Services;
 
-public class ProxyAuthentication(IHttpClientFactory httpClientFactory) : IProxyAuthentication
+public class ProxyAuthentication
+(
+    ILogger<ProxyAuthentication> logger,
+    IHttpClientFactory httpClientFactory,
+    IOptions<API_Helper_RequestHeaderSettings> requestHeaderOptions,
+    IRequestConfigurationProxyService requestConfigurationProxyService
+) : IProxyAuthentication
 {
     private const string Client = "ProxyHttpClient";
     private readonly string ApiKey = Environment.GetEnvironmentVariable("SAFE_SHARE_API_KEY") ?? string.Empty;
@@ -26,7 +35,7 @@ public class ProxyAuthentication(IHttpClientFactory httpClientFactory) : IProxyA
     {
         try
         {
-            var httpClient = httpClientFactory.CreateClient(Client);
+            var httpClient = API_Helper_HttpClient.CreateClientInstance(requestConfigurationProxyService.GetClient(), httpClientFactory);
 
             var registerData = new Dictionary<string, string>
             {
@@ -76,7 +85,7 @@ public class ProxyAuthentication(IHttpClientFactory httpClientFactory) : IProxyA
     {
         try
         {
-            var httpClient = httpClientFactory.CreateClient(Client);
+            var httpClient = API_Helper_HttpClient.CreateClientInstance(requestConfigurationProxyService.GetClient(), httpClientFactory);
 
             var json = JsonSerializer.Serialize(confirmRegistrationDto);
 
@@ -115,7 +124,7 @@ public class ProxyAuthentication(IHttpClientFactory httpClientFactory) : IProxyA
     {
         try
         {
-            var httpClient = httpClientFactory.CreateClient(Client);
+            var httpClient = API_Helper_HttpClient.CreateClientInstance(requestConfigurationProxyService.GetClient(), httpClientFactory);
 
             var json = JsonSerializer.Serialize(ReConfirmRegistration);
 
@@ -154,7 +163,7 @@ public class ProxyAuthentication(IHttpClientFactory httpClientFactory) : IProxyA
     {
         try
         {
-            var httpClient = httpClientFactory.CreateClient(Client);
+            var httpClient = API_Helper_HttpClient.CreateClientInstance(requestConfigurationProxyService.GetClient(), httpClientFactory);
 
             var loginData = new Dictionary<string, string>
             {
@@ -196,6 +205,68 @@ public class ProxyAuthentication(IHttpClientFactory httpClientFactory) : IProxyA
         }
     }
 
+    public async Task<Util_GenericResponse<string>>
+    SaveUserPublicKey
+    (
+        string userId,
+        string userIp,
+        string jwtToken,
+        string publicKey
+    )
+    {
+        try
+        {
+            API_Helper_ParamsStringChecking.CheckNullOrEmpty
+            (
+                (nameof(userId), userId),
+                (nameof(userIp), userIp),
+                (nameof(jwtToken), jwtToken),
+                (nameof(publicKey), publicKey)
+            );
+
+            var httpClient = API_Helper_HttpClient.CreateClientInstance(requestConfigurationProxyService.GetClient(), httpClientFactory);
+
+            var content = new StringContent(JsonSerializer.Serialize(publicKey), Encoding.UTF8, "application/json");
+
+            var requestMessage = new HttpRequestMessage(HttpMethod.Post, BaseRoute.RouteAuthenticationForClient + Route_AuthenticationRoute.SaveUserPublicKey.Replace("{userId}", userId))
+            {
+                Content = content
+            };
+
+            API_Helper_HttpClient.AddHeadersToTheRequest
+            (
+                jwtToken,
+                requestMessage,
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.ClientIP, userIp),
+                new KeyValuePair<string, string>(requestHeaderOptions.Value.ApiKey, requestConfigurationProxyService.GetApiKey())
+            );
+
+            var response = await httpClient.SendAsync(requestMessage);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            var readResult = JsonSerializer.Deserialize<Util_GenericResponse<string>>(responseContent, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            }) ?? throw new ArgumentNullException("Failed to deserialize the server response. The content may not match the expected format.");
+
+            return readResult;
+        }
+        catch (Exception ex)
+        {
+            logger.LogCritical(ex, "Exception in SaveUserPublicKey.");
+
+            return new Util_GenericResponse<string>()
+            {
+                Message = "Something went wrong",
+                Errors = null,
+                StatusCode = System.Net.HttpStatusCode.InternalServerError,
+                Succsess = false,
+                Value = null
+            };
+        }
+    }
+
     public async Task<Tuple<Util_GenericResponse<DTO_LoginResult>, HttpResponseMessage>>
     ConfirmLogin2FA
     (
@@ -206,7 +277,7 @@ public class ProxyAuthentication(IHttpClientFactory httpClientFactory) : IProxyA
     {
         try
         {
-            var httpClient = httpClientFactory.CreateClient(Client);
+            var httpClient = API_Helper_HttpClient.CreateClientInstance(requestConfigurationProxyService.GetClient(), httpClientFactory);
 
             var json = JsonSerializer.Serialize(confirmLogin);
 
@@ -254,7 +325,7 @@ public class ProxyAuthentication(IHttpClientFactory httpClientFactory) : IProxyA
     {
         try
         {
-            var httpClient = httpClientFactory.CreateClient(Client);
+            var httpClient = API_Helper_HttpClient.CreateClientInstance(requestConfigurationProxyService.GetClient(), httpClientFactory);
 
             var content = new StringContent(JsonSerializer.Serialize(new { userId }), Encoding.UTF8, "application/json");
 
@@ -288,7 +359,7 @@ public class ProxyAuthentication(IHttpClientFactory httpClientFactory) : IProxyA
     {
         try
         {
-            var httpClient = httpClientFactory.CreateClient(Client);
+            var httpClient = API_Helper_HttpClient.CreateClientInstance(requestConfigurationProxyService.GetClient(), httpClientFactory);
 
             var requestMessage = new HttpRequestMessage(HttpMethod.Post, BaseRoute.RouteAuthenticationForClient + Route_AuthenticationRoute.RefreshToken)
             {

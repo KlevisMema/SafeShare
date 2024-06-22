@@ -108,7 +108,7 @@ public class AUTH_Register
                     LogLevel.Error,
                     """
                         [RegisterUser Method] => [IP] {IP}    
-                        user was not assigend to a role =>  [RESULT] : {@assignRole}. 
+                        user was not assigned to a role =>  [RESULT] : {@assignRole}. 
                      """,
                     await Util_GetIpAddres.GetLocation(_httpContextAccessor),
                     assignRole
@@ -133,7 +133,7 @@ public class AUTH_Register
                      """
                             [Authentication Module]-[AUTH_Register Class]-[RegisterUser Method] => 
                             [IP] {IP} a token for user with email {registerDto.Email} 
-                            was succsessfully issued but the email send failed. {@emailResult}
+                            was successfully issued but the email send failed. {@emailResult}
                       """,
                      await Util_GetIpAddres.GetLocation(_httpContextAccessor),
                      registerDto.Email,
@@ -154,7 +154,7 @@ public class AUTH_Register
             (
                 """
                     [Authentication Module]-[AUTH_Register Class]-[RegisterUser Method] =>, 
-                    [IP] {IP} | user with email {Email} was succsessfully created. 
+                    [IP] {IP} | user with email {Email} was successfully created. 
                  """,
                 await Util_GetIpAddres.GetLocation(_httpContextAccessor),
                 registerDto.Email
@@ -179,7 +179,7 @@ public class AUTH_Register
                 ex,
                 _logger,
                 $"""
-                    Somewthing went wrong in [Authentication Module]-[AUTH_Register Class]-[RegisterUser Method],   
+                    Something went wrong in [Authentication Module]-[AUTH_Register Class]-[RegisterUser Method],   
                     user with [EMAIL] {registerDto.Email}.
                  """,
                 false,
@@ -232,7 +232,7 @@ public class AUTH_Register
                   LogLevel.Error,
                   """
                         [Authentication Module]-[AUTH_Register Class]-[ConfirmRegistration Method] => 
-                        [IP] {IP}, user with email {Email} is already confirmated.
+                        [IP] {IP}, user with email {Email} is already confirmed.
                    """,
                   await Util_GetIpAddres.GetLocation(_httpContextAccessor),
                   confirmRegistrationDto.Email
@@ -281,7 +281,7 @@ public class AUTH_Register
             (
                 true,
                 true,
-                "Email succsessfully validated",
+                "Email successfully validated",
                 null,
                 System.Net.HttpStatusCode.OK
             );
@@ -293,7 +293,7 @@ public class AUTH_Register
                 ex,
                 _logger,
                 $"""
-                    Somewthing went wrong in [Authentication Module]-[AUTH_Register Class]-[ConfirmRegistration Method], 
+                    Something went wrong in [Authentication Module]-[AUTH_Register Class]-[ConfirmRegistration Method], 
                     user with  [Email] {confirmRegistrationDto.Email} tried to verify his registration.
                  """,
                 false,
@@ -302,7 +302,7 @@ public class AUTH_Register
         }
     }
     /// <summary>
-    /// Re confirms a user if the user fogot the check his email 
+    /// Re confirms a user if the user forgot the check his email 
     /// to confirm his registration.
     /// </summary>
     /// <param name="email">The email of the user</param>
@@ -394,7 +394,7 @@ public class AUTH_Register
                   """
                         [Authentication Module]-[AUTH_Register Class]-[ReConfirmRegistrationRequest Method] => 
                         [IP] {IP} a token for user with email {email} 
-                        was succsessfully issued but the email send failed. {@emailResult}
+                        was successfully issued but the email send failed. {@emailResult}
                    """,
                   await Util_GetIpAddres.GetLocation(_httpContextAccessor),
                   email,
@@ -417,7 +417,7 @@ public class AUTH_Register
                 """
                     [Authentication Module]-[AUTH_Register Class]-[ReConfirmRegistrationRequest Method] => 
                     [IP] {IP} a token for user with email {email} 
-                    was succsessfully and the email was succsessfully sent.
+                    was successfully and the email was successfully sent.
                  """,
                 await Util_GetIpAddres.GetLocation(_httpContextAccessor),
                 email
@@ -440,7 +440,7 @@ public class AUTH_Register
                 ex,
                 _logger,
                 $"""
-                    Somewthing went wrong in [Authentication Module]-[AUTH_Register Class]-[ReConfirmRegistrationRequest Method], 
+                    Something went wrong in [Authentication Module]-[AUTH_Register Class]-[ReConfirmRegistrationRequest Method], 
                     user with [Email] {email} tried to verify his registration.
                  """,
                 false,
@@ -510,7 +510,7 @@ public class AUTH_Register
             (
                 true,
                 true,
-                "User succsessfully assigned to user role",
+                "User successfully assigned to user role",
                 null,
                 System.Net.HttpStatusCode.BadRequest
             );
@@ -522,7 +522,7 @@ public class AUTH_Register
                 ex,
                 _logger,
                 $"""
-                    Somewthing went wrong in [Authentication Module] - [AssignUserToUserRole Method], "
+                    Something went wrong in [Authentication Module] - [AssignUserToUserRole Method], "
                     user with [UserName] {userName}",
                  """,
                 false,

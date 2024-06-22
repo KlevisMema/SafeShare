@@ -67,4 +67,8 @@ public abstract class BaseIdentity : IdentityUser
     /// Gets or sets the date of last log out of the user
     /// </summary>
     public DateTime? LastLogOut { get; set; }
+    /// <summary>
+    /// Gets or sets the public key of the user
+    /// </summary>
+    public string PublicKey { get; set; } = string.Empty;
 }

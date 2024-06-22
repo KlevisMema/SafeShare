@@ -170,6 +170,34 @@ public class AuthenticationController
         return Util_GenericControllerResponse<DTO_LoginResult>.ControllerResponse(result);
     }
     /// <summary>
+    /// Saves users public key after successful log in.
+    /// </summary>
+    /// <param name="userId">The id of the user</param>
+    /// <param name="userPublicKey">The public key of the user generated in the client</param>
+    /// <returns>A response indicating the success or failure of the operation</returns>
+    [ServiceFilter(typeof(VerifyUser))]
+    [HttpPost(Route_AuthenticationRoute.SaveUserPublicKey)]
+    [Authorize(AuthenticationSchemes = "Default")]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<DTO_LoginResult>))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<DTO_LoginResult>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(Util_GenericResponse<DTO_LoginResult>))]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Util_GenericResponse<DTO_LoginResult>))]
+    public async Task<ActionResult<Util_GenericResponse<string>>>
+    SaveUsersPublicKey
+    (
+        Guid userId,
+        [FromBody] string userPublicKey
+    )
+    {
+        if (String.IsNullOrEmpty(userPublicKey))
+            return BadRequest("Empty public key!");
+
+        var result = await mediator.Send(new Mediatr_SaveUsersPublicKeyCommand(userId, userPublicKey));
+
+        return Util_GenericControllerResponse<string>.ControllerResponse(result);
+    }
+    /// <summary>
     /// Endpoint for requesting reconfirmation of the registration process.
     /// This can be used if the initial confirmation (like email verification) was not completed or needs to be resent.
     /// </summary>

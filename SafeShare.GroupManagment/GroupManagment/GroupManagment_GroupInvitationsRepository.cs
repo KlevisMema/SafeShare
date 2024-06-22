@@ -72,7 +72,7 @@ public class GroupManagment_GroupInvitationsRepository
             (
                 _mapper.Map<List<DTO_RecivedInvitations>>(invitations),
                 true,
-                "Invitations retrieved succsessfully",
+                "Invitations retrieved successfully",
                 null,
                 System.Net.HttpStatusCode.OK
             );
@@ -84,8 +84,8 @@ public class GroupManagment_GroupInvitationsRepository
                 ex,
                 _logger,
                 $"""
-                Somewthing went wrong in [GroupManagment Module]-[GroupManagment_GroupInvitationsRepository class]-[GetRecivedGroupsInvitations Method],
-                user with [ID] {userId} tried to get all the recived invitations.
+                Something went wrong in [GroupManagment Module]-[GroupManagment_GroupInvitationsRepository class]-[GetRecivedGroupsInvitations Method],
+                user with [ID] {userId} tried to get all the received invitations.
                 """,
                 null,
                 _httpContextAccessor
@@ -119,7 +119,7 @@ public class GroupManagment_GroupInvitationsRepository
             (
                 _mapper.Map<List<DTO_SentInvitations>>(sentGroupInvitations),
                 true,
-                "Sent invitations recived succsessfully",
+                "Sent invitations received successfully",
                 null,
                 System.Net.HttpStatusCode.OK
             );
@@ -131,8 +131,8 @@ public class GroupManagment_GroupInvitationsRepository
                 ex,
                 _logger,
                 $"""
-                Somewthing went wrong in [GroupManagment Module]-[GroupManagment_GroupInvitationsRepository class]-[GetSentGroupInvitations Method],
-                user with [ID] {userId} tried to get all the recived invitations.
+                Something went wrong in [GroupManagment Module]-[GroupManagment_GroupInvitationsRepository class]-[GetSentGroupInvitations Method],
+                user with [ID] {userId} tried to get all the received invitations.
                 """,
                 null,
                 _httpContextAccessor
@@ -305,7 +305,7 @@ public class GroupManagment_GroupInvitationsRepository
             (
                 true,
                 true,
-                "Invitation sent succsessfully",
+                "Invitation sent successfully",
                 null,
                 System.Net.HttpStatusCode.OK
             );
@@ -318,7 +318,7 @@ public class GroupManagment_GroupInvitationsRepository
                 ex,
                 _logger,
                 $"""
-                    Somewthing went wrong in [GroupManagment Module] - [SendInvitation Method],
+                    Something went wrong in [GroupManagment Module] - [SendInvitation Method],
                     user with [ID] {sendInvitation.InvitingUserId} tried to send an invite to user with
                     [ID] {sendInvitation.InvitedUserId} to the group with [ID] {sendInvitation.GroupId}.
                  """,
@@ -403,7 +403,7 @@ public class GroupManagment_GroupInvitationsRepository
                 (
                     true,
                     true,
-                    "Invitation accepted succsessfully",
+                    "Invitation accepted successfully",
                     null,
                     System.Net.HttpStatusCode.OK
                 );
@@ -414,7 +414,7 @@ public class GroupManagment_GroupInvitationsRepository
                 LogLevel.Error,
                 """
                      Request with IP {IP}.
-                     Somewthing went wrong in [GroupManagment Module]-[GroupManagment_GroupInvitationsRepository class]-[AcceptInvitation Method]
+                     Something went wrong in [GroupManagment Module]-[GroupManagment_GroupInvitationsRepository class]-[AcceptInvitation Method]
                      User with id {invitedUserId} tried to accept the invitation with id {invitationId} made by 
                      the user with id {invitingUserId} for the group with id {groupId} but the invitation with that 
                      id doesn't exists. Dto {@DTO}
@@ -443,7 +443,7 @@ public class GroupManagment_GroupInvitationsRepository
                ex,
                _logger,
                $"""
-                    Somewthing went wrong in [GroupManagment Module]-[GroupManagment_GroupInvitationsRepository class]-[AcceptInvitation Method],
+                    Something went wrong in [GroupManagment Module]-[GroupManagment_GroupInvitationsRepository class]-[AcceptInvitation Method],
                     user with [ID] {accepInvitation.InvitedUserId} tried to accept the invitation by user with id {accepInvitation.InvitingUserId} for the 
                     group with id {accepInvitation.GroupId} with the invitation id {accepInvitation.InvitationId}.
                 """,
@@ -516,7 +516,7 @@ public class GroupManagment_GroupInvitationsRepository
                 (
                    true,
                    true,
-                   "Invitation rejected succsessfully",
+                   "Invitation rejected successfully",
                    null,
                    System.Net.HttpStatusCode.OK
                 );
@@ -526,7 +526,7 @@ public class GroupManagment_GroupInvitationsRepository
             (
                 LogLevel.Error,
                 """
-                     Somewthing went wrong in [GroupManagment Module]-[GroupManagment_GroupInvitationsRepository class]-[RejectInvitation Method].
+                     Something went wrong in [GroupManagment Module]-[GroupManagment_GroupInvitationsRepository class]-[RejectInvitation Method].
                      Request with IP {IP}.
                      User with id {invitedUserId} tried to reject the invitation with id {invitationId} made by 
                      the user with id {invitingUserId} for the group with id {groupId} but the invitation with that 
@@ -557,7 +557,7 @@ public class GroupManagment_GroupInvitationsRepository
                 ex,
                 _logger,
                 $"""
-                    Somewthing went wrong in [GroupManagment Module]-[GroupManagment_GroupInvitationsRepository class]-[RejectInvitation Method],
+                    Something went wrong in [GroupManagment Module]-[GroupManagment_GroupInvitationsRepository class]-[RejectInvitation Method],
                     user with [ID] {rejectInvitation.InvitedUserId} tried to reject the invitation by user with id {rejectInvitation.InvitingUserId} for the 
                     group with id {rejectInvitation.GroupId} with the invitation id {rejectInvitation.InvitationId}.
                  """,
@@ -630,7 +630,7 @@ public class GroupManagment_GroupInvitationsRepository
                 (
                     true,
                     true,
-                    "Invitation deleted succsessfully",
+                    "Invitation deleted successfully",
                     null,
                     System.Net.HttpStatusCode.OK
                 );
@@ -640,7 +640,7 @@ public class GroupManagment_GroupInvitationsRepository
             (
                 LogLevel.Error,
                 """
-                    Somewthing went wrong in [GroupManagment Module]-[GroupManagment_GroupInvitationsRepository class]-[DeleteSentInvitation Method]
+                    Something went wrong in [GroupManagment Module]-[GroupManagment_GroupInvitationsRepository class]-[DeleteSentInvitation Method]
                     Request with IP {IP}.
                     User with id {invitingUserId} tried to delete the invitation with id {invitationId} made to  
                     the user with id {invitedUserId} for the group with id {groupId} but the invitation with that 
@@ -671,7 +671,7 @@ public class GroupManagment_GroupInvitationsRepository
                 ex,
                 _logger,
                 $"""
-                    Somewthing went wrong in [GroupManagment Module]-[GroupManagment_GroupInvitationsRepository class]-[DeleteSentInvitation Method],
+                    Something went wrong in [GroupManagment Module]-[GroupManagment_GroupInvitationsRepository class]-[DeleteSentInvitation Method],
                     user with [ID] {deleteInvitation.InvitingUserId} tried to delete the invitation to the user with id {deleteInvitation.InvitedUserId} for the 
                     group with id {deleteInvitation.GroupId} with the invitation id {deleteInvitation.InvitationId}.
                  """,

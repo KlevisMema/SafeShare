@@ -12,6 +12,7 @@ using SafeShare.ProxyApi.Container.Interfaces;
 using SafeShare.Utilities.SafeShareApi.Responses;
 using SafeShare.DataTransormObject.SafeShareApi.Security;
 using SafeShare.DataTransormObject.SafeShareApi.Authentication;
+using SafeShare.DataTransormObject.SafeShareApi.GroupManagment;
 
 namespace SafeShare.ProxyApi.Controllers;
 
@@ -117,6 +118,27 @@ public class AuthProxyController
         }
 
         return Util_GenericControllerResponse<DTO_LoginResult>.ControllerResponse(result.Item1);
+    }
+
+    [HttpPost(Route_AuthenticationRoute.SaveUserPublicKey)]
+    public async Task<ActionResult<Util_GenericResponse<string>>>
+    SaveUserPublicKey
+    (
+        [FromBody] string userPublicKey
+    )
+    {
+        if (String.IsNullOrEmpty(userPublicKey))
+            return BadRequest("Empty public key!");
+
+        var result = await authenticationService.SaveUserPublicKey
+        (
+            API_Helper_ExtractInfoFromRequestCookie.UserId(API_Helper_ExtractInfoFromRequestCookie.JwtToken(requestHeaderOptions.Value.AuthToken, Request)),
+            API_Helper_ExtractInfoFromRequestCookie.GetUserIp(requestHeaderOptions.Value.ClientIP, Request),
+            API_Helper_ExtractInfoFromRequestCookie.JwtToken(requestHeaderOptions.Value.AuthToken, Request),
+            userPublicKey
+        );
+
+        return Util_GenericControllerResponse<string>.ControllerResponse(result);
     }
 
     [HttpPost(Route_AuthenticationRoute.LogOut)]

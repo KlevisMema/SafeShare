@@ -9,15 +9,15 @@ using System.IdentityModel.Tokens.Jwt;
 using SafeShare.DataAccessLayer.Context;
 using Microsoft.Extensions.Configuration;
 using SafeShare.Authentication.Interfaces;
-using SafeShare.Security.JwtSecurity.Interfaces;
-using SafeShare.Security.JwtSecurity.Implementations;
-using SafeShare.DataAccessLayer.Models.SafeShareApi;
-using SafeShare.DataTransormObject.SafeShareApi.Authentication;
-using SafeShare.DataTransormObject.SafeShareApi.Security;
 using SafeShare.Utilities.SafeShareApi.Log;
-using SafeShare.Utilities.SafeShareApi.Dependencies;
 using SafeShare.Utilities.SafeShareApi.IP;
+using SafeShare.Security.JwtSecurity.Interfaces;
 using SafeShare.Utilities.SafeShareApi.Responses;
+using SafeShare.Utilities.SafeShareApi.Dependencies;
+using SafeShare.DataAccessLayer.Models.SafeShareApi;
+using SafeShare.Security.JwtSecurity.Implementations;
+using SafeShare.DataTransormObject.SafeShareApi.Security;
+using SafeShare.DataTransormObject.SafeShareApi.Authentication;
 
 namespace SafeShare.Authentication.Auth;
 
@@ -26,7 +26,7 @@ namespace SafeShare.Authentication.Auth;
 /// </summary>
 /// <param name="logger">The logger used for logging</param>
 /// <param name="db">The instance of <see cref="ApplicationDbContext"/></param>
-/// <param name="mapper">The automapper instance <see cref="IMapper"/> used for mappings</param>
+/// <param name="mapper">The auto mapper instance <see cref="IMapper"/> used for mappings</param>
 /// <param name="userManager">The user manager instance <see cref="UserManager{TUser}"/></param>
 /// <param name="configuration">The configurations settings instance <see cref="IConfiguration"/></param>
 /// <param name="tokenValidationParameters">An instance of <see cref="TokenValidationParameters"/></param>
@@ -71,7 +71,7 @@ public class AUTH_RefreshToken
     /// Refreshes a token of a expired jwt token
     /// </summary>
     /// <param name="validateTokenDto">The <see cref="DTO_ValidateToken"/> object</param>
-    /// <returns> A generic response indicating if the operation ended succsessfully with the new token or not </returns>
+    /// <returns> A generic response indicating if the operation ended successfully with the new token or not </returns>
     public async Task<Util_GenericResponse<DTO_Token>>
     RefreshToken
     (
@@ -89,7 +89,7 @@ public class AUTH_RefreshToken
                     LogLevel.Error,
                     """
                         [Authentication Module]-[AUTH_RefreshToken Class]-[RefreshToken Method] => 
-                        [RESULT] : [IP] {IP} user has no calims in his token.
+                        [RESULT] : [IP] {IP} user has no claims in his token.
                         Invalid token. Token {Token}
                      """,
                     await Util_GetIpAddres.GetLocation(_httpContextAccessor),
@@ -385,7 +385,7 @@ public class AUTH_RefreshToken
             (
                 token,
                 true,
-                "Refresh token issued succsessfully",
+                "Refresh token issued successfully",
                 null,
                 System.Net.HttpStatusCode.OK
             );
@@ -397,7 +397,7 @@ public class AUTH_RefreshToken
                 ex,
                 _logger,
                 $"""
-                    Somewthing went wrong in [Authentication Module]-[AUTH_RefreshToken Class]-[RefreshToken Method].
+                    Something went wrong in [Authentication Module]-[AUTH_RefreshToken Class]-[RefreshToken Method].
                  """,
                 null,
                 _httpContextAccessor

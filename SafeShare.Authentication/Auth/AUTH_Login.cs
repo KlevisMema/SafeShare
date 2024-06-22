@@ -87,7 +87,7 @@ public class AUTH_Login
                     LogLevel.Error,
                     """
                          [Authentication Module]-[AUTH_Login Class]-[LoginUser Method] =>
-                         [RESULT] : [IP] {IP} user doesnt exists. DTO {@DTO}
+                         [RESULT] : [IP] {IP} user doesn't exists. DTO {@DTO}
                      """,
                     await Util_GetIpAddres.GetLocation(_httpContextAccessor),
                     loginDto
@@ -204,7 +204,7 @@ public class AUTH_Login
                     null,
                     false,
                     """
-                         Something went wrong when loggining in the account,
+                         Something went wrong when logging in the account,
                          your account exists and is deactivated.  
                          Please reactivate it.
                      """,
@@ -214,6 +214,9 @@ public class AUTH_Login
             }
 
             var loginResult = new DTO_LoginResult();
+
+            if (String.IsNullOrEmpty(user.PublicKey))
+                loginResult.GenerateKeys = true;
 
             if (user.RequireOTPDuringLogin)
             {
@@ -240,7 +243,7 @@ public class AUTH_Login
             (
                 """
                     [Authentication Module]-[AUTH_Login Class]-[LoginUser Method] => 
-                    [IP] {IP} | user {loginDto.Email} credentials valiadted successfully."
+                    [IP] {IP} | user {loginDto.Email} credentials validated successfully."
                  """,
                 await Util_GetIpAddres.GetLocation(_httpContextAccessor),
                 loginDto.Email
@@ -254,7 +257,7 @@ public class AUTH_Login
             (
                 loginResult,
                 true,
-                "Credentials succsessfully validated!",
+                "Credentials successfully validated!",
                 null,
                 System.Net.HttpStatusCode.OK
             );
@@ -266,7 +269,7 @@ public class AUTH_Login
                 ex,
                 _logger,
                 $"""
-                    Somewthing went wrong in [Authentication Module]-[AUTH_Login Class]-[LoginUser Method], 
+                    Something went wrong in [Authentication Module]-[AUTH_Login Class]-[LoginUser Method], 
                     user with [EMAIL] {loginDto.Email}.
                  """,
                 null,
@@ -279,7 +282,7 @@ public class AUTH_Login
     /// </summary>
     /// <param name="userId">The id of the user</param>
     /// <param name="otp">The one time password </param>
-    /// <returns>A generic respone with jwt token or a error message</returns>
+    /// <returns>A generic response with jwt token or a error message</returns>
     public async Task<Util_GenericResponse<DTO_LoginResult>>
     ConfirmLogin
     (
@@ -315,7 +318,7 @@ public class AUTH_Login
 
             var user = await _userManager.FindByIdAsync(userId.ToString());
 
-            if (user == null)
+            if (user is null)
             {
                 _logger.Log
                 (
@@ -323,7 +326,7 @@ public class AUTH_Login
                     """
                         [Authentication Module]-[AUTH_Login Class]-[ConfirmLogin Method] => 
                         [RESULT] : [IP] {IP}  
-                        user with [ID] {userId} doesnt exists   
+                        user with [ID] {userId} doesn't exists   
                      """,
                     await Util_GetIpAddres.GetLocation(_httpContextAccessor),
                     userId
@@ -347,7 +350,7 @@ public class AUTH_Login
                     """
                         [Authentication Module]-[AUTH_Login Class]-[ConfirmLogin Method] => 
                         [RESULT] : [IP] {IP}  
-                        user with [ID] {userId} tried to confrim his login but has  
+                        user with [ID] {userId} tried to confirm his login but has  
                         not the flag true to require otp during login.  
                      """,
                     await Util_GetIpAddres.GetLocation(_httpContextAccessor),
@@ -429,7 +432,7 @@ public class AUTH_Login
                     null,
                     false,
                     """
-                        Something went wrong when loggining in the account,
+                        Something went wrong when logging in the account,
                         your account exists and is deactivated. Please reactivate it.
                      """,
                     null,
@@ -464,7 +467,7 @@ public class AUTH_Login
             (
                 confirmLoginResult,
                 true,
-                "OTP validated succsessfully",
+                "OTP validated successfully",
                 null,
                 System.Net.HttpStatusCode.OK
             );
@@ -477,7 +480,7 @@ public class AUTH_Login
                 ex,
                 _logger,
                 $"""
-                    Somewthing went wrong in [Authentication Module]-
+                    Something went wrong in [Authentication Module]-
                     [AUTH_Login Class]-[ConfirmLogin Method], user with [ID] {userId}.
                  """,
                 null,
@@ -488,7 +491,7 @@ public class AUTH_Login
     /// <summary>
     ///     Log out a user
     /// </summary>
-    /// <returns> Asyncronous Task</returns>
+    /// <returns> Asynchronous Task</returns>
     public async Task
     LogOut
     (
@@ -570,7 +573,7 @@ public class AUTH_Login
                    """
                         [Authentication Module]-[AUTH_Login Class]-[LogOut Method] =>   
                         [RESULT] : [IP] {IP}    
-                        user with [ID] {userId} succsessfully logged out.   
+                        user with [ID] {userId} successfully logged out.   
                     """,
                     await Util_GetIpAddres.GetLocation(_httpContextAccessor),
                     userId
@@ -606,6 +609,110 @@ public class AUTH_Login
             );
         }
     }
+    /// <summary>
+    /// Store users public key generated in the client
+    /// </summary>
+    /// <param name="userId">The id of the user</param>
+    /// <param name="userPublicKey">The public key of the user</param>
+    /// <returns>A generic response containing the result of the operation</returns>
+    public async Task<Util_GenericResponse<string>>
+    SaveUsersPublicKey
+    (
+        Guid userId,
+        string userPublicKey
+    )
+    {
+        try
+        {
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+
+            if (user is null)
+            {
+                _logger.Log
+                (
+                    LogLevel.Error,
+                    """
+                        [Authentication Module]-[AUTH_Login Class]-[ConfirmLogin Method] => 
+                        [RESULT] : [IP] {IP}  
+                        user with [ID] {userId} doesn't exists   
+                     """,
+                    await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                    userId
+                );
+
+                return Util_GenericResponse<string>.Response
+                (
+                    null,
+                    false,
+                    "User doesn't exists",
+                    null,
+                    System.Net.HttpStatusCode.NotFound
+                );
+            }
+
+            if (String.IsNullOrEmpty(user.PublicKey))
+            {
+                user.PublicKey = userPublicKey;
+
+                await _db.SaveChangesAsync();
+
+                _logger.Log
+                (
+                    LogLevel.Information,
+                    """
+                        [Authentication Module]-[AUTH_Login Class]-[SaveUsersPublicKey Method] => 
+                        [IP] {IP} user with [ID] {ID} public key was successfully saved.   
+                     """,
+                    await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                    user.Id
+                );
+
+                return Util_GenericResponse<string>.Response
+                (
+                    null,
+                    true,
+                    "Public key saved successfully",
+                    null,
+                    System.Net.HttpStatusCode.OK
+                );
+            }
+
+            _logger.Log
+            (
+                LogLevel.Critical,
+                """
+                    [Authentication Module]-[AUTH_Login Class]-[SaveUsersPublicKey Method] => 
+                    [IP] {IP} user with [ID] {ID} tried to save a public key that he has already saved before.   
+                 """,
+                await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                user.Id
+            );
+
+            return Util_GenericResponse<string>.Response
+            (
+                null,
+                true,
+                "Operation ended successfully",
+                null,
+                System.Net.HttpStatusCode.OK
+            );
+        }
+        catch (Exception ex)
+        {
+            return await Util_LogsHelper<string, AUTH_Login>.ReturnInternalServerError
+            (
+                ex,
+                _logger,
+                $"""
+                    Something went wrong in [Authentication Module]-
+                    [AUTH_Login Class]-[SaveUsersPublicKey Method], user with [ID] {userId}.
+                 """,
+                null,
+                _httpContextAccessor
+            );
+        }
+    }
+
     /// <summary>
     ///     Get the time remaining a user is locked out.
     /// </summary>

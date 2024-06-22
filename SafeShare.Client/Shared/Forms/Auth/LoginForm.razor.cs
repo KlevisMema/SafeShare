@@ -46,7 +46,7 @@ public partial class LoginForm
     private const string RegisterModeInvalidGender = "Register - Please select a valid gender";
     private const string OtpSendMessage = "An email with the otp has been sent you!";
     private const string OtpRedirection = "Redirecting you to the otp validation!";
-    private const string FailGenerateKeys = "Something went wrong, please try again!";
+    private const string GeneralFailKeys = "Something went wrong, please try again!";
     #endregion
 
     #region Functions
@@ -86,18 +86,10 @@ public partial class LoginForm
                 return;
             }
 
-            bool successGenerateKeys = await _jsInterop.InvokeAsync<bool>("generateKeys", clientDto_Login.Password, loginResult.Value.UserId);
+            var resultGeneration = await generateAndSaveKeys(clientDto_Login.Password, loginResult.Value.UserId, loginResult.Value.GenerateKeys);
 
-            if (!successGenerateKeys)
-            {
-                _snackbar.Add(FailGenerateKeys, Severity.Error, options =>
-                {
-                    options.CloseAfterNavigation = true;
-                });
-                clientDto_Login = new();
-                _processing = false;
+            if (!resultGeneration)
                 return;
-            }
 
             await _localStorage.SetItemAsStringAsync("FullName", loginResult.Value.UserFullName);
             await _localStorage.SetItemAsStringAsync("Id", loginResult.Value.UserId);
@@ -116,6 +108,48 @@ public partial class LoginForm
         }
 
         _processing = false;
+    }
+
+    private async Task<bool> generateAndSaveKeys(string password, string userId, bool shouldStorePkInServer)
+    {
+
+        string? publicKey = await _jsInterop.InvokeAsync<string>("getPublicKey", userId);
+
+        if (String.IsNullOrEmpty(publicKey))
+        {
+            bool successGenerateKeys = await _jsInterop.InvokeAsync<bool>("generateKeys", password, userId);
+
+            if (!successGenerateKeys)
+            {
+                _snackbar.Add(GeneralFailKeys, Severity.Error, options =>
+                {
+                    options.CloseAfterNavigation = true;
+                });
+                clientDto_Login = new();
+                _processing = false;
+                return false;
+            }
+
+            publicKey = await _jsInterop.InvokeAsync<string>("getPublicKey", userId);
+        }
+
+        if (shouldStorePkInServer)
+        {
+            var savePublicKey = await _authenticationService.SaveUserPublicKey(userId, publicKey);
+
+            if (!savePublicKey.Succsess)
+            {
+                _snackbar.Add(savePublicKey.Message, Severity.Error, options =>
+                {
+                    options.CloseAfterNavigation = true;
+                });
+                clientDto_Login = new();
+                _processing = false;
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private async Task

@@ -36,7 +36,7 @@ public interface IAUTH_Register
         DTO_ConfirmRegistration confirmRegistrationDto
     );
     /// <summary>
-    /// Re confirms a user if the user fogot the check his email 
+    /// Re confirms a user if the user forgot the check his email 
     /// to confirm his registration.
     /// </summary>
     /// <param name="email">The email of the user</param>

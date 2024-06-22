@@ -52,4 +52,13 @@ public interface IProxyAuthentication
         string refreshToken,
         string refreshTokenId
     );
+
+    Task<Util_GenericResponse<string>>
+    SaveUserPublicKey
+    (
+        string userId,
+        string userIp,
+        string jwtToken,
+        string publicKey
+    );
 }

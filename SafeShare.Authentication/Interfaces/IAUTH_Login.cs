@@ -30,7 +30,7 @@ public interface IAUTH_Login
     /// </summary>
     /// <param name="userId">The id of the user</param>
     /// <param name="otp">The one time password </param>
-    /// <returns>A generic respone with jwt token or a error message</returns>
+    /// <returns>A generic response with jwt token or a error message</returns>
     Task<Util_GenericResponse<DTO_LoginResult>>
     ConfirmLogin
     (
@@ -40,10 +40,22 @@ public interface IAUTH_Login
     /// <summary>
     /// Log out a user
     /// </summary>
-    /// <returns> Asyncronous Task</returns>
+    /// <returns> Asynchronous Task</returns>
     Task
     LogOut
     (
         string userId
+    );
+    /// <summary>
+    /// Store users public key generated in the client
+    /// </summary>
+    /// <param name="userId">The id of the user</param>
+    /// <param name="userPublicKey">The public key of the user</param>
+    /// <returns>A generic response containing the result of the operation</returns>
+    Task<Util_GenericResponse<string>>
+    SaveUsersPublicKey
+    (
+        Guid userId,
+        string userPublicKey
     );
 }

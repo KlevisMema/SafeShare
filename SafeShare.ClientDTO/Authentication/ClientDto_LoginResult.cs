@@ -6,4 +6,5 @@ public class ClientDto_LoginResult
     public bool RequireOtpDuringLogin { get; set; } = false;
     public string UserId { get; set; } = string.Empty;
     public string UserFullName { get; set; } = string.Empty;
+    public bool GenerateKeys { get; set; } = false;
 }

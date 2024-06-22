@@ -16,5 +16,6 @@ public static class Route_AuthenticationRoute
     public const string RefreshToken = "RefreshToken";
     public const string ConfirmLogin = "ConfirmLogin/{userId}";
     public const string ConfirmRegistration = "ConfirmRegistration";
+    public const string SaveUserPublicKey = "SaveUserPublicKey/{userId}";
     public const string ReConfirmRegistrationRequest = "ReConfirmRegistrationRequest";
 }

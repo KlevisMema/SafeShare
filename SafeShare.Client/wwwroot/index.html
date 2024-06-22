@@ -66,6 +66,20 @@
             }
         }
 
+        async function getPublicKey(userId) {
+            console.log("in getGeneratedKeys");
+
+            const keyPairs = await getKeyPairFromDatabase(userId);
+
+            console.log(keyPairs)
+
+            if (keyPairs === null || keyPairs === undefined) {
+                return null;
+            }
+
+            return keyPairs.publicKey;
+        }
+
         async function EncryptExpense(expense, userId) {
             const keyPair = await getKeyPairFromDatabase(userId);
 

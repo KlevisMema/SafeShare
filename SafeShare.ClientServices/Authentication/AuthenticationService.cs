@@ -273,4 +273,45 @@ public class AuthenticationService(IHttpClientFactory httpClientFactory) : IAuth
             };
         }
     }
+
+    public async Task<ClientUtil_ApiResponse<string>>
+    SaveUserPublicKey
+    (
+        string userId,
+        string publicKey
+    )
+    {
+        HttpResponseMessage response = new();
+
+        try
+        {
+            var httpClient = httpClientFactory.CreateClient(Client);
+            var content = new StringContent(JsonSerializer.Serialize(publicKey), Encoding.UTF8, "application/json");
+
+            var url = BaseRoute.RouteAuthenticationProxy + Route_AuthenticationRoute.SaveUserPublicKey.Replace("{userId}", userId);
+
+            response = await httpClient.PostAsync(url, content);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var readResult = JsonSerializer.Deserialize<ClientUtil_ApiResponse<string>>(responseContent, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            }) ?? throw new ArgumentNullException("Failed to deserialize the server response. The content may not match the expected format.");
+
+            return readResult;
+        }
+        catch (Exception ex)
+        {
+            // do something with the Exception message
+
+            return new ClientUtil_ApiResponse<string>()
+            {
+                Errors = null,
+                Message = "Something went wrong, please try logging in again",
+                Succsess = false,
+                Value = null,
+                StatusCode = response.StatusCode
+            };
+        }
+    }
 }

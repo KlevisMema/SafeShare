@@ -50,7 +50,7 @@ public class DTO_UserUpdatedInfo
     /// </summary>
     public DateTime CreatedAt { get; set; }
     /// <summary>
-    /// Gets or sets the datetime when account last eddited his info.
+    /// Gets or sets the datetime when account last edited his info.
     /// </summary>
     public DateTime? ModifiedAt { get; set; }
     /// <summary>

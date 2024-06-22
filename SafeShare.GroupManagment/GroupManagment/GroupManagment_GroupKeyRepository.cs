@@ -62,7 +62,7 @@ public class GroupManagment_GroupKeyRepository
                 LogLevel.Critical,
                 """
                     [GroupManagment Module]--[GroupManagment_GroupKeyRepository class]--[CreateKeyForGroup Method] => 
-                    [RESULT] : A key could not be created for the group with id {groupId}. An excpetion was thrown=>
+                    [RESULT] : A key could not be created for the group with id {groupId}. An exception was thrown=>
                     {ex}
                  """,
                 groupId,
@@ -125,7 +125,7 @@ public class GroupManagment_GroupKeyRepository
                 LogLevel.Critical,
                 """
                     [GroupManagment Module]--[GroupManagment_GroupKeyRepository class]--[UpdateKeyForGroup Method] => 
-                    [RESULT] : A key could not be created for the group with id {groupId}. An excpetion was thrown=>
+                    [RESULT] : A key could not be created for the group with id {groupId}. An exception was thrown=>
                     {ex}
                  """,
                 groupId,
@@ -184,7 +184,7 @@ public class GroupManagment_GroupKeyRepository
                 LogLevel.Critical,
                 """
                     [GroupManagment Module]--[GroupManagment_GroupKeyRepository class]--[DeleteGroupKey Method] => 
-                    [RESULT] : A key could not be deleted for the group with id {groupId}. An excpetion was thrown=>
+                    [RESULT] : A key could not be deleted for the group with id {groupId}. An exception was thrown=>
                     {ex}
                 """,
                 groupId,

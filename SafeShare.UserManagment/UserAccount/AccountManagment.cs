@@ -189,7 +189,7 @@ public class AccountManagment
                 ex,
                 _logger,
                 $"""
-                     Somewthing went wrong in [UserManagment Module]-[AccountManagment Class]-[UpdateUser Method],
+                     Something went wrong in [UserManagment Module]-[AccountManagment Class]-[UpdateUser Method],
                      user with [ID] {id}.
                  """,
                 null,
@@ -323,7 +323,7 @@ public class AccountManagment
             (
                 true,
                 true,
-                "Your account was deactivated succsessfully",
+                "Your account was deactivated successfully",
                 null,
                 System.Net.HttpStatusCode.OK
             );
@@ -336,7 +336,7 @@ public class AccountManagment
                 ex,
                 _logger,
                 $"""
-                     Somewthing went wrong in [UserManagment Module]-[AccountManagment Class]-[DeactivateAccount Method],
+                     Something went wrong in [UserManagment Module]-[AccountManagment Class]-[DeactivateAccount Method],
                      user with [ID] {id}".
                  """,
                 false,
@@ -478,7 +478,7 @@ public class AccountManagment
                 """
                      [UserManagment Module]- [AccountManagment Class]-[ActivateAccountRequest Method] =>
                      User with [IP] {IP} and
-                     [Email] {Email} tried to activate the account. Email was succsessfully sent.
+                     [Email] {Email} tried to activate the account. Email was successfully sent.
                      User {@User} 
                  """,
                 await Util_GetIpAddres.GetLocation(_httpContextAccessor),
@@ -503,7 +503,7 @@ public class AccountManagment
                 ex,
                 _logger,
                 $"""
-                     Somewthing went wrong in [UserManagment Module] - [ActivateAccountRequest Method],   +
+                     Something went wrong in [UserManagment Module] - [ActivateAccountRequest Method],   +
                      user with [Email] {email} tried to make a request to reactivate the account ,
                  """,
                 false,
@@ -657,7 +657,7 @@ public class AccountManagment
                 """
                     [UserManagment Module]- [AccountManagment Class]-[ActivateAccountConfirmation Method] =>
                     User with [IP] {IP} and
-                    [Email] {Email} tried to activate the account. Account updated succsessfully
+                    [Email] {Email} tried to activate the account. Account updated successfully
                     DTO {@DTO} | User {@User}.
                  """,
                 await Util_GetIpAddres.GetLocation(_httpContextAccessor),
@@ -683,7 +683,7 @@ public class AccountManagment
                ex,
                _logger,
                $"""
-                    Somewthing went wrong in [UserManagment Module] - [ActivateAccountConfirmation Method],
+                    Something went wrong in [UserManagment Module] - [ActivateAccountConfirmation Method],
                     user with [Email] {accountConfirmation.Email} tried to confirm his reactivate the account request,
                 """,
                false,
@@ -794,7 +794,7 @@ public class AccountManagment
                 ex,
                 _logger,
                 """
-                     Somewthing went wrong in [UserManagment Module]-[AccountManagment Class]-[ChangePassword Method],
+                     Something went wrong in [UserManagment Module]-[AccountManagment Class]-[ChangePassword Method],
                      user with [ID] {id} 
                  """,
                 false,
@@ -928,7 +928,7 @@ public class AccountManagment
                 ex,
                 _logger,
                 $"""
-                    Somewthing went wrong in [UserManagment Module]-[AccountManagment Class]-[ForgotPassword Method], 
+                    Something went wrong in [UserManagment Module]-[AccountManagment Class]-[ForgotPassword Method], 
                     user with [ID] {user.Id}.
                  """,
                 false,
@@ -1034,7 +1034,7 @@ public class AccountManagment
                 LogLevel.Information,
                 """
                      [UserManagment Module]-[AccountManagment Class]-[ResetPassword Method] => 
-                     [IP] {IP} user with email {Email} succsessfully
+                     [IP] {IP} user with email {Email} successfully
                      reset the password. User {@User}.
                  """,
                 await Util_GetIpAddres.GetLocation(_httpContextAccessor),
@@ -1046,7 +1046,7 @@ public class AccountManagment
             (
                 true,
                 true,
-                "Password was succsessfully restored",
+                "Password was successfully restored",
                 changePasswordResult.Errors.Select(x => x.Description).ToList(),
                 System.Net.HttpStatusCode.OK
             );
@@ -1323,7 +1323,7 @@ public class AccountManagment
                 LogLevel.Information,
                 """
                     [UserManagment Module]-[AccountManagment Class]-[ConfirmRequestChangeEmailAddress Method] => 
-                    [IP] {IP} user with email {EmailAddress} succsessfully changed his email.
+                    [IP] {IP} user with email {EmailAddress} successfully changed his email.
                  """,
                 await Util_GetIpAddres.GetLocation(_httpContextAccessor),
                 changeEmailAddressConfirmDto.EmailAddress
@@ -1333,7 +1333,7 @@ public class AccountManagment
             (
                 token,
                 true,
-                "Your email was succsessfully changed.",
+                "Your email was successfully changed.",
                 null,
                 System.Net.HttpStatusCode.OK
             );
@@ -1346,7 +1346,7 @@ public class AccountManagment
                 ex,
                 _logger,
                 $"""
-                    Somewthing went wrong in [UserManagment Module]-[ChangeEmailAddress Class]-[ConfirmRequestChangeEmailAddress Method],
+                    Something went wrong in [UserManagment Module]-[ChangeEmailAddress Class]-[ConfirmRequestChangeEmailAddress Method],
                     user with [ID] {userId} and [Email] {changeEmailAddressConfirmDto.EmailAddress} tried to confirm the request to confirm the email.
                  """,
                 null,
@@ -1389,7 +1389,7 @@ public class AccountManagment
                 ex,
                 _logger,
                 $"""
-                    Somewthing went wrong in [UserManagment Module]-[ChangeEmailAddress Class]-[ConfirmChangeEmailAddressRequest Method],
+                    Something went wrong in [UserManagment Module]-[ChangeEmailAddress Class]-[ConfirmChangeEmailAddressRequest Method],
                     user with [ID] {userId} tried to search user by username.
                  """,
                 null,
@@ -1506,7 +1506,7 @@ public class AccountManagment
             (
                 user.ImageData,
                 true,
-                "User profile picture uploaded succsessfully",
+                "User profile picture uploaded successfully",
                 null,
                 System.Net.HttpStatusCode.OK
             );
@@ -1603,7 +1603,7 @@ public class AccountManagment
             (
                 userInfoMapped,
                 true,
-                $"User {purpose} succsessfully",
+                $"User {purpose} successfully",
                 null,
                 System.Net.HttpStatusCode.OK
             );
@@ -1615,7 +1615,7 @@ public class AccountManagment
                 ex,
                 _logger,
                 $"""
-                    Somewthing went wrong in [UserManagment Module]-[AccountManagment Class]-[GetUserInfoMapped Method], 
+                    Something went wrong in [UserManagment Module]-[AccountManagment Class]-[GetUserInfoMapped Method], 
                     user with [ID] {id}
                  """,
                 null,
