@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Hosting.Server;
 using SafeShare.ClientDTO.AccountManagment;
 using System.ComponentModel.DataAnnotations;
 using SafeShare.Client.Shared.Forms.Account;
+using SafeShare.Client.Internal.Helpers;
 
 namespace SafeShare.Client.Shared;
 
@@ -108,6 +109,36 @@ public partial class NavMenu
         }
     }
 
+
+
+    private async Task
+    OpenPopUpDeactivateAccountForm()
+    {
+        var dialog = await DialogService.ShowAsync<DeactivateAccount>("Deactivate Account Dialog", DialogHelper.DialogOptions());
+        await dialog.Result;
+    }
+
+    private async Task
+    OpenPopUpChangeEmailForm()
+    {
+        var dialog = await DialogService.ShowAsync<RequestChangeEmailAddress>("Change Email Dialog", DialogHelper.DialogOptions());
+        await dialog.Result;
+    }
+
+    private async Task
+    OpenPopUpChangePasswordForm()
+    {
+        var dialog = await DialogService.ShowAsync<ChangePassword>("Change Password Dialog", DialogHelper.DialogOptions());
+        await dialog.Result;
+    }
+
+    private async Task
+    OpenPopUpCreateGroup()
+    {
+        var dialog = await DialogService.ShowAsync<CreateGroup>("Change Email Dialog", DialogHelper.DialogOptions());
+        await dialog.Result;
+    }
+
     public void Dispose()
     {
         _appState.OnGroupEdited -= HandleGroupEdited;
@@ -115,48 +146,5 @@ public partial class NavMenu
         _appState.OnNewGroupCreated -= HandleNewGroupCreated;
         _appState.OnRemovedFromGroup -= HandleRemovedFromGroup;
         _appState.OnGroupInvitationAccepted -= HandleGroupInvitationAccepted;
-    }
-
-    private async Task
-    OpenPopUpDeactivateAccountForm()
-    {
-        var dialog = await DialogService.ShowAsync<DeactivateAccount>("Deactivate Account Dialog", DialogOptions());
-        await dialog.Result;
-    }
-
-    private async Task
-    OpenPopUpChangeEmailForm()
-    {
-        var dialog = await DialogService.ShowAsync<RequestChangeEmailAddress>("Change Email Dialog", DialogOptions());
-        await dialog.Result;
-    }
-
-    private async Task
-    OpenPopUpChangePasswordForm()
-    {
-        var dialog = await DialogService.ShowAsync<ChangePassword>("Change Password Dialog", DialogOptions());
-        await dialog.Result;
-    }
-
-    private async Task
-        OpenPopUpCreateGroup()
-    {
-        var dialog = await DialogService.ShowAsync<CreateGroup>("Change Email Dialog", DialogOptions());
-        var result = await dialog.Result;
-
-
-    }
-
-    private static DialogOptions
-    DialogOptions()
-    {
-        return new()
-        {
-            ClassBackground = "my-custom-class",
-            CloseOnEscapeKey = false,
-            DisableBackdropClick = true,
-            CloseButton = true,
-            Position = DialogPosition.Center
-        };
     }
 }

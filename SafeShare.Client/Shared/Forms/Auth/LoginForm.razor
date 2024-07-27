@@ -1,6 +1,7 @@
-﻿@using SafeShare.ClientDTO.Enums
+﻿@using SafeShare.Client.Shared.Forms.Account
+@using SafeShare.ClientDTO.Enums
 
-<style>
+<style class="apply-nonce">
     @@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap");
 
     * {
@@ -222,6 +223,7 @@
 </style>
 
 <MudSnackbarProvider />
+<MudDialogProvider />
 
 <section class="wrapper" @onclick="(() => ToggleForms())">
 

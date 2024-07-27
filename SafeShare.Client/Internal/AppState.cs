@@ -8,8 +8,16 @@ public class AppState
 {
     private ClientDto_LoginResult? ClientSecrests { get; set; }
 
+
+    /// <summary>
+    /// A property indicating that user have public key in the database but no keys in his 
+    /// browser this means that user is logging form a new device or has cleared his browser so 
+    /// his keys needs to be generated again and saved in the browser.
+    /// </summary>
+    public bool GenerateSameKeys { get; set; } = false;
+
     public void
-    SetClientSecrests
+    SetClientSecrets
     (
         ClientDto_LoginResult? clientSecrest
     )
@@ -18,7 +26,7 @@ public class AppState
     }
 
     public ClientDto_LoginResult?
-    GetClientSecrests()
+    GetClientSecrets()
     {
         return ClientSecrests;
     }
@@ -37,7 +45,7 @@ public class AppState
     public void LogOut() => OnLogOut?.Invoke();
     public void GroupDeleted(Guid groupId) => OnGroupDeleted?.Invoke(groupId);
     public void RemovedFromGroup(Guid groupId) => OnRemovedFromGroup?.Invoke(groupId);
-    public void ExpenseEditted(ClientDto_Expense expense) => OnExpenseEditted?.Invoke(expense);
+    public void ExpenseEdited(ClientDto_Expense expense) => OnExpenseEditted?.Invoke(expense);
     public void GroupEdited(ClientDto_GroupType? groupType) => OnGroupEdited?.Invoke(groupType);
     public void NewGroupAdded(ClientDto_GroupType? groupType) => OnNewGroupCreated?.Invoke(groupType);
     public void GroupDetails(ClientDto_GroupDetails? groupDetails) => OnGroupDetails?.Invoke(groupDetails);

@@ -190,26 +190,39 @@ public partial class EditProfileForm
     {
         if (file is not null)
         {
-            _processingUploadProfilePic = true;
-            await Task.Delay(1000);
-
-            using var memoryStream = new MemoryStream();
-            var fileContent = new StreamContent(file.OpenReadStream());
-            fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse(file.ContentType);
-
-            var resultUploadProfilePic = await _userManagmentService.UploadProfilePicture(file.Name, fileContent);
-
-            if (!resultUploadProfilePic.Succsess && resultUploadProfilePic.Errors is not null)
-                ShowValidationsMessages(resultUploadProfilePic.Errors);
-            else
+            try
             {
-                _snackbar.Add(resultUploadProfilePic.Message, Severity.Success, config => { config.CloseAfterNavigation = true; });
-                UserInfo.ProfilePicture = resultUploadProfilePic.Value;
-            }
+                _processingUploadProfilePic = true;
+                await Task.Delay(1000);
 
-            _processingUploadProfilePic = false;
-            ClearSelection();
-            await InvokeAsync(StateHasChanged);
+                using var memoryStream = new MemoryStream();
+                var fileContent = new StreamContent(file.OpenReadStream(10485760));
+                fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse(file.ContentType);
+
+                var resultUploadProfilePic = await _userManagmentService.UploadProfilePicture(file.Name, fileContent);
+
+                if (!resultUploadProfilePic.Succsess && resultUploadProfilePic.Errors is not null)
+                    ShowValidationsMessages(resultUploadProfilePic.Errors);
+                else
+                {
+                    _snackbar.Add(resultUploadProfilePic.Message, Severity.Success, config => { config.CloseAfterNavigation = true; });
+                    UserInfo.ProfilePicture = resultUploadProfilePic.Value;
+                }
+
+                _processingUploadProfilePic = false;
+                ClearSelection();
+                await InvokeAsync(StateHasChanged);
+
+            }
+            catch (Exception ex)
+            {
+                _processingUploadProfilePic = false;
+
+                ClearSelection();
+                await InvokeAsync(StateHasChanged);
+
+                ShowValidationsMessages([$"File limit exceed, image should be lower size than {10} MB"]);
+            }
 
             return;
         }

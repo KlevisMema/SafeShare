@@ -6,6 +6,7 @@ using System.Net.Http.Json;
 using Blazored.LocalStorage;
 using SafeShare.Client.Internal;
 using System.Text.Encodings.Web;
+using SafeShare.ClientUtilities.Helpers;
 using Microsoft.Extensions.Configuration;
 using SafeShare.ClientServices.Interfaces;
 using Microsoft.AspNetCore.Components.Web;
@@ -33,7 +34,7 @@ builder.Services.AddMudServices(config =>
     config.SnackbarConfiguration.SnackbarVariant = Variant.Filled;
 });
 
-builder.Services.AddHttpClient("MyHttpClient", client =>
+builder.Services.AddHttpClient(ClientUtilHelpers_Statics.HttpClientName, client =>
 {
     client.BaseAddress = new Uri("https://localhost:7280/");
     client.DefaultRequestHeaders.Add("Accept", "application/json");

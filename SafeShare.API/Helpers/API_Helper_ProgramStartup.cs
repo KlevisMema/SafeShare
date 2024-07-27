@@ -147,7 +147,7 @@ internal static class API_Helper_ProgramStartup
         services.Configure<Util_ConfirmRegistrationSettings>(configuration.GetSection(Util_ConfirmRegistrationSettings.SectionName));
     }
     /// <summary>
-    ///     Enfoce the usage of TLS of latest versions
+    ///     Enforce the usage of TLS of latest versions
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/></param>
     private static void

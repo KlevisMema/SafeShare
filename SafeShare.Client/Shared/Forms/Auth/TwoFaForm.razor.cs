@@ -112,7 +112,7 @@ public partial class TwoFaForm
 
     private async Task HandleTwoFAResultSuccess(ClientUtil_ApiResponse<ClientDto_LoginResult> result)
     {
-        AppState.SetClientSecrests(result.Value);
+        AppState.SetClientSecrets(result.Value);
         ShowSnackbar(result.Message, Severity.Success);
         await Task.Delay(2000);
         ShowSnackbar($"{SnackbarMessage}", Severity.Info);

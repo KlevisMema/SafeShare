@@ -632,7 +632,7 @@ public class AUTH_Login
                 (
                     LogLevel.Error,
                     """
-                        [Authentication Module]-[AUTH_Login Class]-[ConfirmLogin Method] => 
+                        [Authentication Module]-[AUTH_Login Class]-[SaveUsersPublicKey Method] => 
                         [RESULT] : [IP] {IP}  
                         user with [ID] {userId} doesn't exists   
                      """,
@@ -708,6 +708,107 @@ public class AUTH_Login
                     [AUTH_Login Class]-[SaveUsersPublicKey Method], user with [ID] {userId}.
                  """,
                 null,
+                _httpContextAccessor
+            );
+        }
+    }
+
+    /// <summary>
+    ///     Validate the public key generated
+    /// </summary>
+    /// <param name="userId">The id of the user</param>
+    /// <param name="userPublicKey">The public key generated in the client</param>
+    /// <returns>A generic response containing the result of the operation</returns>
+    public async Task<Util_GenericResponse<bool>>
+    VerifyPk
+    (
+        Guid userId,
+        string userPublicKey
+    )
+    {
+        try
+        {
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+
+            if (user is null)
+            {
+                _logger.Log
+                (
+                    LogLevel.Error,
+                    """
+                        [Authentication Module]-[AUTH_Login Class]-[ValidatePk Method] => 
+                        [RESULT] : [IP] {IP}  
+                        user with [ID] {userId} doesn't exists   
+                     """,
+                    await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                    userId
+                );
+
+                return Util_GenericResponse<bool>.Response
+                (
+                    false,
+                    false,
+                    "User doesn't exists",
+                    null,
+                    System.Net.HttpStatusCode.NotFound
+                );
+            }
+
+            if (userPublicKey != user.PublicKey)
+            {
+                _logger.Log
+                (
+                    LogLevel.Information,
+                    """
+                        [Authentication Module]-[AUTH_Login Class]-[SaveUsersPublicKey Method] => 
+                        [IP] {IP} user with [ID] {ID} public key generated its not the same that is 
+                        first saved in the database, user probably gave a wrong secret passphrase   
+                     """,
+                    await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                    user.Id
+                );
+
+                return Util_GenericResponse<bool>.Response
+                (
+                    false,
+                    false,
+                    string.Empty,
+                    null,
+                    System.Net.HttpStatusCode.BadRequest
+                );
+            }
+
+            _logger.Log
+            (
+                LogLevel.Information,
+                """
+                    [Authentication Module]-[AUTH_Login Class]-[SaveUsersPublicKey Method] => 
+                    [IP] {IP} user with [ID] {ID} just created the same keys in a new device/browser.   
+                 """,
+                await Util_GetIpAddres.GetLocation(_httpContextAccessor),
+                user.Id
+            );
+
+            return Util_GenericResponse<bool>.Response
+            (
+                true,
+                true,
+                string.Empty,
+                null,
+                System.Net.HttpStatusCode.OK
+            );
+        }
+        catch (Exception ex)
+        {
+            return await Util_LogsHelper<bool, AUTH_Login>.ReturnInternalServerError
+            (
+                ex,
+                _logger,
+                $"""
+                    Something went wrong in [Authentication Module]-
+                    [AUTH_Login Class]-[ValidatePk Method], user with [ID] {userId}.
+                 """,
+                false,
                 _httpContextAccessor
             );
         }

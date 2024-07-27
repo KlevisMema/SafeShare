@@ -26,8 +26,6 @@ app.UseAuthorization();
 
 app.UseCors(builder.Configuration.GetSection("Cors:Policy:Name").Value!);
 
-//app.UseAntiforgery();
-
 app.UseMiddleware<API_HELPER_ApiKeyMiddleware>(); 
 
 app.UseMiddleware<API_Helper_ForgeryToken>();

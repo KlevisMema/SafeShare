@@ -29,6 +29,7 @@ using SafeShare.DataTransormObject.SafeShareApi.Security;
 using SafeShare.Utilities.SafeShareApi.ConfigurationSettings;
 using SafeShare.DataTransormObject.SafeShareApi.UserManagment;
 using SafeShare.DataTransormObject.SafeShareApi.Authentication;
+using SafeShare.MediatR.Actions.Queries.Authentication;
 
 namespace SafeShare.API.Controllers;
 
@@ -196,6 +197,34 @@ public class AuthenticationController
         var result = await mediator.Send(new Mediatr_SaveUsersPublicKeyCommand(userId, userPublicKey));
 
         return Util_GenericControllerResponse<string>.ControllerResponse(result);
+    }
+    /// <summary>
+    /// Verify users public key after successful log in.
+    /// </summary>
+    /// <param name="userId">The id of the user</param>
+    /// <param name="userPublicKey">The public key of the user generated in the client</param>
+    /// <returns>A response indicating the success or failure of the operation</returns>
+    [ServiceFilter(typeof(VerifyUser))]
+    [HttpGet(Route_AuthenticationRoute.VerifyPk)]
+    [Authorize(AuthenticationSchemes = "Default")]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(UnauthorizedResult))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Util_GenericResponse<bool>))]
+    [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(Util_GenericResponse<bool>))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(Util_GenericResponse<bool>))]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(Util_GenericResponse<bool>))]
+    public async Task<ActionResult<Util_GenericResponse<bool>>>
+    VerifyPK
+    (
+        Guid userId,
+        [FromBody] string userPublicKey
+    )
+    {
+        if (String.IsNullOrEmpty(userPublicKey))
+            return BadRequest("Empty public key!");
+
+        var result = await mediator.Send(new MediatR_VerifyPkQuery(userId, userPublicKey));
+
+        return Util_GenericControllerResponse<bool>.ControllerResponse(result);
     }
     /// <summary>
     /// Endpoint for requesting reconfirmation of the registration process.

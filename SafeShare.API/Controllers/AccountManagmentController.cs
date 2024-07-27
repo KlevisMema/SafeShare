@@ -342,7 +342,7 @@ public class AccountManagmentController
     UploadProfilePicture
     (
         Guid userId,
-        [FromForm] IFormFile image
+        IFormFile image
     )
     {
         return await _mediator.Send(new MediatR_UploadProfilePictureCommand(userId, image));

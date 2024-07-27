@@ -31,7 +31,7 @@ public class DTO_LoginResult
     /// </summary>
     public string UserFullName { get; set; } = string.Empty;
     /// <summary>
-    ///  Gets or sets the field if the indicating if the user needs to generate the keys.
+    ///  Gets or sets the field indicating if the user needs to generate the keys.
     /// </summary>
     public bool GenerateKeys { get; set; } = false;
 }

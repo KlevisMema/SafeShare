@@ -276,7 +276,7 @@ public class AccountManagmentProxyController
     public async Task<ActionResult<Util_GenericResponse<byte[]>>>
     UploadProfilePicture
     (
-        [FromForm] IFormFile image
+        IFormFile image
     )
     {
         var result = await accountManagmentProxyService.UploadProfilePicture

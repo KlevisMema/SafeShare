@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using System.Text.Json;
 using Newtonsoft.Json.Linq;
+using SafeShare.ClientUtilities.Helpers;
 using SafeShare.ClientDTO.Authentication;
 using SafeShare.ClientServerShared.Routes;
 using SafeShare.ClientUtilities.Responses;
@@ -11,8 +12,6 @@ namespace SafeShare.ClientServices.Authentication;
 
 public class AuthenticationService(IHttpClientFactory httpClientFactory) : IAuthenticationService
 {
-    private const string Client = "MyHttpClient";
-
     public async Task<ClientUtil_ApiResponse<bool>>
     RegisterUser
     (
@@ -24,7 +23,7 @@ public class AuthenticationService(IHttpClientFactory httpClientFactory) : IAuth
         try
         {
             var requestMessage = new HttpRequestMessage();
-            var httpClient = httpClientFactory.CreateClient(Client);
+            var httpClient = httpClientFactory.CreateClient(ClientUtilHelpers_Statics.HttpClientName);
 
             var registerData = new Dictionary<string, string>
             {
@@ -77,7 +76,7 @@ public class AuthenticationService(IHttpClientFactory httpClientFactory) : IAuth
         try
         {
             var requestMessage = new HttpRequestMessage();
-            var httpClient = httpClientFactory.CreateClient(Client);
+            var httpClient = httpClientFactory.CreateClient(ClientUtilHelpers_Statics.HttpClientName);
 
             var loginData = new Dictionary<string, string>
             {
@@ -117,7 +116,7 @@ public class AuthenticationService(IHttpClientFactory httpClientFactory) : IAuth
 
     )
     {
-        var httpClient = httpClientFactory.CreateClient(Client);
+        var httpClient = httpClientFactory.CreateClient(ClientUtilHelpers_Statics.HttpClientName);
 
         await httpClient.PostAsync(BaseRoute.RouteAuthenticationProxy + Route_AuthenticationRoute.LogOut, null);
     }
@@ -129,7 +128,7 @@ public class AuthenticationService(IHttpClientFactory httpClientFactory) : IAuth
 
         try
         {
-            var httpClient = httpClientFactory.CreateClient(Client);
+            var httpClient = httpClientFactory.CreateClient(ClientUtilHelpers_Statics.HttpClientName);
 
             response = await httpClient.GetAsync(BaseRoute.RouteAuthenticationProxy + Route_AuthenticationRoute.JwtToken);
 
@@ -160,7 +159,7 @@ public class AuthenticationService(IHttpClientFactory httpClientFactory) : IAuth
         {
             var requestMessage = new HttpRequestMessage();
 
-            var httpClient = httpClientFactory.CreateClient(Client);
+            var httpClient = httpClientFactory.CreateClient(ClientUtilHelpers_Statics.HttpClientName);
 
             var json = JsonSerializer.Serialize(confirmRegistration);
 
@@ -202,7 +201,7 @@ public class AuthenticationService(IHttpClientFactory httpClientFactory) : IAuth
         try
         {
             var requestMessage = new HttpRequestMessage();
-            var httpClient = httpClientFactory.CreateClient(Client);
+            var httpClient = httpClientFactory.CreateClient(ClientUtilHelpers_Statics.HttpClientName);
 
             var json = JsonSerializer.Serialize(ConfirmRegistration);
 
@@ -244,7 +243,7 @@ public class AuthenticationService(IHttpClientFactory httpClientFactory) : IAuth
         {
             var requestMessage = new HttpRequestMessage();
 
-            var httpClient = httpClientFactory.CreateClient(Client);
+            var httpClient = httpClientFactory.CreateClient(ClientUtilHelpers_Statics.HttpClientName);
 
             var json = JsonSerializer.Serialize(TwoFA);
 
@@ -285,7 +284,7 @@ public class AuthenticationService(IHttpClientFactory httpClientFactory) : IAuth
 
         try
         {
-            var httpClient = httpClientFactory.CreateClient(Client);
+            var httpClient = httpClientFactory.CreateClient(ClientUtilHelpers_Statics.HttpClientName);
             var content = new StringContent(JsonSerializer.Serialize(publicKey), Encoding.UTF8, "application/json");
 
             var url = BaseRoute.RouteAuthenticationProxy + Route_AuthenticationRoute.SaveUserPublicKey.Replace("{userId}", userId);

@@ -31,18 +31,27 @@ async function openDatabase() {
 }
 
 async function getKeyPairFromDatabase(userId) {
-
     console.log("getKeyPairFromDatabase" + " " + userId);
 
-    const db = await openDatabase();
-    const transaction = db.transaction("keys", "readonly");
-    const store = transaction.objectStore("keys");
+    try {
+        const db = await openDatabase();
+        const transaction = db.transaction("keys", "readonly");
+        const store = transaction.objectStore("keys");
 
-    const request = store.get(userId);
-    return new Promise((resolve, reject) => {
-        request.onsuccess = (event) => {
-            resolve(event.target.result.keyPair);
-        };
-        request.onerror = (event) => reject('Error retrieving the key pair: ', event.target.errorCode);
-    });
+        const request = store.get(userId);
+        return new Promise((resolve, reject) => {
+            request.onsuccess = (event) => {
+                const result = event.target.result;
+                if (result && result.keyPair) {
+                    resolve(result.keyPair);
+                } else {
+                    resolve(null);
+                }
+            };
+            request.onerror = (event) => reject('Error retrieving the key pair: ' + event.target.errorCode);
+        });
+    } catch (error) {
+        console.error('Database error: ', error);
+        throw new Error('Error opening the database');
+    }
 }

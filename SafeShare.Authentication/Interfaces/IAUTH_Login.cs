@@ -58,4 +58,16 @@ public interface IAUTH_Login
         Guid userId,
         string userPublicKey
     );
+    /// <summary>
+    ///     Validate the public key generated
+    /// </summary>
+    /// <param name="userId">The id of the user</param>
+    /// <param name="userPublicKey">The public key generated in the client</param>
+    /// <returns>A generic response containing the result of the operation</returns>
+    Task<Util_GenericResponse<bool>>
+    VerifyPk
+    (
+        Guid userId,
+        string userPublicKey
+    );
 }

@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using System.Net.Http;
 using System.Text.Json;
+using SafeShare.ClientUtilities.Helpers;
 using SafeShare.ClientDTO.Authentication;
 using SafeShare.ClientDTO.GroupManagment;
 using SafeShare.ClientServerShared.Routes;
@@ -10,8 +11,6 @@ using SafeShare.ClientServices.Interfaces;
 namespace SafeShare.ClientServices.GroupManagment;
 public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) : IClientService_GroupManagment
 {
-    private const string Client = "MyHttpClient";
-
     public async Task<ClientUtil_ApiResponse<ClientDto_GroupTypes>>
     GetGroupTypes()
     {
@@ -19,7 +18,7 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
 
         try
         {
-            var httpClient = httpClientFactory.CreateClient(Client);
+            var httpClient = httpClientFactory.CreateClient(ClientUtilHelpers_Statics.HttpClientName);
 
             response = await httpClient.GetAsync(BaseRoute.RouteGroupManagmentProxy + Route_GroupManagmentRoutes.ProxyGroupTypes);
 
@@ -55,7 +54,7 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
 
         try
         {
-            var httpClient = httpClientFactory.CreateClient(Client);
+            var httpClient = httpClientFactory.CreateClient(ClientUtilHelpers_Statics.HttpClientName);
 
             response = await httpClient.GetAsync(BaseRoute.RouteGroupManagmentProxy + Route_GroupManagmentRoutes.ProxyGetGroupDetails.Replace("{groupId}", groupId.ToString()));
 
@@ -91,7 +90,7 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
 
         try
         {
-            var httpClient = httpClientFactory.CreateClient(Client);
+            var httpClient = httpClientFactory.CreateClient(ClientUtilHelpers_Statics.HttpClientName);
 
             var registerData = new Dictionary<string, string>
             {
@@ -142,7 +141,7 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
 
         try
         {
-            var httpClient = httpClientFactory.CreateClient(Client);
+            var httpClient = httpClientFactory.CreateClient(ClientUtilHelpers_Statics.HttpClientName);
 
             var registerData = new Dictionary<string, string>
             {
@@ -188,7 +187,7 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
 
         try
         {
-            var httpClient = httpClientFactory.CreateClient(Client);
+            var httpClient = httpClientFactory.CreateClient(ClientUtilHelpers_Statics.HttpClientName);
 
             var json = JsonSerializer.Serialize(membersId);
 
@@ -231,7 +230,7 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
 
         try
         {
-            var httpClient = httpClientFactory.CreateClient(Client);
+            var httpClient = httpClientFactory.CreateClient(ClientUtilHelpers_Statics.HttpClientName);
 
             response = await httpClient.GetAsync(BaseRoute.RouteGroupManagmentProxy + Route_GroupManagmentRoutes.ProxyGetGroupsInvitations);
 
@@ -264,7 +263,7 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
 
         try
         {
-            var httpClient = httpClientFactory.CreateClient(Client);
+            var httpClient = httpClientFactory.CreateClient(ClientUtilHelpers_Statics.HttpClientName);
 
             response = await httpClient.GetAsync(BaseRoute.RouteGroupManagmentProxy + Route_GroupManagmentRoutes.ProxyGetSentGroupInvitations);
 
@@ -300,7 +299,7 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
 
         try
         {
-            var httpClient = httpClientFactory.CreateClient(Client);
+            var httpClient = httpClientFactory.CreateClient(ClientUtilHelpers_Statics.HttpClientName);
 
             var json = JsonSerializer.Serialize(sendInvitationRequest);
 
@@ -340,7 +339,7 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
 
         try
         {
-            var httpClient = httpClientFactory.CreateClient(Client);
+            var httpClient = httpClientFactory.CreateClient(ClientUtilHelpers_Statics.HttpClientName);
 
             var json = JsonSerializer.Serialize(invitationRequestActions);
 
@@ -380,7 +379,7 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
 
         try
         {
-            var httpClient = httpClientFactory.CreateClient(Client);
+            var httpClient = httpClientFactory.CreateClient(ClientUtilHelpers_Statics.HttpClientName);
 
             var json = JsonSerializer.Serialize(invitationRequestActions);
 
@@ -420,7 +419,7 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
 
         try
         {
-            var httpClient = httpClientFactory.CreateClient(Client);
+            var httpClient = httpClientFactory.CreateClient(ClientUtilHelpers_Statics.HttpClientName);
 
             var content = new StringContent(JsonSerializer.Serialize(invitationRequestActions), Encoding.UTF8, "application/json");
 
@@ -464,7 +463,7 @@ public class ClientService_GroupManagment(IHttpClientFactory httpClientFactory) 
 
         try
         {
-            var httpClient = httpClientFactory.CreateClient(Client);
+            var httpClient = httpClientFactory.CreateClient(ClientUtilHelpers_Statics.HttpClientName);
 
             var content = new StringContent(JsonSerializer.Serialize(usersOfTheGroup), Encoding.UTF8, "application/json");
 

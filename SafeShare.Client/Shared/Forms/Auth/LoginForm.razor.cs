@@ -5,11 +5,14 @@ using Blazored.LocalStorage;
 using SafeShare.Client.Internal;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Components;
+using SafeShare.Client.Internal.Helpers;
 using SafeShare.ClientDTO.Authentication;
+using SafeShare.ClientUtilities.Responses;
 using SafeShare.ClientServices.Interfaces;
 using SafeShare.ClientDTO.AccountManagment;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Components.Forms;
+using SafeShare.Client.Shared.Forms.Account;
 using System.Runtime.InteropServices.JavaScript;
 #endregion
 
@@ -20,6 +23,7 @@ public partial class LoginForm
     #region Injections
     [Inject] private AppState AppState { get; set; } = null!;
     [Inject] private ISnackbar _snackbar { get; set; } = null!;
+    [Inject] IDialogService DialogService { get; set; } = null!;
     [Inject] private IJSRuntime _jsInterop { get; set; } = null!;
     [Inject] private ILocalStorageService _localStorage { get; set; } = null!;
     [Inject] private NavigationManager _navigationManager { get; set; } = null!;
@@ -79,77 +83,72 @@ public partial class LoginForm
         var loginResult = await _authenticationService.LogInUser(clientDto_Login);
 
         if (loginResult.Succsess && loginResult.Value is not null)
-        {
-            if (loginResult.Value.RequireOtpDuringLogin)
-            {
-                await RedirectToOtpValidationPage(loginResult.Value.UserId);
-                return;
-            }
-
-            var resultGeneration = await generateAndSaveKeys(clientDto_Login.Password, loginResult.Value.UserId, loginResult.Value.GenerateKeys);
-
-            if (!resultGeneration)
-                return;
-
-            await _localStorage.SetItemAsStringAsync("FullName", loginResult.Value.UserFullName);
-            await _localStorage.SetItemAsStringAsync("Id", loginResult.Value.UserId);
-
-            await RedirectToDashboardPage(loginResult.Message, loginResult.Value);
-        }
+            await LoginSuccess(loginResult);
         else
-        {
-            _snackbar.Add(loginResult.Message, Severity.Error, options =>
-            {
-                options.CloseAfterNavigation = true;
-            });
-
-            if (loginResult.Message!.Contains("deactivated"))
-                showActivateAccountRequestBtn = true;
-        }
+            UnsuccessfulLogIn(loginResult.Message, loginResult.Message!.Contains("deactivated"));
 
         _processing = false;
     }
 
-    private async Task<bool> generateAndSaveKeys(string password, string userId, bool shouldStorePkInServer)
+    private async Task LoginSuccess
+    (
+        ClientUtil_ApiResponse<ClientDto_LoginResult> loginResult
+    )
     {
+        await _localStorage.SetItemAsStringAsync("Id", loginResult.Value!.UserId);
 
+        if (loginResult.Value.GenerateKeys)
+            await OpenPopUpGiveSecretPassPhrase();
+        else
+            await CheckIfKeysExistInBrowser(loginResult.Value.UserId);
+
+        if (loginResult.Value.RequireOtpDuringLogin)
+        {
+            await RedirectToOtpValidationPage(loginResult.Value.UserId);
+            return;
+        }
+
+        await _localStorage.SetItemAsStringAsync("FullName", loginResult.Value.UserFullName);
+
+        await RedirectToDashboardPage(loginResult.Message, loginResult.Value);
+    }
+
+    private void UnsuccessfulLogIn
+    (
+        string? message,
+        bool accountDeactivated
+    )
+    {
+        _snackbar.Add(message ?? "Something went wrong, try again", Severity.Error, options =>
+        {
+            options.CloseAfterNavigation = true;
+        });
+
+        if (accountDeactivated)
+            showActivateAccountRequestBtn = true;
+    }
+
+    private async Task
+    CheckIfKeysExistInBrowser
+    (
+        string userId
+    )
+    {
         string? publicKey = await _jsInterop.InvokeAsync<string>("getPublicKey", userId);
 
-        if (String.IsNullOrEmpty(publicKey))
+        if (string.IsNullOrEmpty(publicKey))
         {
-            bool successGenerateKeys = await _jsInterop.InvokeAsync<bool>("generateKeys", password, userId);
-
-            if (!successGenerateKeys)
-            {
-                _snackbar.Add(GeneralFailKeys, Severity.Error, options =>
-                {
-                    options.CloseAfterNavigation = true;
-                });
-                clientDto_Login = new();
-                _processing = false;
-                return false;
-            }
-
-            publicKey = await _jsInterop.InvokeAsync<string>("getPublicKey", userId);
+            AppState.GenerateSameKeys = true;
+            await OpenPopUpGiveSecretPassPhrase();
         }
 
-        if (shouldStorePkInServer)
-        {
-            var savePublicKey = await _authenticationService.SaveUserPublicKey(userId, publicKey);
+    }
 
-            if (!savePublicKey.Succsess)
-            {
-                _snackbar.Add(savePublicKey.Message, Severity.Error, options =>
-                {
-                    options.CloseAfterNavigation = true;
-                });
-                clientDto_Login = new();
-                _processing = false;
-                return false;
-            }
-        }
-
-        return true;
+    private async Task
+    OpenPopUpGiveSecretPassPhrase()
+    {
+        var dialog = await DialogService.ShowAsync<KeysGeneration>("Enter secret passphrase", DialogHelper.DialogOptionsNoCloseButton());
+        await dialog.Result;
     }
 
     private async Task
@@ -172,7 +171,7 @@ public partial class LoginForm
         ClientDto_LoginResult loginResult
     )
     {
-        AppState.SetClientSecrests(loginResult);
+        AppState.SetClientSecrets(loginResult);
         _snackbar.Add(loginResultMessage, Severity.Success, config => { config.CloseAfterNavigation = true; });
         await Task.Delay(2000);
         _snackbar.Add($"{SnackbarMessage}", Severity.Info, config => { config.CloseAfterNavigation = true; });
@@ -208,9 +207,7 @@ public partial class LoginForm
         var validationPassed = loginForm!.EditContext!.Validate();
 
         if (validationPassed)
-        {
             await SubmitLoginForm();
-        }
         else
             ShowValidationsMessages(loginForm.EditContext.GetValidationMessages(), LoginMode, false);
     }
@@ -276,7 +273,6 @@ public partial class LoginForm
     private static IEnumerable<string>
     PasswordStrength
     (
-
         string pw
     )
     {

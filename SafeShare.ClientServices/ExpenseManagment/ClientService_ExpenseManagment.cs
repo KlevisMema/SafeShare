@@ -2,6 +2,7 @@
 using System.Text.Json;
 using System.Collections.Generic;
 using SafeShare.ClientDTO.Expense;
+using SafeShare.ClientUtilities.Helpers;
 using SafeShare.ClientDTO.GroupManagment;
 using SafeShare.ClientDTO.Authentication;
 using SafeShare.ClientUtilities.Responses;
@@ -13,8 +14,6 @@ namespace SafeShare.ClientServices.ExpenseManagment;
 
 public class ClientService_ExpenseManagment(IHttpClientFactory httpClientFactory) : IClientService_ExpenseManagment
 {
-    private const string Client = "MyHttpClient";
-
     public async Task<ClientUtil_ApiResponse<List<ClientDto_Expense>>>
     GetAllExpensesOfGroup
     (
@@ -25,7 +24,7 @@ public class ClientService_ExpenseManagment(IHttpClientFactory httpClientFactory
 
         try
         {
-            var httpClient = httpClientFactory.CreateClient(Client);
+            var httpClient = httpClientFactory.CreateClient(ClientUtilHelpers_Statics.HttpClientName);
 
             var content = new StringContent(JsonSerializer.Serialize(groupId), Encoding.UTF8, "application/json");
 
@@ -65,7 +64,7 @@ public class ClientService_ExpenseManagment(IHttpClientFactory httpClientFactory
 
         try
         {
-            var httpClient = httpClientFactory.CreateClient(Client);
+            var httpClient = httpClientFactory.CreateClient(ClientUtilHelpers_Statics.HttpClientName);
 
             var content = new StringContent(JsonSerializer.Serialize(new { groupId }), Encoding.UTF8, "application/json");
 
@@ -108,7 +107,7 @@ public class ClientService_ExpenseManagment(IHttpClientFactory httpClientFactory
 
         try
         {
-            var httpClient = httpClientFactory.CreateClient(Client);
+            var httpClient = httpClientFactory.CreateClient(ClientUtilHelpers_Statics.HttpClientName);
 
             var registerData = new Dictionary<string, string>
             {
@@ -156,7 +155,7 @@ public class ClientService_ExpenseManagment(IHttpClientFactory httpClientFactory
 
         try
         {
-            var httpClient = httpClientFactory.CreateClient(Client);
+            var httpClient = httpClientFactory.CreateClient(ClientUtilHelpers_Statics.HttpClientName);
 
             var registerData = new Dictionary<string, string>
             {
@@ -203,7 +202,7 @@ public class ClientService_ExpenseManagment(IHttpClientFactory httpClientFactory
 
         try
         {
-            var httpClient = httpClientFactory.CreateClient(Client);
+            var httpClient = httpClientFactory.CreateClient(ClientUtilHelpers_Statics.HttpClientName);
 
             var content = new StringContent(JsonSerializer.Serialize(clientDto_ExpenseDelete), Encoding.UTF8, "application/json");
 

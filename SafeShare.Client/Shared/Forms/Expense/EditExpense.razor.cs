@@ -37,7 +37,7 @@ public partial class EditExpense
             Expense.Description = editExpenseResult.Value.Description;
             Expense.Date = editExpenseResult.Value.Date;
 
-            _appState.ExpenseEditted(Expense);
+            _appState.ExpenseEdited(Expense);
         }
 
         _snackbar.Add(editExpenseResult.Message, editExpenseResult.StatusCode == System.Net.HttpStatusCode.OK ? Severity.Success : Severity.Warning, config => { config.CloseAfterNavigation = true; config.VisibleStateDuration = 3000; });

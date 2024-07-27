@@ -4,6 +4,7 @@ using System.Text.Json;
 using Newtonsoft.Json.Linq;
 using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Http;
+using SafeShare.ClientUtilities.Helpers;
 using SafeShare.ClientDTO.Authentication;
 using SafeShare.ClientServerShared.Routes;
 using SafeShare.ClientUtilities.Responses;
@@ -14,8 +15,6 @@ namespace SafeShare.ClientServices.UserManagment;
 
 public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) : IClientService_UserManagment
 {
-    private const string Client = "MyHttpClient";
-
     public async Task<ClientUtil_ApiResponse<ClientDto_UserInfo>>
     GetUser()
     {
@@ -23,7 +22,7 @@ public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) :
 
         try
         {
-            var httpClient = httpClientFactory.CreateClient(Client);
+            var httpClient = httpClientFactory.CreateClient(ClientUtilHelpers_Statics.HttpClientName);
 
             response = await httpClient.GetAsync(BaseRoute.RouteAccountManagmentProxy + Route_AccountManagmentRoute.ProxyGetUser);
 
@@ -59,7 +58,7 @@ public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) :
 
         try
         {
-            var httpClient = httpClientFactory.CreateClient(Client);
+            var httpClient = httpClientFactory.CreateClient(ClientUtilHelpers_Statics.HttpClientName);
 
             var updateUserData = new Dictionary<string, string>
             {
@@ -107,7 +106,7 @@ public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) :
 
         try
         {
-            var httpClient = httpClientFactory.CreateClient(Client);
+            var httpClient = httpClientFactory.CreateClient(ClientUtilHelpers_Statics.HttpClientName);
 
             var changePasswordData = new Dictionary<string, string>
             {
@@ -152,7 +151,7 @@ public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) :
 
         try
         {
-            var httpClient = httpClientFactory.CreateClient(Client);
+            var httpClient = httpClientFactory.CreateClient(ClientUtilHelpers_Statics.HttpClientName);
 
             var deactivateAccountData = new Dictionary<string, string>
             {
@@ -197,7 +196,7 @@ public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) :
 
         try
         {
-            var httpClient = httpClientFactory.CreateClient(Client);
+            var httpClient = httpClientFactory.CreateClient(ClientUtilHelpers_Statics.HttpClientName);
 
             var json = JsonSerializer.Serialize(ActivateAccountRequest.Email);
 
@@ -237,7 +236,7 @@ public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) :
 
         try
         {
-            var httpClient = httpClientFactory.CreateClient(Client);
+            var httpClient = httpClientFactory.CreateClient(ClientUtilHelpers_Statics.HttpClientName);
 
             var json = JsonSerializer.Serialize(activateAccountConfirmation);
 
@@ -278,7 +277,7 @@ public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) :
         try
         {
             var requestMessage = new HttpRequestMessage();
-            var httpClient = httpClientFactory.CreateClient(Client);
+            var httpClient = httpClientFactory.CreateClient(ClientUtilHelpers_Statics.HttpClientName);
 
             var forgotPasswordData = new Dictionary<string, string>
             {
@@ -322,7 +321,7 @@ public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) :
         try
         {
             var requestMessage = new HttpRequestMessage();
-            var httpClient = httpClientFactory.CreateClient(Client);
+            var httpClient = httpClientFactory.CreateClient(ClientUtilHelpers_Statics.HttpClientName);
 
             var forgotPasswordData = new Dictionary<string, string>
             {
@@ -368,7 +367,7 @@ public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) :
 
         try
         {
-            var httpClient = httpClientFactory.CreateClient(Client);
+            var httpClient = httpClientFactory.CreateClient(ClientUtilHelpers_Statics.HttpClientName);
 
             var requestChangeEmailData = new Dictionary<string, string>
             {
@@ -413,7 +412,7 @@ public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) :
 
         try
         {
-            var httpClient = httpClientFactory.CreateClient(Client);
+            var httpClient = httpClientFactory.CreateClient(ClientUtilHelpers_Statics.HttpClientName);
 
             var json = JsonSerializer.Serialize(changeEmailAddressRequestConfirm);
 
@@ -455,7 +454,7 @@ public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) :
 
         try
         {
-            var httpClient = httpClientFactory.CreateClient(Client);
+            var httpClient = httpClientFactory.CreateClient(ClientUtilHelpers_Statics.HttpClientName);
 
             response = await httpClient.GetAsync(BaseRoute.RouteAccountManagmentProxy + Route_AccountManagmentRoute.ProxySearchUserByUserName + $"?username={userName}", cancellationToken);
 
@@ -493,7 +492,7 @@ public class ClientService_UserManagment(IHttpClientFactory httpClientFactory) :
 
         try
         {
-            var httpClient = httpClientFactory.CreateClient(Client);
+            var httpClient = httpClientFactory.CreateClient(ClientUtilHelpers_Statics.HttpClientName);
 
             var formData = new MultipartFormDataContent
             {
